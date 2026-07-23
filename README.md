@@ -5,6 +5,7 @@ Mobile app for tracking on-call medical rotation shifts (guardias) in the Mexica
 ## Documentation
 
 - [Product Requirements (PRD)](docs/PRD.md) — scope, features, data model, roadmap
+- [AGENTS.md](AGENTS.md) — stack and conventions (Expo, NativeWind, i18n, feature folders)
 
 ## Requirements
 

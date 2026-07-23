@@ -10,7 +10,7 @@
 
 ## 1. Overview
 
-Guardias is a mobile app for tracking on-call medical rotation shifts. It is designed specifically for the Mexican medical system's guardia structure, where doctors rotate through repeating patterns (most commonly **A-D**, every 4 days) with 36-hour weekday shifts and 24-hour weekend shifts.
+Guardias is a mobile app for tracking on-call medical rotation shifts. It is designed specifically for the Mexican medical system's guardia structure, where doctors rotate through repeating patterns (most commonly **A-D**, every 4 days). For MVP, all shifts are **24 hours**.
 
 The app replaces bloated, ad-ridden alternatives with a clean, offline-first tool that respects the user's time.
 
@@ -20,7 +20,7 @@ Existing apps like *On Calls / Guardias Médicas* are filled with ads and paywal
 
 ### Target users
 
-- **Primary:** Medical residents or doctors in Mexico following guardia rotations (A-D standard, or custom patterns)
+- **Primary:** Medical residents or doctors in Mexico following A-C or A-D guardia rotations
 - **Secondary:** Close contacts (friends, family) who want to coordinate around the user's schedule
 
 ### Success metrics
@@ -38,47 +38,56 @@ Existing apps like *On Calls / Guardias Médicas* are filled with ads and paywal
 
 ### Rotation types (guardia patterns)
 
-Guardia rotations are named by how often a doctor is on call within a repeating cycle. The letter after the hyphen indicates the cycle length:
+Guardia rotations are named by how often a doctor is on call within a repeating cycle. The letter after the hyphen indicates the cycle length.
 
-| Pattern | Cycle length | Meaning |
-|---|---|---|
-| A | 1 day | On call every day |
-| A-B | 2 days | On call every 2 days |
-| A-C | 3 days | On call every 3 days |
-| **A-D** | **4 days** | **On call every 4 days — standard in Mexican hospitals; MVP default** |
-| A-E, A-F, … | N days | On call every N days (general case) |
+**MVP patterns:**
 
-Within a fixed-length cycle, the doctor is assigned a **starting offset** (A, B, C, D in a 4-day cycle) that determines which days in the cycle are shift days.
+
+| Pattern | Cycle length | Meaning                                                               |
+| ------- | ------------ | --------------------------------------------------------------------- |
+| A-C     | 3 days       | On call every 3 days                                                  |
+| **A-D** | **4 days**   | **On call every 4 days — standard in Mexican hospitals; MVP default** |
+
+
+Other every-N named patterns (A-B, A-E, A-F, …) and custom rotations are deferred (see below).
+
+Within a fixed-length cycle, the doctor is assigned a **starting offset** that determines which days in the cycle are shift days (A, B, C for A-C; A, B, C, D for A-D).
 
 **A-D example (4-day cycle, MVP standard):**
 
+
 | Starting offset | Shift days in cycle |
-|---|---|
-| A | Days 1, 5, 9, 13… |
-| B | Days 2, 6, 10, 14… |
-| C | Days 3, 7, 11, 15… |
-| D | Days 4, 8, 12, 16… |
+| --------------- | ------------------- |
+| A               | Days 1, 5, 9, 13…   |
+| B               | Days 2, 6, 10, 14…  |
+| C               | Days 3, 7, 11, 15…  |
+| D               | Days 4, 8, 12, 16…  |
 
-### Custom rotation patterns (MVP)
 
-In addition to preset cycles (A-D and other every-N-day patterns), the user can define a **custom** pattern in either of two modes:
+**A-C example (3-day cycle):**
 
-1. **Every N days** — same as A-N naming, but with a user-chosen N (e.g. every 5 days from the start date).
+
+| Starting offset | Shift days in cycle |
+| --------------- | ------------------- |
+| A               | Days 1, 4, 7, 10…   |
+| B               | Days 2, 5, 8, 11…   |
+| C               | Days 3, 6, 9, 12…   |
+
+
+### Custom rotation patterns (v3.0)
+
+Custom patterns are **out of scope for MVP** and planned for **v3.0**:
+
+1. **Every N days** — user-chosen N (e.g. every 5 days from the start date), including named presets beyond A-C/A-D such as A-B or A-E.
 2. **Specific weekdays** — shift on selected days of the week regardless of cycle position (e.g. every Wednesday and Saturday).
 
-Custom patterns do not use A/B/C/D offsets; shift days are computed directly from the chosen interval or weekday set.
+### Shift duration
 
-### Shift duration rules
-
-| Condition | Duration | Notes |
-|---|---|---|
-| Shift ends on a weekday (Mon–Fri) | 36 hours | Standard guardia |
-| Shift ends on Saturday or Sunday | 24 hours | Weekend guardia |
-| Shift ends on a public holiday | 24 hours | Planned for v1.1 |
+For MVP, **every shift is 24 hours**. Variable durations (e.g. 36-hour weekday guardias) and holiday-based overrides are out of scope for v1.0.
 
 ### Rotation periods
 
-Each rotation typically lasts **3 months (one trimester)**. After 3 months, the doctor may be assigned a new pattern or offset (e.g. from A to B within an A-D cycle). In MVP the user manages one rotation period at a time; multiple sequential periods are planned for v1.1.
+Each rotation typically lasts **3 months (one trimester)**. After 3 months, the doctor may be assigned a new pattern or offset (e.g. from A to B within an A-D cycle). In MVP the user manages **multiple sequential, non-overlapping** rotation periods via a rotation list (see F4); periods that intersect the visible month appear on the calendar.
 
 ---
 
@@ -88,57 +97,62 @@ Each rotation typically lasts **3 months (one trimester)**. After 3 months, the 
 
 The user creates a rotation period by specifying:
 
+- **Required label** (e.g. "Internal medicine", "Pediatrics – Jan 2025")
 - **Rotation pattern:**
   - **A-D (every 4 days)** — MVP default; user picks starting offset A, B, C, or D
-  - **Other every-N presets** — A (daily), A-B (every 2 days), A-C (every 3 days), etc.
-  - **Custom** — every N days from start date, or specific weekdays (e.g. Wednesday + Saturday)
+  - **A-C (every 3 days)** — user picks starting offset A, B, or C
 - Start date (first day of rotation)
 - End date (last day of rotation)
-- Optional label (e.g. "Pediatrics – Jan 2025")
 - **Optional vacation period** — start and end dates during which no shifts are scheduled, even if the rotation pattern would otherwise assign one (e.g. approved leave mid-trimester)
 - **Optional shift start time** — time of day each shift begins (default **07:00**)
-- **Optional shift duration** — how long each shift lasts in hours (default **24**)
 
-The app automatically calculates all shift dates from the pattern and start date, excluding any vacation dates. In MVP, the user manages a single rotation period (see F5).
+All shifts are **24 hours**. The app automatically calculates all shift dates from the pattern and start date, excluding any vacation dates. Users manage periods from the rotation list (see F4).
 
-### F2 — Shift rules engine
-
-When a rotation period does not use a fixed `shiftDurationHours` (see F1), rules determine shift duration per shift:
-
-- If shift end day is Saturday or Sunday → 24 hours
-- Otherwise → 36 hours
-
-MVP stores the F1 default of **24 hours** for all shifts; the weekend/weekday rules above apply only when the user clears the fixed duration to use rule-based scheduling. Rules are stored per rotation period and **displayed on the rotation details page** (read-only in MVP). Custom or user-editable rules (e.g. holiday overrides, custom durations) are planned for v1.1.
-
-### F3 — Calendar view
+### F2 — Calendar view
 
 A monthly calendar shows:
 
 - Shift days highlighted
 - Free weekends visually distinguished (both Saturday and Sunday free)
-- Tap a shift day to open the **Shift detail** page (see F7)
 - Navigate forward/backward by month
 
-### F4 — Homepage
+**Day detail sheet**
 
-The app's default landing screen. It surfaces at-a-glance statistics for the current rotation period:
+Tapping any day opens a **bottom sheet** with details for that day (e.g. free day, or shift start/end/duration). From a shift day sheet, the user can navigate to the full **Shift detail** screen (see F6).
+
+**Month legend and filter**
+
+Below the calendar, a legend shows counts for the visible month:
+
+- **X shift days** (guardias)
+- **X free weekends**
+
+Tapping a legend item filters the calendar: the selected type stays full opacity; all other mark types are reduced in opacity. Tapping again (or tapping another item) updates the filter accordingly.
+
+### F3 — Homepage
+
+The app's default landing screen. It surfaces at-a-glance statistics for the current (or upcoming) rotation period:
 
 - Time until the next shift starts (days and hours)
 - Number of shifts remaining in the current rotation period
 - If currently in a shift: time remaining in the current shift
-- Quick access to edit the rotation period (F5) or open the calendar (F3)
+- Quick access to the rotation list (F4) or the calendar (F2)
 
 **Planned beyond MVP (v1.1):** cumulative career stats on the homepage — total hours worked and total shifts completed across all past rotation periods.
 
-### F5 — Rotation period management
+### F4 — Rotation period management
 
-The user creates, edits, or replaces their rotation period configuration. The add/edit form collects all F1 fields (pattern, dates, vacation, shift start time, shift duration, label).
+The **Shifts** tab shows a **list of rotation periods** (label + date range). From the list the user can:
 
-**MVP scope:** one active rotation period at a time. If the user needs a new trimester, they edit the existing period or replace it — there is no rotation list or multi-period calendar in v1.0.
+- Add a new period (FAB → add form)
+- Open a period's **rotation detail** (tap a list row)
+- Edit or delete a period from detail / edit flows
 
-**Planned beyond MVP (v1.1):** multiple non-overlapping rotation periods stored sequentially; each visible on the same calendar, differentiated by color or label, with individual edit/delete actions.
+The add/edit form collects all F1 fields (required label, A-C or A-D pattern + offset, start/end date, optional vacation, optional shift start time). Shift duration is fixed at 24 hours and is not user-editable in MVP.
 
-### F6 — Bilingual UI (English & Spanish)
+**MVP scope:** multiple sequential, non-overlapping rotation periods. Periods that intersect the visible month are shown on the calendar (F2). Overlapping date ranges are rejected with validation.
+
+### F5 — Bilingual UI (English & Spanish)
 
 The MVP ships with full in-app localization for English (`en`) and Spanish (`es`).
 
@@ -158,7 +172,7 @@ The MVP ships with full in-app localization for English (`en`) and Spanish (`es`
 
 **In scope for v1.0**
 
-- UI strings for all MVP screens (F1–F5, F7, Settings)
+- UI strings for all MVP screens (F1–F4, F6, Settings)
 - Error and validation messages
 - Empty states and onboarding hints
 
@@ -167,39 +181,42 @@ The MVP ships with full in-app localization for English (`en`) and Spanish (`es`
 - Additional locales beyond English and Spanish
 - Translating user-created rotation labels (stored as entered)
 
-### F7 — Shift detail
+### F6 — Shift detail
 
-Opened from the calendar (F3) when the user taps a past or future shift day.
+Opened from the calendar day sheet (F2) when the user opens details for a past or future shift day.
 
 **Future shifts**
 
-- Date, start time, end time, duration, rotation label
+- Date, start time, end time, duration (24 hours), rotation label
 
 **Past shifts**
 
 - Date (primary emphasis)
-- Hours worked (computed from scheduled start/end)
+- Hours worked (computed from scheduled start/end; 24 hours in MVP)
 - Step count *(planned v2.0 — requires health device integration)*
 
 ---
 
 ## 4. Out of Scope for MVP
 
-| Feature | Target version |
-|---|---|
-| Multiple rotation periods on one calendar | v1.1 |
-| Cumulative stats (total hours worked, total shifts completed) | v1.1 |
-| Google Calendar sync | v1.1 |
-| iOS support | v1.1 |
-| Push notifications for upcoming shifts | v1.1 |
-| Editable shift rules (beyond default weekend/weekday) | v1.1 |
-| Holiday rule overrides | v1.1 |
-| Friend schedule comparison | v1.2 |
-| Shareable schedule link | v1.2 |
-| User accounts / cloud sync | v1.2 |
-| Step count on past shift detail | v2.0 |
-| Health device integration (steps, sleep) | v2.0 |
-| Locales beyond English and Spanish | v1.1+ |
+
+| Feature                                                       | Target version |
+| ------------------------------------------------------------- | -------------- |
+| Cumulative stats (total hours worked, total shifts completed) | v1.1           |
+| Google Calendar sync                                          | v1.1           |
+| iOS support                                                   | v1.1           |
+| Push notifications for upcoming shifts                        | v1.1           |
+| Variable / rule-based shift durations (e.g. 36 h weekdays)    | v1.1+          |
+| Holiday rule overrides                                        | v1.1           |
+| Friend schedule comparison                                    | v1.2           |
+| Shareable schedule link                                       | v1.2           |
+| User accounts / cloud sync                                    | v1.2           |
+| Step count on past shift detail                               | v2.0           |
+| Health device integration (steps, sleep)                      | v2.0           |
+| Custom rotation (every N days / specific weekdays)            | v3.0           |
+| Named presets beyond A-C / A-D (A-B, A-E, …)                  | v3.0           |
+| Locales beyond English and Spanish                            | v1.1+          |
+
 
 ---
 
@@ -209,65 +226,67 @@ All data is stored locally on-device using AsyncStorage. No backend or authentic
 
 ### RotationPeriod
 
-| Field | Type | Description |
-|---|---|---|
-| id | string | UUID |
-| label | string | e.g. "Pediatrics – Jan 2025" |
-| pattern | RotationPattern | How shift days are determined (see below) |
-| startDate | ISO date string | First day of rotation |
-| endDate | ISO date string | Last day of rotation |
-| vacationStartDate | ISO date string \| null | Optional vacation block start (inclusive) |
-| vacationEndDate | ISO date string \| null | Optional vacation block end (inclusive) |
-| shiftStartTime | string | Local time each shift starts, `HH:mm` (default `07:00`) |
-| shiftDurationHours | number \| null | Fixed shift length in hours (default `24`); `null` = use F2 rules engine |
-| rules | ShiftRule[] | Array of duration rules (read-only in MVP UI) |
-| createdAt | ISO datetime | When the period was created |
+
+| Field             | Type                   | Description                                             |
+| ----------------- | ---------------------- | ------------------------------------------------------- |
+| id                | string                 | UUID                                                    |
+| label             | string                 | Required; e.g. "Internal medicine"                      |
+| pattern           | RotationPattern        | How shift days are determined (see below)               |
+| startDate         | ISO date string        | First day of rotation                                   |
+| endDate           | ISO date string        | Last day of rotation                                    |
+| vacationStartDate | ISO date string \| null | Optional vacation block start (inclusive)              |
+| vacationEndDate   | ISO date string \| null | Optional vacation block end (inclusive)                |
+| shiftStartTime    | string                 | Local time each shift starts, `HH:mm` (default `07:00`) |
+| createdAt         | ISO datetime           | When the period was created                             |
+
+
+Shift duration is not stored: all MVP shifts are **24 hours**.
 
 ### RotationPattern
 
-| Field | Type | Description |
-|---|---|---|
-| type | `PRESET` \| `CUSTOM` | Preset every-N cycle or custom pattern |
-| cycleDays | number \| null | For `PRESET`: cycle length (4 = A-D, MVP default) |
-| offset | A \| B \| C \| D \| … \| null | Starting position within the cycle; letter maps to offset index (A=1, B=2, …) |
-| customMode | `INTERVAL` \| `WEEKDAYS` \| null | For `CUSTOM` only |
-| intervalDays | number \| null | For `CUSTOM` + `INTERVAL`: shift every N days from start date |
-| weekdays | number[] \| null | For `CUSTOM` + `WEEKDAYS`: ISO weekday indices (1=Mon … 7=Sun), e.g. `[3, 6]` for Wed + Sat |
 
-### ShiftRule
+| Field     | Type                 | Description                                                                                          |
+| --------- | -------------------- | ---------------------------------------------------------------------------------------------------- |
+| cycleDays | `3` \| `4`           | Cycle length: `3` = A-C, `4` = A-D (MVP default)                                                     |
+| offset    | `A` \| `B` \| `C` \| `D` | Starting position within the cycle; letter maps to offset index (A=1, B=2, …). `D` only for A-D |
 
-| Field | Type | Description |
-|---|---|---|
-| condition | WEEKEND_END \| WEEKDAY_END \| HOLIDAY_END | When this rule applies |
-| durationHours | number | Shift length in hours (24 or 36) |
+
+Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`) are deferred to **v3.0**.
 
 ### Shift (computed, not stored)
 
-| Field | Type | Description |
-|---|---|---|
-| startDateTime | ISO datetime | Computed from pattern + rotation start date + `shiftStartTime` |
-| endDateTime | ISO datetime | Computed: startDateTime + durationHours |
-| durationHours | number | 24 or 36 based on rule match |
-| rotationPeriodId | string | Parent rotation period |
+
+| Field            | Type         | Description                                                    |
+| ---------------- | ------------ | -------------------------------------------------------------- |
+| startDateTime    | ISO datetime | Computed from pattern + rotation start date + `shiftStartTime` |
+| endDateTime      | ISO datetime | Computed: startDateTime + 24 hours                             |
+| durationHours    | `24`         | Fixed for MVP                                                  |
+| rotationPeriodId | string       | Parent rotation period                                         |
+
 
 ### AppPreferences (stored)
 
-| Field | Type | Description |
-|---|---|---|
+
+| Field  | Type               | Description                                  |
+| ------ | ------------------ | -------------------------------------------- |
 | locale | `en` \| `es` \| null | User override; `null` = follow device locale |
+
 
 ---
 
 ## 6. Screen Inventory
 
-| Screen | Key content |
-|---|---|
-| Homepage (F4) | Time to next shift, shifts remaining, current-shift countdown; edit rotation CTA |
-| Calendar View (F3) | Monthly calendar with shift days highlighted, free weekends marked |
-| Add / Edit Rotation (F5) | Form: pattern (A-D default, other presets, or custom), start/end date, optional vacation, shift start time (default 07:00), shift duration (default 24 h), label |
-| Rotation Detail | Pattern summary, date range, vacation period, shift start time, duration, **read-only shift rules** (weekend 24 h / weekday 36 h when duration not fixed) |
-| Shift Detail (F7) | Past shifts: date, hours worked; future shifts: start/end time, duration, label; step count *(v2.0)* |
-| Settings (F6) | Language (English / Español / System default); future: notifications, theme |
+
+| Screen              | Key content                                                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Homepage (F3)       | Time to next shift, shifts remaining, current-shift countdown; CTAs to rotations list and calendar                                          |
+| Calendar View (F2)  | Monthly calendar; day-tap bottom sheet; legend (shift days + free weekends) with opacity filter                                             |
+| Shifts list (F4)    | List of rotation periods (label + date range); FAB to add                                                                                   |
+| Add / Edit Rotation | Form: required label, A-C or A-D + offset, start/end date, optional vacation, shift start time (default 07:00); duration fixed at 24 h      |
+| Rotation Detail     | Label, hours worked / next shift summary, date range, shifts completed / remaining; edit action                                             |
+| Shift Detail (F6)   | Past shifts: date, hours worked; future shifts: start/end time, duration (24 h), label; step count *(v2.0)*                                 |
+| Settings (F5)       | Language (English / Español / System default); future: notifications, theme                                                               |
+
 
 ---
 
@@ -276,17 +295,17 @@ All data is stored locally on-device using AsyncStorage. No backend or authentic
 - Rotation periods that span a year boundary (Dec → Jan)
 - Leap years affecting shift date calculations
 - Schedules starting mid-cycle (user joins rotation on day 2 of a 4-day cycle)
-- Custom weekday patterns (e.g. Wed + Sat) vs. every-N patterns producing different densities
+- A-C vs A-D offset letter mapping (A–C only for 3-day cycles)
 - Vacation period overlapping scheduled shift days — those days must show as free
 - Vacation period partially outside rotation bounds — validate or clamp to rotation dates
-- Non-4-day preset cycles (A, A-B, A-C) with correct offset letter mapping
+- Overlapping rotation period date ranges — reject with validation
 - Daylight saving time transitions in Mexico (April and October)
 - Back-to-back rotation periods with no gap between them
 - User device timezone differs from hospital timezone
 - Device locale is neither `en` nor `es` — must fall back to Spanish cleanly
 - User switches language mid-session — all visible screens update without restart
-- Custom shift start time (e.g. 07:00) crossing midnight when combined with 24 h+ durations
-- Fixed `shiftDurationHours` vs. F2 rule-based duration — ensure only one source applies per period
+- Custom shift start time (e.g. 07:00) crossing midnight when combined with 24 h duration
+- Calendar legend filter: only one category emphasized at a time; empty months (0 shift days / 0 free weekends) still render counts correctly
 
 ---
 
@@ -294,11 +313,11 @@ All data is stored locally on-device using AsyncStorage. No backend or authentic
 
 ### v1.0 — MVP
 
-Core shift tracking, homepage stats, calendar view, single rotation period (add/edit), shift detail for past and future shifts, bilingual UI (English & Spanish), bilingual Play Store listing.
+Core shift tracking (A-C / A-D, fixed 24 h shifts), homepage stats, calendar with day sheet and legend filter, rotation list with multiple sequential periods, shift detail for past and future shifts, bilingual UI (English & Spanish), bilingual Play Store listing.
 
 ### v1.1 — Quality of life
 
-Multiple rotation periods on one calendar, cumulative homepage stats (total hours and shifts worked), Google Calendar sync, iOS support, push notifications, holiday rule overrides.
+Cumulative homepage stats (total hours and shifts worked), Google Calendar sync, iOS support, push notifications, variable / rule-based shift durations, holiday rule overrides.
 
 ### v1.2 — Social
 
@@ -308,34 +327,41 @@ Friend schedule comparison, shareable schedule links, user accounts and cloud sy
 
 Health device integration (step counts, sleep tracking), step count on past shift detail, shift fatigue insights.
 
+### v3.0 — Flexible schedules
+
+Custom rotation patterns (every N days, specific weekdays), named presets beyond A-C / A-D (A-B, A-E, …).
+
 ---
 
 ## 9. Technical Stack
 
-| Layer | Choice | Reason |
-|---|---|---|
-| Framework | React Native + Expo | Cross-platform, AI-friendly, no native config |
-| Language | TypeScript | Catches bugs at compile time |
-| Local storage | AsyncStorage | No backend needed for MVP |
-| Calendar UI | react-native-calendars | Flexible marking, active community |
-| UI components | react-native-paper | Material Design, native Android feel |
-| Date math | date-fns | Reliable DST handling, tree-shakeable |
-| Localization | expo-localization + i18next (or expo-localization + JSON catalogs) | Device locale detection, EN/ES string catalogs |
-| Build & publish | EAS (Expo Application Services) | Handles Android signing and Play Store upload |
+
+| Layer           | Choice                                                             | Reason                                         |
+| --------------- | ------------------------------------------------------------------ | ---------------------------------------------- |
+| Framework       | React Native + Expo                                                | Cross-platform, AI-friendly, no native config  |
+| Language        | TypeScript                                                         | Catches bugs at compile time                   |
+| Local storage   | AsyncStorage                                                       | No backend needed for MVP                      |
+| Calendar UI     | react-native-calendars                                             | Flexible marking, active community             |
+| Styling         | NativeWind (Tailwind CSS `className`)                              | Utility-first styling shared with web mental model |
+| UI components   | `@expo/ui` + React Native primitives                               | Platform-native controls; not Material Design 3 |
+| Date math       | date-fns                                                           | Reliable DST handling, tree-shakeable          |
+| Localization    | expo-localization + i18next (or expo-localization + JSON catalogs) | Device locale detection, EN/ES string catalogs |
+| Build & publish | EAS (Expo Application Services)                                    | Handles Android signing and Play Store upload  |
+
 
 ### Suggested repo layout (implementation)
 
 ```
 src/
 ├── features/
-│   ├── calendar/       # F3
-│   ├── dashboard/      # F4 homepage
-│   ├── rotations/      # F1, F5
-│   ├── shifts/         # F7 shift detail
-│   └── settings/       # F6 language picker
+│   ├── calendar/       # F2
+│   ├── dashboard/      # F3 homepage
+│   ├── rotations/      # F1, F4
+│   ├── shifts/         # F6 shift detail
+│   └── settings/       # F5 language picker
 ├── components/         # Shared UI
 ├── lib/
-│   ├── shifts/         # F2 rules engine
+│   ├── shifts/         # Shift date calculator (fixed 24 h)
 │   └── storage/        # AsyncStorage helpers
 ├── i18n/
 │   ├── en.json
@@ -347,9 +373,15 @@ src/
 
 ## 10. Changelog
 
-| Date | Change |
-|---|---|
-| July 2026 | Initial MVP PRD |
-| July 2026 | Added F6 bilingual UI (EN/ES) as MVP requirement |
-| July 2026 | Rotation patterns: A-D MVP default, every-N presets, custom interval/weekdays; optional vacation period (F1); read-only rules on rotation detail (F2) |
+
+| Date      | Change                                                                                                                                                                                                                                        |
+| --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| July 2026 | Initial MVP PRD                                                                                                                                                                                                                               |
+| July 2026 | Added F6 bilingual UI (EN/ES) as MVP requirement                                                                                                                                                                                              |
+| July 2026 | UI direction: prefer `@expo/ui` native platform components; do not use Material Design 3 / react-native-paper as the design system                                                                                                              |
+| July 2026 | Styling: NativeWind (Tailwind CSS) for layout/colors; keeps platform-native controls via `@expo/ui` / RN primitives                                                                                                                             |
+| July 2026 | Rotation patterns: A-D MVP default, every-N presets, custom interval/weekdays; optional vacation period (F1); read-only rules on rotation detail (F2)                                                                                         |
 | July 2026 | F1: optional shift start time (default 07:00) and duration (default 24 h); F4 reframed as homepage; F5 scoped to single-period management for MVP; F7 shift detail for past/future shifts; cumulative stats and multi-period deferred to v1.1 |
+| July 2026 | MVP scope revision: A-C/A-D only; fixed 24 h shifts; required label; removed shift rules engine; calendar day sheet + two-item legend filter; multi-period rotation list; custom every-N/weekday patterns deferred to v3.0; features renumbered F1–F6 |
+
+
