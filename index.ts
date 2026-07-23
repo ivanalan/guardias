@@ -1,5 +1,8 @@
 import { registerRootComponent } from 'expo';
 
+// Side-effect import: initializes i18next before App mounts
+import './src/i18n';
+
 import App from './App';
 
 // registerRootComponent calls AppRegistry.registerComponent('main', () => App);

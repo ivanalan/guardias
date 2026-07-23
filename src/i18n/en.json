@@ -1,0 +1,10 @@
+{
+  "tabs": {
+    "home": "Home",
+    "calendar": "Calendar",
+    "shifts": "Shifts"
+  },
+  "home": {
+    "placeholder": "Bottom navigation via React Navigation"
+  }
+}
