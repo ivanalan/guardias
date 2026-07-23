@@ -1,0 +1,40 @@
+---
+description: Prefer NativeWind styling + native platform controls for Guardias (Expo)
+globs: "**/*.{tsx,jsx}"
+alwaysApply: false
+---
+
+# Native UI — Guardias
+
+**Goal:** Style with NativeWind (Tailwind `className`); use real platform-native controls — not a Material Design 3 / Material You design system (including react-native-paper).
+
+## Preferred stack
+
+### Styling — NativeWind
+
+- Use **[NativeWind](https://www.nativewind.dev/)** for layout, spacing, typography scale, and colors via `className`.
+- Prefer utility classes over large `StyleSheet.create` blocks for app chrome and screens.
+- Import CSS-enabled primitives from `src/tw` (re-exports `react-native-css/components`) when using `className`.
+- Keep Tailwind theme tokens in CSS (`src/global.css` / `@theme`); avoid one-off hardcoded colors when a token exists.
+- For setup/troubleshooting, use the Expo agent skill **`expo-tailwind-setup`** (`.agents/skills/expo-tailwind-setup`).
+
+### Controls — platform native
+
+- Use **[`@expo/ui`](https://docs.expo.dev/versions/v54.0.0/sdk/ui/)** when it fits the platform and SDK.
+  - **SDK 54:** SwiftUI via `@expo/ui/swift-ui` (requires a development build; not Expo Go). Wrap SwiftUI trees in `Host`.
+  - **Android on SDK 54:** Compose/`@expo/ui` Android support is limited — use React Native core components (`View`, `Text`, `TextInput`, `Pressable`, `Switch`, etc.) and system look. Do not fill the gap with Paper/MD3.
+  - On later SDKs, prefer Jetpack Compose / universal `@expo/ui` APIs when available.
+- Icons: `@expo/vector-icons` or platform-native icon APIs from `@expo/ui` when present. Do not assume Paper / Material Design Icons name strings.
+
+NativeWind and `@expo/ui` complement each other: NativeWind styles layout/chrome; `@expo/ui` / RN primitives provide interactive controls.
+
+## Do not
+
+- Do **not** implement Material Design 3 (MD3 / Material You) as the app design system
+- Do **not** use the `material-3` agent skill for Guardias UI
+- Do **not** add new `react-native-paper` components or themes (`PaperProvider`, `MD3LightTheme`, etc.)
+- Do **not** invent a custom “Material-like” look to approximate MD3
+
+## Migration note
+
+`react-native-paper` may still be in `package.json` until removed. When touching UI, prefer NativeWind + `@expo/ui` / RN primitives rather than extending Paper.
