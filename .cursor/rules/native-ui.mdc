@@ -6,7 +6,7 @@ alwaysApply: false
 
 # Native UI — Guardias
 
-**Goal:** Style with NativeWind (Tailwind `className`); use real platform-native controls — not a Material Design 3 / Material You design system (including react-native-paper).
+**Goal:** Style with NativeWind (Tailwind `className`); use real platform-native controls. HIG/SwiftUI on iOS, Material via Jetpack Compose on Android — not a cross-platform Material Design 3 / Paper kit.
 
 ## Preferred stack
 
@@ -20,20 +20,20 @@ alwaysApply: false
 
 ### Controls — platform native
 
-- Use **[`@expo/ui`](https://docs.expo.dev/versions/v54.0.0/sdk/ui/)** when it fits the platform and SDK.
-  - **SDK 54:** SwiftUI via `@expo/ui/swift-ui` (requires a development build; not Expo Go). Wrap SwiftUI trees in `Host`.
-  - **Android on SDK 54:** Compose/`@expo/ui` Android support is limited — use React Native core components (`View`, `Text`, `TextInput`, `Pressable`, `Switch`, etc.) and system look. Do not fill the gap with Paper/MD3.
-  - On later SDKs, prefer Jetpack Compose / universal `@expo/ui` APIs when available.
-- Icons: `@expo/vector-icons` or platform-native icon APIs from `@expo/ui` when present. Do not assume Paper / Material Design Icons name strings.
+- Use **[`@expo/ui`](https://docs.expo.dev/versions/v55.0.0/sdk/ui/)** when it fits the platform and SDK.
+  - **iOS:** SwiftUI via `@expo/ui/swift-ui` (wrap trees in `Host`). Native stack large titles + SF Symbol header items via React Navigation.
+  - **Android:** Jetpack Compose / Material via `@expo/ui/jetpack-compose` (FAB, buttons, etc.). Use the standard native stack Top App Bar (`title`) — do **not** force iOS `headerLargeTitle` on Android.
+  - When Compose is unavailable (e.g. Expo Go limitation), fall back to RN primitives with reliable inline styles — never Paper.
+- Icons: platform-native (SF Symbols on iOS; Material Symbols / XML drawables on Android Compose). `@expo/vector-icons` only as a temporary RN fallback.
 
 NativeWind and `@expo/ui` complement each other: NativeWind styles layout/chrome; `@expo/ui` / RN primitives provide interactive controls.
 
 ## Do not
 
-- Do **not** implement Material Design 3 (MD3 / Material You) as the app design system
+- Do **not** implement Material Design 3 as a **cross-platform** design system (no MD3 chrome on iOS)
 - Do **not** use the `material-3` agent skill for Guardias UI
 - Do **not** add new `react-native-paper` components or themes (`PaperProvider`, `MD3LightTheme`, etc.)
-- Do **not** invent a custom “Material-like” look to approximate MD3
+- Do **not** invent a custom “Material-like” look to approximate MD3 on iOS
 
 ## Migration note
 

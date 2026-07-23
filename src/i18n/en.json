@@ -6,5 +6,11 @@
   },
   "home": {
     "placeholder": "Bottom navigation via React Navigation"
+  },
+  "shifts": {
+    "emptyTitle": "No rotations yet",
+    "emptyBody": "Add a rotation period to start tracking your guardias.",
+    "addA11y": "Add rotation",
+    "comingSoon": "Adding rotations is coming soon."
   }
 }

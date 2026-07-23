@@ -9,6 +9,7 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import type { ComponentProps } from 'react';
 
 import i18n from './src/i18n';
+import { ShiftsStack } from './src/features/rotations/shifts-stack';
 import { Text, View } from './src/tw';
 
 type TabKey = 'Home' | 'Calendar' | 'Shifts';
@@ -48,10 +49,6 @@ function CalendarScreen() {
   return <TabPlaceholder titleKey="tabs.calendar" />;
 }
 
-function ShiftsScreen() {
-  return <TabPlaceholder titleKey="tabs.shifts" />;
-}
-
 function RootNavigator() {
   const { t } = useTranslation();
 
@@ -78,7 +75,7 @@ function RootNavigator() {
         {/* `name` is a route id — keep stable; translate via tabBarLabel */}
         <Tab.Screen name="Home" component={HomeScreen} />
         <Tab.Screen name="Calendar" component={CalendarScreen} />
-        <Tab.Screen name="Shifts" component={ShiftsScreen} />
+        <Tab.Screen name="Shifts" component={ShiftsStack} />
       </Tab.Navigator>
       <StatusBar style="auto" />
     </NavigationContainer>
