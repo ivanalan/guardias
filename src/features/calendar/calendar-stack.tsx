@@ -2,11 +2,11 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
 import { CalendarScreen } from './screens/calendar-screen';
-import { DayDetailStubScreen } from './screens/day-detail-stub-screen';
+import { DayDetailScreen } from './screens/day-detail-screen';
 
 export type CalendarStackParamList = {
   CalendarHome: undefined;
-  DayDetailStub: { date: string };
+  DayDetail: { date: string };
 };
 
 const Stack = createNativeStackNavigator<CalendarStackParamList>();
@@ -25,8 +25,8 @@ export function CalendarStack() {
         }}
       />
       <Stack.Screen
-        name="DayDetailStub"
-        component={DayDetailStubScreen}
+        name="DayDetail"
+        component={DayDetailScreen}
         options={{
           title: t('calendar.dayDetailTitle'),
           presentation: 'formSheet',
