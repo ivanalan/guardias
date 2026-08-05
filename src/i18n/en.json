@@ -7,6 +7,11 @@
   "home": {
     "placeholder": "Bottom navigation via React Navigation"
   },
+  "calendar": {
+    "today": "Today",
+    "dayDetailTitle": "Day",
+    "dayDetailComingSoon": "Day details coming soon."
+  },
   "shifts": {
     "emptyTitle": "No rotations yet",
     "emptyBody": "Add a rotation period to start tracking your guardias.",

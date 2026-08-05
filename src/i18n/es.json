@@ -7,6 +7,11 @@
   "home": {
     "placeholder": "Navegación inferior con React Navigation"
   },
+  "calendar": {
+    "today": "Hoy",
+    "dayDetailTitle": "Día",
+    "dayDetailComingSoon": "Los detalles del día estarán disponibles pronto."
+  },
   "shifts": {
     "emptyTitle": "Aún no hay rotaciones",
     "emptyBody": "Agrega un periodo de rotación para empezar a seguir tus guardias.",
