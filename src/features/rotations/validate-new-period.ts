@@ -1,10 +1,13 @@
+import type { RotationPeriod } from './types';
+
 export type RotationValidationError =
   | 'labelRequired'
   | 'dateOrder'
   | 'vacationOrder'
-  | 'vacationOutOfBounds';
+  | 'vacationOutOfBounds'
+  | 'dateOverlap';
 
-export type NewPeriodInput = {
+export type PeriodFormInput = {
   label: string;
   startDate: string;
   endDate: string;
@@ -13,9 +16,37 @@ export type NewPeriodInput = {
   vacationEndDate: string;
 };
 
-/** Returns the first validation error for a new period, or null if valid. */
-export function validateNewPeriod(
-  input: NewPeriodInput,
+/**
+ * Inclusive date-range overlap: `[aStart, aEnd]` intersects `[bStart, bEnd]`.
+ */
+export function datesOverlap(
+  aStart: string,
+  aEnd: string,
+  bStart: string,
+  bEnd: string,
+): boolean {
+  return aStart <= bEnd && bStart <= aEnd;
+}
+
+/** First existing period whose range overlaps `[startDate, endDate]`, if any. */
+export function findOverlappingPeriod(
+  startDate: string,
+  endDate: string,
+  periods: readonly RotationPeriod[],
+  excludeId?: string,
+): RotationPeriod | undefined {
+  return periods.find(
+    (period) =>
+      period.id !== excludeId &&
+      datesOverlap(startDate, endDate, period.startDate, period.endDate),
+  );
+}
+
+/** Returns the first validation error for a period form, or null if valid. */
+export function validatePeriodForm(
+  input: PeriodFormInput,
+  periods: readonly RotationPeriod[],
+  excludeId?: string,
 ): RotationValidationError | null {
   if (!input.label.trim()) {
     return 'labelRequired';
@@ -23,6 +54,17 @@ export function validateNewPeriod(
 
   if (input.endDate <= input.startDate) {
     return 'dateOrder';
+  }
+
+  if (
+    findOverlappingPeriod(
+      input.startDate,
+      input.endDate,
+      periods,
+      excludeId,
+    ) != null
+  ) {
+    return 'dateOverlap';
   }
 
   if (!input.vacationEnabled) {

@@ -36,7 +36,7 @@ export function CalendarScreen({ navigation }: Props) {
           setCurrentMonth(month.dateString);
         }}
         onDayPress={(day: DateData) => {
-          navigation.navigate('DayDetailStub', { date: day.dateString });
+          navigation.navigate('DayDetail', { date: day.dateString });
         }}
         enableSwipeMonths
         firstDay={1}

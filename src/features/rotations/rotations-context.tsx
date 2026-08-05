@@ -14,6 +14,8 @@ import type { RotationPeriod } from './types';
 type RotationsContextValue = {
   periods: RotationPeriod[];
   addPeriod: (period: RotationPeriod) => void;
+  updatePeriod: (period: RotationPeriod) => void;
+  deletePeriod: (id: string) => void;
 };
 
 const RotationsContext = createContext<RotationsContextValue | null>(null);
@@ -59,12 +61,30 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
+  const updatePeriod = useCallback((period: RotationPeriod) => {
+    setPeriods((prev) => {
+      const next = prev.map((item) => (item.id === period.id ? period : item));
+      void saveRotationPeriods(next);
+      return next;
+    });
+  }, []);
+
+  const deletePeriod = useCallback((id: string) => {
+    setPeriods((prev) => {
+      const next = prev.filter((item) => item.id !== id);
+      void saveRotationPeriods(next);
+      return next;
+    });
+  }, []);
+
   if (!ready) {
     return null;
   }
 
   return (
-    <RotationsContext.Provider value={{ periods, addPeriod }}>
+    <RotationsContext.Provider
+      value={{ periods, addPeriod, updatePeriod, deletePeriod }}
+    >
       {children}
     </RotationsContext.Provider>
   );

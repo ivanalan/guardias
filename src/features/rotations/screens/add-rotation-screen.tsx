@@ -1,14 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollView, Switch } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { addMonths, parseISO } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
-import type { ShiftsStackParamList } from '../shifts-stack';
+import { Pressable, Text, TextInput, View } from '../../../tw';
 import {
   formatFormDate,
   parseHHMM,
@@ -16,18 +15,24 @@ import {
   toISODate,
 } from '../format-period-range';
 import { useRotations } from '../rotations-context';
+import type { ShiftsStackParamList } from '../shifts-stack';
 import {
   DEFAULT_PATTERN,
   DEFAULT_SHIFT_START_TIME,
   OFFSETS_FOR_CYCLE,
   type CycleDays,
   type OffsetLetter,
+  type RotationPeriod,
 } from '../types';
 import {
-  validateNewPeriod,
+  validatePeriodForm,
   type RotationValidationError,
 } from '../validate-new-period';
-import { Pressable, Text, TextInput, View } from '../../../tw';
+
+type Props = NativeStackScreenProps<
+  ShiftsStackParamList,
+  'AddRotation' | 'EditRotation'
+>;
 
 type ActivePicker =
   'start' | 'end' | 'shiftStart' | 'vacationStart' | 'vacationEnd' | null;
@@ -43,27 +48,69 @@ function defaultEndISO(from: Date = new Date()): string {
   return toISODate(addMonths(from, 3));
 }
 
-/** Add-rotation form — Slice 6: validation + shift time + optional vacation. */
-export function AddRotationScreen() {
+function initialFormState(existing: RotationPeriod | undefined) {
+  if (existing == null) {
+    const start = toISODate(new Date());
+    const end = defaultEndISO();
+    return {
+      label: '',
+      startDate: start,
+      endDate: end,
+      cycleDays: DEFAULT_PATTERN.cycleDays,
+      offset: DEFAULT_PATTERN.offset,
+      shiftStartTime: DEFAULT_SHIFT_START_TIME,
+      vacationEnabled: false,
+      vacationStartDate: start,
+      vacationEndDate: end,
+    };
+  }
+
+  return {
+    label: existing.label,
+    startDate: existing.startDate,
+    endDate: existing.endDate,
+    cycleDays: existing.pattern.cycleDays,
+    offset: existing.pattern.offset,
+    shiftStartTime: existing.shiftStartTime,
+    vacationEnabled:
+      existing.vacationStartDate != null && existing.vacationEndDate != null,
+    vacationStartDate: existing.vacationStartDate ?? existing.startDate,
+    vacationEndDate: existing.vacationEndDate ?? existing.endDate,
+  };
+}
+
+/** Add or edit rotation form (F1 / F4). */
+export function AddRotationScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
-  const navigation =
-    useNavigation<NativeStackNavigationProp<ShiftsStackParamList>>();
-  const { addPeriod } = useRotations();
+  const { periods, addPeriod, updatePeriod } = useRotations();
 
-  const [label, setLabel] = useState('');
-  const [startDate, setStartDate] = useState(() => toISODate(new Date()));
-  const [endDate, setEndDate] = useState(() => defaultEndISO());
-  const [cycleDays, setCycleDays] = useState<CycleDays>(
-    DEFAULT_PATTERN.cycleDays,
+  const routeParams = route.params;
+  const editingId =
+    route.name === 'EditRotation' && routeParams
+      ? routeParams.periodId
+      : undefined;
+  const existing =
+    editingId != null
+      ? periods.find((item) => item.id === editingId)
+      : undefined;
+
+  const initial = initialFormState(existing);
+  const [label, setLabel] = useState(initial.label);
+  const [startDate, setStartDate] = useState(initial.startDate);
+  const [endDate, setEndDate] = useState(initial.endDate);
+  const [cycleDays, setCycleDays] = useState<CycleDays>(initial.cycleDays);
+  const [offset, setOffset] = useState<OffsetLetter>(initial.offset);
+  const [shiftStartTime, setShiftStartTime] = useState(initial.shiftStartTime);
+  const [vacationEnabled, setVacationEnabled] = useState(
+    initial.vacationEnabled,
   );
-  const [offset, setOffset] = useState<OffsetLetter>(DEFAULT_PATTERN.offset);
-  const [shiftStartTime, setShiftStartTime] = useState(
-    DEFAULT_SHIFT_START_TIME,
+  const [vacationStartDate, setVacationStartDate] = useState(
+    initial.vacationStartDate,
   );
-  const [vacationEnabled, setVacationEnabled] = useState(false);
-  const [vacationStartDate, setVacationStartDate] = useState(startDate);
-  const [vacationEndDate, setVacationEndDate] = useState(endDate);
+  const [vacationEndDate, setVacationEndDate] = useState(
+    initial.vacationEndDate,
+  );
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
   const [error, setError] = useState<RotationValidationError | null>(null);
   const scrollRef = useRef<ScrollView>(null);
@@ -76,7 +123,6 @@ export function AddRotationScreen() {
     if (!shouldScrollPickerIntoView) {
       return;
     }
-    // Wait for the picker to mount/layout, then scroll it into view.
     const timeoutId = setTimeout(() => {
       scrollRef.current?.scrollToEnd({ animated: true });
     }, 50);
@@ -116,6 +162,36 @@ export function AddRotationScreen() {
     setVacationEndDate((prev) => (prev > nextEnd ? nextEnd : prev));
     setError(null);
   }
+  [
+    {
+      resource:
+        '/Users/amatias/personal-projects/guardias/src/features/rotations/screens/rotation-detail-screen.tsx',
+      owner: 'typescript',
+      code: '18048',
+      severity: 8,
+      message: "'period' is possibly 'undefined'.",
+      source: 'ts',
+      startLineNumber: 49,
+      startColumn: 53,
+      endLineNumber: 49,
+      endColumn: 59,
+      modelVersionId: 3,
+    },
+    {
+      resource:
+        '/Users/amatias/personal-projects/guardias/src/features/rotations/screens/rotation-detail-screen.tsx',
+      owner: 'typescript',
+      code: '18048',
+      severity: 8,
+      message: "'period' is possibly 'undefined'.",
+      source: 'ts',
+      startLineNumber: 56,
+      startColumn: 26,
+      endLineNumber: 56,
+      endColumn: 32,
+      modelVersionId: 3,
+    },
+  ];
 
   function onShiftStartValueChange(_event: unknown, selected: Date) {
     if (process.env.EXPO_OS === 'android') {
@@ -152,30 +228,54 @@ export function AddRotationScreen() {
   }
 
   function save() {
-    const validationError = validateNewPeriod({
-      label,
-      startDate,
-      endDate,
-      vacationEnabled,
-      vacationStartDate,
-      vacationEndDate,
-    });
+    if (editingId != null && existing == null) {
+      return;
+    }
+
+    const validationError = validatePeriodForm(
+      {
+        label,
+        startDate,
+        endDate,
+        vacationEnabled,
+        vacationStartDate,
+        vacationEndDate,
+      },
+      periods,
+      editingId,
+    );
     if (validationError) {
       setError(validationError);
       return;
     }
 
-    addPeriod({
-      id: Crypto.randomUUID(),
-      label: label.trim(),
-      startDate,
-      endDate,
-      pattern: { cycleDays, offset },
-      vacationStartDate: vacationEnabled ? vacationStartDate : null,
-      vacationEndDate: vacationEnabled ? vacationEndDate : null,
-      shiftStartTime,
-      createdAt: new Date().toISOString(),
-    });
+    const vacationStart = vacationEnabled ? vacationStartDate : null;
+    const vacationEnd = vacationEnabled ? vacationEndDate : null;
+
+    if (editingId != null && existing != null) {
+      updatePeriod({
+        ...existing,
+        label: label.trim(),
+        startDate,
+        endDate,
+        pattern: { cycleDays, offset },
+        vacationStartDate: vacationStart,
+        vacationEndDate: vacationEnd,
+        shiftStartTime,
+      });
+    } else {
+      addPeriod({
+        id: Crypto.randomUUID(),
+        label: label.trim(),
+        startDate,
+        endDate,
+        pattern: { cycleDays, offset },
+        vacationStartDate: vacationStart,
+        vacationEndDate: vacationEnd,
+        shiftStartTime,
+        createdAt: new Date().toISOString(),
+      });
+    }
     navigation.goBack();
   }
 
@@ -205,7 +305,19 @@ export function AddRotationScreen() {
     vacationEndDate,
     t,
     addPeriod,
+    updatePeriod,
+    editingId,
+    existing,
+    periods,
   ]);
+
+  if (editingId != null && existing == null) {
+    return (
+      <View className="flex-1 items-center justify-center gap-2 bg-white p-6">
+        <Text className="text-base">{t('shifts.detail.notFound')}</Text>
+      </View>
+    );
+  }
 
   return (
     <ScrollView

@@ -10,14 +10,20 @@ import type { ComponentProps } from 'react';
 
 import i18n from './src/i18n';
 import { CalendarStack } from './src/features/calendar/calendar-stack';
+import { DashboardStack } from './src/features/dashboard/dashboard-stack';
 import { RotationsProvider } from './src/features/rotations/rotations-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
-import { Text, View } from './src/tw';
 
-type TabKey = 'Home' | 'Calendar' | 'Shifts';
+type TabParamList = {
+  Home: undefined;
+  Calendar: undefined;
+  Shifts: undefined;
+};
+
+type TabKey = keyof TabParamList;
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<TabParamList>();
 
 const tabIcons: Record<TabKey, { focused: IconName; unfocused: IconName }> = {
   Home: { focused: 'home', unfocused: 'home-outline' },
@@ -35,27 +41,6 @@ const tabTitleKeys: Record<
   Shifts: 'tabs.shifts',
 };
 
-function TabPlaceholder({
-  titleKey,
-}: {
-  titleKey: (typeof tabTitleKeys)[TabKey];
-}) {
-  const { t } = useTranslation();
-
-  return (
-    <View className="flex-1 items-center justify-center gap-2 p-6">
-      <Text className="text-2xl font-semibold">{t(titleKey)}</Text>
-      <Text className="text-center text-sm opacity-70">
-        {t('home.placeholder')}
-      </Text>
-    </View>
-  );
-}
-
-function HomeScreen() {
-  return <TabPlaceholder titleKey="tabs.home" />;
-}
-
 function RootNavigator() {
   const { t } = useTranslation();
 
@@ -66,9 +51,9 @@ function RootNavigator() {
           headerShown: false,
           tabBarActiveTintColor: '#D1B20',
           tabBarInactiveTintColor: '#49454F',
-          tabBarLabel: t(tabTitleKeys[route.name as TabKey]),
+          tabBarLabel: t(tabTitleKeys[route.name]),
           tabBarIcon: ({ focused, color, size }) => {
-            const icons = tabIcons[route.name as TabKey];
+            const icons = tabIcons[route.name];
             return (
               <MaterialCommunityIcons
                 name={focused ? icons.focused : icons.unfocused}
@@ -80,7 +65,7 @@ function RootNavigator() {
         })}
       >
         {/* `name` is a route id — keep stable; translate via tabBarLabel */}
-        <Tab.Screen name="Home" component={HomeScreen} />
+        <Tab.Screen name="Home" component={DashboardStack} />
         <Tab.Screen name="Calendar" component={CalendarStack} />
         <Tab.Screen name="Shifts" component={ShiftsStack} />
       </Tab.Navigator>

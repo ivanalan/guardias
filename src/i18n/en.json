@@ -5,19 +5,44 @@
     "shifts": "Shifts"
   },
   "home": {
-    "placeholder": "Bottom navigation via React Navigation"
+    "emptyTitle": "No rotations yet",
+    "emptyBody": "Add a rotation period to see your next shift and countdown here.",
+    "nextShift": "Next shift",
+    "inShift": "On shift",
+    "untilStart": "{{days}}d {{hours}}h until start",
+    "remainingInShift": "{{days}}d {{hours}}h left",
+    "shiftsRemaining_one": "{{count}} shift remaining",
+    "shiftsRemaining_other": "{{count}} shifts remaining",
+    "periodLabel": "{{label}}",
+    "openCalendar": "Calendar",
+    "openRotations": "Rotations"
   },
   "calendar": {
     "today": "Today",
     "dayDetailTitle": "Day",
-    "dayDetailComingSoon": "Day details coming soon."
+    "freeDay": "Free day",
+    "shiftDay": "Shift",
+    "starts": "Starts",
+    "ends": "Ends",
+    "duration": "{{hours}} hours"
   },
   "shifts": {
     "emptyTitle": "No rotations yet",
     "emptyBody": "Add a rotation period to start tracking your guardias.",
     "addA11y": "Add rotation",
     "addTitle": "Add rotation",
+    "editTitle": "Edit rotation",
     "save": "Save",
+    "detail": {
+      "title": "Rotation",
+      "notFound": "This rotation was not found.",
+      "noVacation": "None",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteCancel": "Cancel",
+      "deleteConfirmTitle": "Delete rotation?",
+      "deleteConfirmBody": "“{{label}}” will be removed. This cannot be undone."
+    },
     "form": {
       "name": "Name",
       "namePlaceholder": "e.g. Emergency room",
@@ -36,7 +61,8 @@
       "labelRequired": "Name is required.",
       "dateOrder": "End date must be after the start date.",
       "vacationOrder": "Vacation end must be on or after vacation start.",
-      "vacationOutOfBounds": "Vacation must fall within the rotation dates."
+      "vacationOutOfBounds": "Vacation must fall within the rotation dates.",
+      "dateOverlap": "This date range overlaps another rotation."
     },
     "comingSoon": "Adding rotations is coming soon."
   }

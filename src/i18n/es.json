@@ -5,19 +5,44 @@
     "shifts": "Guardias"
   },
   "home": {
-    "placeholder": "Navegación inferior con React Navigation"
+    "emptyTitle": "Sin rotaciones aún",
+    "emptyBody": "Agrega un período de rotación para ver tu próxima guardia y la cuenta regresiva aquí.",
+    "nextShift": "Próxima guardia",
+    "inShift": "En guardia",
+    "untilStart": "{{days}}d {{hours}}h para iniciar",
+    "remainingInShift": "{{days}}d {{hours}}h restantes",
+    "shiftsRemaining_one": "{{count}} guardia restante",
+    "shiftsRemaining_other": "{{count}} guardias restantes",
+    "periodLabel": "{{label}}",
+    "openCalendar": "Calendario",
+    "openRotations": "Rotaciones"
   },
   "calendar": {
     "today": "Hoy",
     "dayDetailTitle": "Día",
-    "dayDetailComingSoon": "Los detalles del día estarán disponibles pronto."
+    "freeDay": "Día libre",
+    "shiftDay": "Guardia",
+    "starts": "Inicia",
+    "ends": "Termina",
+    "duration": "{{hours}} horas"
   },
   "shifts": {
     "emptyTitle": "Aún no hay rotaciones",
     "emptyBody": "Agrega un periodo de rotación para empezar a seguir tus guardias.",
     "addA11y": "Agregar rotación",
     "addTitle": "Agregar rotación",
+    "editTitle": "Editar rotación",
     "save": "Guardar",
+    "detail": {
+      "title": "Rotación",
+      "notFound": "No se encontró esta rotación.",
+      "noVacation": "Ninguna",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteCancel": "Cancelar",
+      "deleteConfirmTitle": "¿Eliminar rotación?",
+      "deleteConfirmBody": "Se eliminará “{{label}}”. Esta acción no se puede deshacer."
+    },
     "form": {
       "name": "Nombre",
       "namePlaceholder": "p. ej. Emergencias",
@@ -36,7 +61,8 @@
       "labelRequired": "El nombre es obligatorio.",
       "dateOrder": "La fecha de fin debe ser posterior a la de inicio.",
       "vacationOrder": "El fin de vacaciones debe ser igual o posterior al inicio.",
-      "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación."
+      "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación.",
+      "dateOverlap": "Este rango de fechas se traslapa con otra rotación."
     },
     "comingSoon": "Agregar rotaciones estará disponible pronto."
   }
