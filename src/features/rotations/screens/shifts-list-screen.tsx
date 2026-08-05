@@ -1,37 +1,36 @@
-import { FlatList, View } from 'react-native';
+import { FlatList } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
-import { FloatingAddButton } from '../components/add-rotation-button';
-import { FAB_CLEARANCE } from '../components/fallback-fab';
+import { FAB_CLEARANCE, FloatingAddButton } from '../components/add-rotation-button';
 import { RotationPeriodRow } from '../components/rotation-period-row';
 import { ShiftsEmptyState } from '../components/shifts-empty-state';
-import { MOCK_ROTATION_PERIODS } from '../data/mock-rotation-periods';
 import { formatPeriodRange } from '../format-period-range';
+import { useRotations } from '../rotations-context';
 import type { RotationPeriod } from '../types';
 import type { AppLanguage } from '../../../i18n';
-
-const isAndroid = process.env.EXPO_OS === 'android';
+import { View } from '../../../tw';
 
 function keyExtractor(item: RotationPeriod) {
   return item.id;
 }
 
-/** Shifts tab list of rotation periods (mock data for this slice). */
+/** Shifts tab list of rotation periods. */
 export function ShiftsListScreen() {
   const { t, i18n } = useTranslation();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
+  const { periods } = useRotations();
 
   return (
-    <View style={{ flex: 1 }}>
+    <View className="flex-1">
       <FlatList
-        data={MOCK_ROTATION_PERIODS}
+        data={periods}
         keyExtractor={keyExtractor}
         contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
           gap: 12,
           paddingTop: 12,
-          paddingBottom: isAndroid ? FAB_CLEARANCE : 12,
+          paddingBottom: FAB_CLEARANCE,
         }}
         ListEmptyComponent={ShiftsEmptyState}
         renderItem={({ item }) => (
@@ -42,7 +41,7 @@ export function ShiftsListScreen() {
         )}
         accessibilityLabel={t('tabs.shifts')}
       />
-      {isAndroid ? <FloatingAddButton /> : null}
+      <FloatingAddButton />
     </View>
   );
 }

@@ -11,6 +11,28 @@
     "emptyTitle": "No rotations yet",
     "emptyBody": "Add a rotation period to start tracking your guardias.",
     "addA11y": "Add rotation",
+    "addTitle": "Add rotation",
+    "save": "Save",
+    "form": {
+      "name": "Name",
+      "namePlaceholder": "e.g. Emergency room",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "schedule": "Schedule",
+      "patternAD": "A-D (every 4 days)",
+      "patternAC": "A-C (every 3 days)",
+      "offset": "Shift",
+      "shiftStartTime": "Shift start time",
+      "vacation": "Vacation days",
+      "vacationStart": "Vacation start",
+      "vacationEnd": "Vacation end"
+    },
+    "errors": {
+      "labelRequired": "Name is required.",
+      "dateOrder": "End date must be after the start date.",
+      "vacationOrder": "Vacation end must be on or after vacation start.",
+      "vacationOutOfBounds": "Vacation must fall within the rotation dates."
+    },
     "comingSoon": "Adding rotations is coming soon."
   }
 }

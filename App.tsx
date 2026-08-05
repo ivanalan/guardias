@@ -24,19 +24,28 @@ const tabIcons: Record<TabKey, { focused: IconName; unfocused: IconName }> = {
 };
 
 /** Route name (stable id) → catalog key for the tab label */
-const tabTitleKeys: Record<TabKey, 'tabs.home' | 'tabs.calendar' | 'tabs.shifts'> = {
+const tabTitleKeys: Record<
+  TabKey,
+  'tabs.home' | 'tabs.calendar' | 'tabs.shifts'
+> = {
   Home: 'tabs.home',
   Calendar: 'tabs.calendar',
   Shifts: 'tabs.shifts',
 };
 
-function TabPlaceholder({ titleKey }: { titleKey: (typeof tabTitleKeys)[TabKey] }) {
+function TabPlaceholder({
+  titleKey,
+}: {
+  titleKey: (typeof tabTitleKeys)[TabKey];
+}) {
   const { t } = useTranslation();
 
   return (
     <View className="flex-1 items-center justify-center gap-2 p-6">
       <Text className="text-2xl font-semibold">{t(titleKey)}</Text>
-      <Text className="text-center text-sm opacity-70">{t('home.placeholder')}</Text>
+      <Text className="text-center text-sm opacity-70">
+        {t('home.placeholder')}
+      </Text>
     </View>
   );
 }

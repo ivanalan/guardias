@@ -1,12 +1,12 @@
 ---
-description: Prefer NativeWind styling + native platform controls for Guardias (Expo)
+description: Prefer NativeWind + shared RN primitives for Guardias (Expo)
 globs: "**/*.{tsx,jsx}"
 alwaysApply: false
 ---
 
 # Native UI — Guardias
 
-**Goal:** Style with NativeWind (Tailwind `className`); use real platform-native controls. HIG/SwiftUI on iOS, Material via Jetpack Compose on Android — not a cross-platform Material Design 3 / Paper kit.
+**Goal:** One shared UI path on iOS, Android, and web. Style with NativeWind; use React Native primitives. No platform-specific UI files or `@expo/ui`.
 
 ## Preferred stack
 
@@ -16,25 +16,20 @@ alwaysApply: false
 - Prefer utility classes over large `StyleSheet.create` blocks for app chrome and screens.
 - Import CSS-enabled primitives from `src/tw` (re-exports `react-native-css/components`) when using `className`.
 - Keep Tailwind theme tokens in CSS (`src/global.css` / `@theme`); avoid one-off hardcoded colors when a token exists.
+- Platform font token overrides in `global.css` (`@media ios` / `@media android`) are fine — they feed NativeWind theme vars.
 - For setup/troubleshooting, use the Expo agent skill **`expo-tailwind-setup`** (`.agents/skills/expo-tailwind-setup`).
 
-### Controls — platform native
+### Controls — shared RN primitives
 
-- Use **[`@expo/ui`](https://docs.expo.dev/versions/v55.0.0/sdk/ui/)** when it fits the platform and SDK.
-  - **iOS:** SwiftUI via `@expo/ui/swift-ui` (wrap trees in `Host`). Native stack large titles + SF Symbol header items via React Navigation.
-  - **Android:** Jetpack Compose / Material via `@expo/ui/jetpack-compose` (FAB, buttons, etc.). Use the standard native stack Top App Bar (`title`) — do **not** force iOS `headerLargeTitle` on Android.
-  - When Compose is unavailable (e.g. Expo Go limitation), fall back to RN primitives with reliable inline styles — never Paper.
-- Icons: platform-native (SF Symbols on iOS; Material Symbols / XML drawables on Android Compose). `@expo/vector-icons` only as a temporary RN fallback.
-
-NativeWind and `@expo/ui` complement each other: NativeWind styles layout/chrome; `@expo/ui` / RN primitives provide interactive controls.
+- Use React Native primitives (`Pressable`, `TextInput`, `FlatList`, etc.) and React Navigation for chrome.
+- Icons: `@expo/vector-icons`.
+- Keep the same components and layout on every platform. Day-to-day development targets **Expo Go** via `expo start` (not `expo run:ios` / `expo run:android`).
 
 ## Do not
 
-- Do **not** implement Material Design 3 as a **cross-platform** design system (no MD3 chrome on iOS)
+- Do **not** add `.ios.tsx` / `.android.tsx` (or `.ios.ts` / `.android.ts`) UI modules
+- Do **not** use [`@expo/ui`](https://docs.expo.dev/versions/latest/sdk/ui/) (SwiftUI / Jetpack Compose)
+- Do **not** branch UI on `process.env.EXPO_OS` or `Platform.OS` except for rare unavoidable native APIs
+- Do **not** implement Material Design 3 as a design system
 - Do **not** use the `material-3` agent skill for Guardias UI
-- Do **not** add new `react-native-paper` components or themes (`PaperProvider`, `MD3LightTheme`, etc.)
-- Do **not** invent a custom “Material-like” look to approximate MD3 on iOS
-
-## Migration note
-
-`react-native-paper` may still be in `package.json` until removed. When touching UI, prefer NativeWind + `@expo/ui` / RN primitives rather than extending Paper.
+- Do **not** add `react-native-paper` components or themes

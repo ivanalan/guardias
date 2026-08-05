@@ -343,7 +343,7 @@ Custom rotation patterns (every N days, specific weekdays), named presets beyond
 | Local storage   | AsyncStorage                                                       | No backend needed for MVP                      |
 | Calendar UI     | react-native-calendars                                             | Flexible marking, active community             |
 | Styling         | NativeWind (Tailwind CSS `className`)                              | Utility-first styling shared with web mental model |
-| UI components   | `@expo/ui` + React Native primitives                               | Platform-native controls; not Material Design 3 |
+| UI components   | React Native primitives + NativeWind                               | One shared UI path; Expo Go–first               |
 | Date math       | date-fns                                                           | Reliable DST handling, tree-shakeable          |
 | Localization    | expo-localization + i18next (or expo-localization + JSON catalogs) | Device locale detection, EN/ES string catalogs |
 | Build & publish | EAS (Expo Application Services)                                    | Handles Android signing and Play Store upload  |
@@ -378,8 +378,8 @@ src/
 | --------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | July 2026 | Initial MVP PRD                                                                                                                                                                                                                               |
 | July 2026 | Added F6 bilingual UI (EN/ES) as MVP requirement                                                                                                                                                                                              |
-| July 2026 | UI direction: prefer `@expo/ui` native platform components; do not use Material Design 3 / react-native-paper as the design system                                                                                                              |
-| July 2026 | Styling: NativeWind (Tailwind CSS) for layout/colors; keeps platform-native controls via `@expo/ui` / RN primitives                                                                                                                             |
+| July 2026 | UI direction: NativeWind + shared RN primitives; Expo Go–first; no `@expo/ui` / platform UI splits; do not use Material Design 3 / react-native-paper                                                                                           |
+| July 2026 | Styling: NativeWind (Tailwind CSS) for layout/colors with shared RN controls on all platforms                                                                                                                                                   |
 | July 2026 | Rotation patterns: A-D MVP default, every-N presets, custom interval/weekdays; optional vacation period (F1); read-only rules on rotation detail (F2)                                                                                         |
 | July 2026 | F1: optional shift start time (default 07:00) and duration (default 24 h); F4 reframed as homepage; F5 scoped to single-period management for MVP; F7 shift detail for past/future shifts; cumulative stats and multi-period deferred to v1.1 |
 | July 2026 | MVP scope revision: A-C/A-D only; fixed 24 h shifts; required label; removed shift rules engine; calendar day sheet + two-item legend filter; multi-period rotation list; custom every-N/weekday patterns deferred to v3.0; features renumbered F1–F6 |
