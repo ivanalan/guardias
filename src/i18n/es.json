@@ -11,6 +11,28 @@
     "emptyTitle": "Aún no hay rotaciones",
     "emptyBody": "Agrega un periodo de rotación para empezar a seguir tus guardias.",
     "addA11y": "Agregar rotación",
+    "addTitle": "Agregar rotación",
+    "save": "Guardar",
+    "form": {
+      "name": "Nombre",
+      "namePlaceholder": "p. ej. Emergencias",
+      "startDate": "Fecha de inicio",
+      "endDate": "Fecha de fin",
+      "schedule": "Horario",
+      "patternAD": "A-D (cada 4 días)",
+      "patternAC": "A-C (cada 3 días)",
+      "offset": "Turno",
+      "shiftStartTime": "Inicio de guardia",
+      "vacation": "Vacaciones",
+      "vacationStart": "Inicio de vacaciones",
+      "vacationEnd": "Fin de vacaciones"
+    },
+    "errors": {
+      "labelRequired": "El nombre es obligatorio.",
+      "dateOrder": "La fecha de fin debe ser posterior a la de inicio.",
+      "vacationOrder": "El fin de vacaciones debe ser igual o posterior al inicio.",
+      "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación."
+    },
     "comingSoon": "Agregar rotaciones estará disponible pronto."
   }
 }

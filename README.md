@@ -11,7 +11,7 @@ Mobile app for tracking on-call medical rotation shifts (guardias) in the Mexica
 
 - Node.js 18+
 - npm
-- [Expo Go](https://expo.dev/go) on a physical device, or Android emulator
+- [Expo Go](https://expo.dev/go) on a physical device, or an iOS/Android simulator/emulator
 
 ## Getting started
 
@@ -20,15 +20,15 @@ npm install
 npm start
 ```
 
-Then press `a` for Android emulator, or scan the QR code with Expo Go.
+Then press `a` for Android, `i` for iOS, or scan the QR code with Expo Go.
 
 ## Scripts
 
 | Command | Description |
 |---|---|
 | `npm start` | Start Expo dev server |
-| `npm run android` | Start with Android |
-| `npm run ios` | Start with iOS *(planned v1.1)* |
+| `npm run android` | Start Expo and open Android |
+| `npm run ios` | Start Expo and open iOS |
 | `npm run web` | Start web preview |
 
 ## Project structure
@@ -37,7 +37,7 @@ Then press `a` for Android emulator, or scan the QR code with Expo Go.
 guardias/
 ├── docs/
 │   └── PRD.md          # Product requirements
-├── src/                # Application code (to be added)
+├── src/                # Application code
 ├── App.tsx             # Root component
 ├── AGENTS.md           # AI agent conventions
 └── app.json            # Expo config

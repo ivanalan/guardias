@@ -1,0 +1,30 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import type { RotationPeriod } from './types';
+
+const STORAGE_KEY = 'guardias.rotationPeriods';
+
+/** Returns stored periods, or `null` if nothing has been saved yet. */
+export async function loadRotationPeriods(): Promise<RotationPeriod[] | null> {
+  const raw = await AsyncStorage.getItem(STORAGE_KEY);
+  if (raw == null) {
+    return null;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!Array.isArray(parsed)) {
+      return null;
+    }
+    return parsed as RotationPeriod[];
+  } catch {
+    return null;
+  }
+}
+
+/** Persist the full periods list (source of truth for the device). */
+export async function saveRotationPeriods(
+  periods: readonly RotationPeriod[],
+): Promise<void> {
+  await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(periods));
+}

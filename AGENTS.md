@@ -9,12 +9,13 @@
 
 ## Stack
 
-- Expo SDK 55 — read versioned docs: https://docs.expo.dev/versions/v55.0.0/
+- Expo SDK 57 — read versioned docs: https://docs.expo.dev/versions/v57.0.0/
 - TypeScript, react-native-calendars, AsyncStorage, date-fns
 - Localization: expo-localization + i18n string catalogs (`src/i18n/en.json`, `src/i18n/es.json`)
 - **Styling: [NativeWind](https://www.nativewind.dev/v5) v5** (Tailwind CSS v4 `className` via `react-native-css`). Prefer utility classes and CSS-wrapped components from `src/tw` over large `StyleSheet` blocks. Setup skill: `expo-tailwind-setup` (`.agents/skills/expo-tailwind-setup`).
-- **UI controls: platform-native.** Prefer [`@expo/ui`](https://docs.expo.dev/versions/v55.0.0/sdk/ui/) — SwiftUI (`@expo/ui/swift-ui`) on iOS, Jetpack Compose / Material (`@expo/ui/jetpack-compose`) on Android. NativeWind styles layout/chrome; `@expo/ui` / RN primitives provide interactive controls. See `.cursor/rules/native-ui.mdc`.
-- Do **not** use Material Design 3 as a **cross-platform** design system (no MD3 look on iOS). Do **not** use the `material-3` skill or expand `react-native-paper` usage. Platform Material on Android via Compose is encouraged.
+- **UI controls: shared RN primitives.** One component tree for all platforms — no `.ios` / `.android` UI files, no `@expo/ui`. See `.cursor/rules/native-ui.mdc`.
+- Develop in **Expo Go** (`expo start`). Do not introduce packages that require a custom native binary unless explicitly requested.
+- Do **not** use Material Design 3 or `react-native-paper` as the design system.
 
 ## Conventions
 
