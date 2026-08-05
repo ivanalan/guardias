@@ -9,6 +9,8 @@ import { I18nextProvider, useTranslation } from 'react-i18next';
 import type { ComponentProps } from 'react';
 
 import i18n from './src/i18n';
+import { CalendarStack } from './src/features/calendar/calendar-stack';
+import { RotationsProvider } from './src/features/rotations/rotations-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
 import { Text, View } from './src/tw';
 
@@ -54,10 +56,6 @@ function HomeScreen() {
   return <TabPlaceholder titleKey="tabs.home" />;
 }
 
-function CalendarScreen() {
-  return <TabPlaceholder titleKey="tabs.calendar" />;
-}
-
 function RootNavigator() {
   const { t } = useTranslation();
 
@@ -83,7 +81,7 @@ function RootNavigator() {
       >
         {/* `name` is a route id — keep stable; translate via tabBarLabel */}
         <Tab.Screen name="Home" component={HomeScreen} />
-        <Tab.Screen name="Calendar" component={CalendarScreen} />
+        <Tab.Screen name="Calendar" component={CalendarStack} />
         <Tab.Screen name="Shifts" component={ShiftsStack} />
       </Tab.Navigator>
       <StatusBar style="auto" />
@@ -95,7 +93,9 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <SafeAreaProvider>
-        <RootNavigator />
+        <RotationsProvider>
+          <RootNavigator />
+        </RotationsProvider>
       </SafeAreaProvider>
     </I18nextProvider>
   );
