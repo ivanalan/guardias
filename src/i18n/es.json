@@ -9,13 +9,11 @@
     "emptyBody": "Agrega un período de rotación para ver tu próxima guardia y la cuenta regresiva aquí.",
     "nextShift": "Próxima guardia",
     "inShift": "En guardia",
-    "untilStart": "{{days}}d {{hours}}h para iniciar",
+    "untilStart": "{{days}}d {{hours}}h hasta siguiente guardia",
     "remainingInShift": "{{days}}d {{hours}}h restantes",
     "shiftsRemaining_one": "{{count}} guardia restante",
     "shiftsRemaining_other": "{{count}} guardias restantes",
-    "periodLabel": "{{label}}",
-    "openCalendar": "Calendario",
-    "openRotations": "Rotaciones"
+    "periodLabel": "{{label}}"
   },
   "calendar": {
     "today": "Hoy",
@@ -25,6 +23,14 @@
     "starts": "Inicia",
     "ends": "Termina",
     "duration": "{{hours}} horas"
+  },
+  "settings": {
+    "title": "Ajustes",
+    "language": "Idioma",
+    "languageSystem": "Predeterminado del sistema",
+    "languageEn": "English",
+    "languageEs": "Español",
+    "openA11y": "Abrir ajustes"
   },
   "shifts": {
     "emptyTitle": "Aún no hay rotaciones",
@@ -63,7 +69,6 @@
       "vacationOrder": "El fin de vacaciones debe ser igual o posterior al inicio.",
       "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación.",
       "dateOverlap": "Este rango de fechas se traslapa con otra rotación."
-    },
-    "comingSoon": "Agregar rotaciones estará disponible pronto."
+    }
   }
 }

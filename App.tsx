@@ -12,6 +12,7 @@ import i18n from './src/i18n';
 import { CalendarStack } from './src/features/calendar/calendar-stack';
 import { DashboardStack } from './src/features/dashboard/dashboard-stack';
 import { RotationsProvider } from './src/features/rotations/rotations-context';
+import { PreferencesProvider } from './src/features/settings/preferences-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
 
 type TabParamList = {
@@ -78,9 +79,11 @@ export default function App() {
   return (
     <I18nextProvider i18n={i18n}>
       <SafeAreaProvider>
-        <RotationsProvider>
-          <RootNavigator />
-        </RotationsProvider>
+        <PreferencesProvider>
+          <RotationsProvider>
+            <RootNavigator />
+          </RotationsProvider>
+        </PreferencesProvider>
       </SafeAreaProvider>
     </I18nextProvider>
   );

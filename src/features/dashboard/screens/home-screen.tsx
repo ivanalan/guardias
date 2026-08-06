@@ -3,21 +3,13 @@ import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { getHomepageShiftStatus } from '../../../lib/shifts';
-import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { ScrollView, Text, View } from '../../../tw';
 import { useRotations } from '../../rotations/rotations-context';
 
 const REFRESH_MS = 60_000;
 
-export type HomeScreenProps = {
-  onOpenCalendar?: () => void;
-  onOpenRotations?: () => void;
-};
-
-/** F3 homepage: countdown / in-shift status and quick links. */
-export function HomeScreen({
-  onOpenCalendar,
-  onOpenRotations,
-}: HomeScreenProps) {
+/** F3 homepage: countdown / in-shift status. */
+export function HomeScreen() {
   const { t } = useTranslation();
   const { periods } = useRotations();
   const [now, setNow] = useState(() => new Date());
@@ -88,29 +80,6 @@ export function HomeScreen({
           </Text>
         </View>
       ) : null}
-
-      <View className="gap-3">
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenCalendar}
-          className="rounded-2xl bg-neutral-100 px-4 py-4 active:opacity-70"
-          style={{ borderCurve: 'continuous' }}
-        >
-          <Text className="text-center text-base font-medium">
-            {t('home.openCalendar')}
-          </Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          onPress={onOpenRotations}
-          className="rounded-2xl bg-neutral-100 px-4 py-4 active:opacity-70"
-          style={{ borderCurve: 'continuous' }}
-        >
-          <Text className="text-center text-base font-medium">
-            {t('home.openRotations')}
-          </Text>
-        </Pressable>
-      </View>
     </ScrollView>
   );
 }

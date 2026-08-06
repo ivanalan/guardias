@@ -136,7 +136,6 @@ The app's default landing screen. It surfaces at-a-glance statistics for the cur
 - Time until the next shift starts (days and hours)
 - Number of shifts remaining in the current rotation period
 - If currently in a shift: time remaining in the current shift
-- Quick access to the rotation list (F4) or the calendar (F2)
 
 **Planned beyond MVP (v1.1):** cumulative career stats on the homepage — total hours worked and total shifts completed across all past rotation periods.
 
@@ -279,7 +278,7 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 
 | Screen              | Key content                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage (F3)       | Time to next shift, shifts remaining, current-shift countdown; CTAs to rotations list and calendar                                          |
+| Homepage (F3)       | Time to next shift, shifts remaining, current-shift countdown; Settings entry (language)                                                    |
 | Calendar View (F2)  | Monthly calendar; day-tap bottom sheet; legend (shift days + free weekends) with opacity filter                                             |
 | Shifts list (F4)    | List of rotation periods (label + date range); FAB to add                                                                                   |
 | Add / Edit Rotation | Form: required label, A-C or A-D + offset, start/end date, optional vacation, shift start time (default 07:00); duration fixed at 24 h      |
@@ -383,5 +382,6 @@ src/
 | July 2026 | Rotation patterns: A-D MVP default, every-N presets, custom interval/weekdays; optional vacation period (F1); read-only rules on rotation detail (F2)                                                                                         |
 | July 2026 | F1: optional shift start time (default 07:00) and duration (default 24 h); F4 reframed as homepage; F5 scoped to single-period management for MVP; F7 shift detail for past/future shifts; cumulative stats and multi-period deferred to v1.1 |
 | July 2026 | MVP scope revision: A-C/A-D only; fixed 24 h shifts; required label; removed shift rules engine; calendar day sheet + two-item legend filter; multi-period rotation list; custom every-N/weekday patterns deferred to v3.0; features renumbered F1–F6 |
+| August 2026 | F5 Settings: language override (System / English / Español) persisted in AsyncStorage; device locale with Spanish fallback                                               |
 
 

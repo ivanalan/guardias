@@ -8,8 +8,7 @@ import es from './es.json';
 export type AppLanguage = 'en' | 'es';
 
 /**
- * Resolve the initial language from the device locale.
- * Saved Settings preference will override this later (F5).
+ * Resolve language from the device locale when Settings has no override.
  *
  * Priority (MVP):
  * 1. Device language `en` or `es`
