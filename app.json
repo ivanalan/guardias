@@ -16,6 +16,9 @@
       "expo-font",
       "expo-status-bar",
       "@react-native-community/datetimepicker"
-    ]
+    ],
+    "ios": {
+      "bundleIdentifier": "com.10alanm.guardias"
+    }
   }
 }
