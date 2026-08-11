@@ -11,8 +11,11 @@
     "inShift": "On shift",
     "untilStart": "{{days}}d {{hours}}h until next shift",
     "remainingInShift": "{{days}}d {{hours}}h left",
+    "durationShort": "{{days}}d {{hours}}h",
     "shiftsRemaining_one": "{{count}} shift remaining",
     "shiftsRemaining_other": "{{count}} shifts remaining",
+    "shiftsCompleted": "shifts completed",
+    "progressOf": " / {{total}}",
     "periodLabel": "{{label}}"
   },
   "calendar": {
@@ -58,6 +61,9 @@
       "patternAD": "A-D (every 4 days)",
       "patternAC": "A-C (every 3 days)",
       "offset": "Shift",
+      "preview": "Preview",
+      "previewShiftCount_one": "{{count}} shift day",
+      "previewShiftCount_other": "{{count}} shift days",
       "shiftStartTime": "Shift start time",
       "vacation": "Vacation days",
       "vacationStart": "Vacation start",

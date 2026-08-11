@@ -1,4 +1,4 @@
-import { format, parseISO } from 'date-fns';
+import { addMonths, format, parseISO, subDays } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 
 const locales = { en: enUS, es } as const;
@@ -18,6 +18,11 @@ export function formatPeriodRange(
 /** Local calendar date as ISO `YYYY-MM-DD` (no time / timezone shift). */
 export function toISODate(date: Date): string {
   return format(date, 'yyyy-MM-dd');
+}
+
+/** Inclusive end of a typical rotation: start + 2 months − 1 day. */
+export function defaultRotationEndISO(start: Date): string {
+  return toISODate(subDays(addMonths(start, 2), 1));
 }
 
 /** Formats an ISO date for the add/edit form, e.g. "Jul 1, 2026". */
