@@ -7,10 +7,12 @@ export {
   countShiftsRemaining,
   formatDurationParts,
   getHomepageShiftStatus,
+  getPeriodShiftProgress,
 } from './get-homepage-shift-status';
 export type {
   DurationParts,
   HomepageShiftStatus,
+  PeriodShiftProgress,
 } from './get-homepage-shift-status';
 export { isShiftDay } from './is-shift-day';
 export { listShiftDatesInRange } from './list-shift-dates-in-range';

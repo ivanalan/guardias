@@ -11,8 +11,11 @@
     "inShift": "En guardia",
     "untilStart": "{{days}}d {{hours}}h hasta siguiente guardia",
     "remainingInShift": "{{days}}d {{hours}}h restantes",
+    "durationShort": "{{days}}d {{hours}}h",
     "shiftsRemaining_one": "{{count}} guardia restante",
     "shiftsRemaining_other": "{{count}} guardias restantes",
+    "shiftsCompleted": "guardias completadas",
+    "progressOf": " / {{total}}",
     "periodLabel": "{{label}}"
   },
   "calendar": {
@@ -58,6 +61,9 @@
       "patternAD": "A-D (cada 4 días)",
       "patternAC": "A-C (cada 3 días)",
       "offset": "Turno",
+      "preview": "Vista previa",
+      "previewShiftCount_one": "{{count}} día de guardia",
+      "previewShiftCount_other": "{{count}} días de guardia",
       "shiftStartTime": "Inicio de guardia",
       "vacation": "Vacaciones",
       "vacationStart": "Inicio de vacaciones",

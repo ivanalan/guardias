@@ -16,7 +16,7 @@ export function RotationPeriodRow({
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="mx-4 shadow-xs rounded-2xl bg-white px-4 py-4 active:opacity-70"
+      className="px-8 py-6 active:opacity-70"
       style={{ borderCurve: 'continuous' }}
     >
       <View className="gap-2">

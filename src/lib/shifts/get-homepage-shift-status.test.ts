@@ -4,6 +4,7 @@ import {
   countShiftsRemaining,
   formatDurationParts,
   getHomepageShiftStatus,
+  getPeriodShiftProgress,
 } from './get-homepage-shift-status';
 
 function period(
@@ -190,5 +191,66 @@ describe('getHomepageShiftStatus', () => {
     // Oct 1 is Thursday; B offset on A-D starting Oct 1 → first B is Oct 2.
     expect(status.period.id).toBe('p2');
     expect(status.nextShift.date).toBe('2026-10-02');
+  });
+});
+
+describe('getPeriodShiftProgress', () => {
+  const julyPeriod = period({
+    id: 'p1',
+    startDate: '2026-07-01',
+    endDate: '2026-07-31',
+    pattern: { cycleDays: 4, offset: 'A' },
+  });
+
+  it('returns zeros before the period starts', () => {
+    expect(
+      getPeriodShiftProgress(julyPeriod, localDate(2026, 5, 15, 12)),
+    ).toEqual({ completed: 0, total: 8, progress: 0 });
+  });
+
+  it('counts a shift as completed only after it ends', () => {
+    // Jul 1 shift ends Jul 2 07:00. Mid-shift → 0 completed.
+    expect(
+      getPeriodShiftProgress(julyPeriod, localDate(2026, 6, 1, 15)),
+    ).toEqual({ completed: 0, total: 8, progress: 0 });
+
+    // Just after first shift ends.
+    const afterFirst = getPeriodShiftProgress(
+      julyPeriod,
+      localDate(2026, 6, 2, 7),
+    );
+    expect(afterFirst.completed).toBe(1);
+    expect(afterFirst.total).toBe(8);
+    expect(afterFirst.progress).toBeCloseTo(1 / 8);
+  });
+
+  it('excludes vacation shift days from total', () => {
+    const withVacation = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      vacationStartDate: '2026-07-05',
+      vacationEndDate: '2026-07-05',
+    });
+
+    const progress = getPeriodShiftProgress(
+      withVacation,
+      localDate(2026, 5, 15, 12),
+    );
+    expect(progress.total).toBe(7);
+    expect(progress.completed).toBe(0);
+    expect(progress.progress).toBe(0);
+  });
+
+  it('returns full progress after the last shift ends', () => {
+    // Last A day in July 2026 is Jul 29 (01,05,09,13,17,21,25,29).
+    const afterLast = getPeriodShiftProgress(
+      julyPeriod,
+      localDate(2026, 6, 30, 8),
+    );
+    expect(afterLast.completed).toBe(8);
+    expect(afterLast.total).toBe(8);
+    expect(afterLast.progress).toBe(1);
   });
 });

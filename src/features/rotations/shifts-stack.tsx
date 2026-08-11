@@ -19,12 +19,16 @@ export function ShiftsStack() {
   const { t } = useTranslation();
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator
+      screenOptions={{
+        headerBackButtonDisplayMode: 'minimal',
+      }}
+    >
       <Stack.Screen
         name="ShiftsList"
         component={ShiftsListScreen}
         options={{
-          title: t('tabs.shifts'),
+          headerShown: false,
         }}
       />
       <Stack.Screen

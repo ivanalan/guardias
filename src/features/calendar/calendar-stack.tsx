@@ -21,7 +21,7 @@ export function CalendarStack() {
         name="CalendarHome"
         component={CalendarScreen}
         options={{
-          title: t('tabs.calendar'),
+          headerShown: false,
         }}
       />
       <Stack.Screen

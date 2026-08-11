@@ -2,13 +2,15 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ScrollView, Switch } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { addMonths, parseISO } from 'date-fns';
+import { parseISO } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { Pressable, Text, TextInput, View } from '../../../tw';
+import { RotationPreviewCalendar } from '../components/rotation-preview-calendar';
 import {
+  defaultRotationEndISO,
   formatFormDate,
   parseHHMM,
   toHHMM,
@@ -44,14 +46,10 @@ const BOTTOM_PICKERS: ReadonlySet<Exclude<ActivePicker, null>> = new Set([
   'vacationEnd',
 ]);
 
-function defaultEndISO(from: Date = new Date()): string {
-  return toISODate(addMonths(from, 3));
-}
-
 function initialFormState(existing: RotationPeriod | undefined) {
   if (existing == null) {
     const start = toISODate(new Date());
-    const end = defaultEndISO();
+    const end = defaultRotationEndISO(parseISO(start));
     return {
       label: '',
       startDate: start,
@@ -112,12 +110,27 @@ export function AddRotationScreen({ navigation, route }: Props) {
     initial.vacationEndDate,
   );
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
+  const [endDateTouched, setEndDateTouched] = useState(false);
   const [error, setError] = useState<RotationValidationError | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const prevActivePickerRef = useRef<ActivePicker>(null);
+  const startAtPickerOpenRef = useRef<string | null>(null);
 
   const offsets = OFFSETS_FOR_CYCLE[cycleDays];
   const shouldScrollPickerIntoView =
     activePicker != null && BOTTOM_PICKERS.has(activePicker);
+
+  const draftPeriod: RotationPeriod = {
+    id: editingId ?? 'draft',
+    label: label.trim() || 'draft',
+    startDate,
+    endDate,
+    pattern: { cycleDays, offset },
+    vacationStartDate: vacationEnabled ? vacationStartDate : null,
+    vacationEndDate: vacationEnabled ? vacationEndDate : null,
+    shiftStartTime,
+    createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
+  };
 
   useEffect(() => {
     if (!shouldScrollPickerIntoView) {
@@ -128,6 +141,30 @@ export function AddRotationScreen({ navigation, route }: Props) {
     }, 50);
     return () => clearTimeout(timeoutId);
   }, [shouldScrollPickerIntoView, activePicker]);
+
+  // When the start picker closes after a real start change, fill end if untouched.
+  useEffect(() => {
+    const prev = prevActivePickerRef.current;
+    prevActivePickerRef.current = activePicker;
+
+    if (activePicker === 'start' && prev !== 'start') {
+      startAtPickerOpenRef.current = startDate;
+      return;
+    }
+
+    if (prev !== 'start' || activePicker === 'start') {
+      return;
+    }
+
+    if (
+      !endDateTouched &&
+      startAtPickerOpenRef.current != null &&
+      startDate !== startAtPickerOpenRef.current
+    ) {
+      setEndDate(defaultRotationEndISO(parseISO(startDate)));
+    }
+    startAtPickerOpenRef.current = null;
+  }, [activePicker, startDate, endDateTouched]);
 
   function selectCycleDays(next: CycleDays) {
     setCycleDays(next);
@@ -148,7 +185,9 @@ export function AddRotationScreen({ navigation, route }: Props) {
     }
     const nextStart = toISODate(selected);
     setStartDate(nextStart);
-    setEndDate((prevEnd) => (nextStart > prevEnd ? nextStart : prevEnd));
+    if (endDateTouched) {
+      setEndDate((prevEnd) => (nextStart > prevEnd ? nextStart : prevEnd));
+    }
     setVacationStartDate((prev) => (prev < nextStart ? nextStart : prev));
     setError(null);
   }
@@ -158,40 +197,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
       setActivePicker(null);
     }
     const nextEnd = toISODate(selected);
+    setEndDateTouched(true);
     setEndDate(nextEnd);
     setVacationEndDate((prev) => (prev > nextEnd ? nextEnd : prev));
     setError(null);
   }
-  [
-    {
-      resource:
-        '/Users/amatias/personal-projects/guardias/src/features/rotations/screens/rotation-detail-screen.tsx',
-      owner: 'typescript',
-      code: '18048',
-      severity: 8,
-      message: "'period' is possibly 'undefined'.",
-      source: 'ts',
-      startLineNumber: 49,
-      startColumn: 53,
-      endLineNumber: 49,
-      endColumn: 59,
-      modelVersionId: 3,
-    },
-    {
-      resource:
-        '/Users/amatias/personal-projects/guardias/src/features/rotations/screens/rotation-detail-screen.tsx',
-      owner: 'typescript',
-      code: '18048',
-      severity: 8,
-      message: "'period' is possibly 'undefined'.",
-      source: 'ts',
-      startLineNumber: 56,
-      startColumn: 26,
-      endLineNumber: 56,
-      endColumn: 32,
-      modelVersionId: 3,
-    },
-  ];
 
   function onShiftStartValueChange(_event: unknown, selected: Date) {
     if (process.env.EXPO_OS === 'android') {
@@ -340,18 +350,23 @@ export function AddRotationScreen({ navigation, route }: Props) {
           <Text className="text-sm font-medium text-neutral-600">
             {t('shifts.form.name')}
           </Text>
-          <TextInput
-            value={label}
-            onChangeText={(text) => {
-              setLabel(text);
-              setError(null);
-            }}
-            placeholder={t('shifts.form.namePlaceholder')}
-            returnKeyType="done"
-            accessibilityLabel={t('shifts.form.name')}
-            className="rounded-xl border border-neutral-200 bg-white px-4 py-3 text-base"
+          <View
+            className="rounded-xl border border-neutral-200 bg-white px-4 py-3"
             style={{ borderCurve: 'continuous' }}
-          />
+          >
+            <TextInput
+              value={label}
+              onChangeText={(text) => {
+                setLabel(text);
+                setError(null);
+              }}
+              placeholder={t('shifts.form.namePlaceholder')}
+              returnKeyType="done"
+              accessibilityLabel={t('shifts.form.name')}
+              className="text-base text-neutral-900"
+              style={{ height: 24, padding: 0 }}
+            />
+          </View>
         </View>
 
         <View className="flex-row gap-3">
@@ -441,6 +456,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
             })}
           </View>
         </View>
+
+        <RotationPreviewCalendar period={draftPeriod} language={language} />
 
         <View className="gap-2">
           <Text className="text-sm font-medium text-neutral-600">

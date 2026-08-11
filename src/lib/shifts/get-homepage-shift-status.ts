@@ -63,6 +63,47 @@ export function countShiftsRemaining(
   return count;
 }
 
+/** Completed vs total scheduled shifts in a period (for homepage ring fill). */
+export type PeriodShiftProgress = {
+  completed: number;
+  total: number;
+  /** 0–1; `0` when `total` is 0. */
+  progress: number;
+};
+
+/**
+ * Counts finished shifts (`endDateTime <= now`) and all scheduled shifts in
+ * `period`. Vacation / non-shift days are excluded via `listShiftDatesInRange`.
+ */
+export function getPeriodShiftProgress(
+  period: RotationPeriod,
+  now: Date,
+): PeriodShiftProgress {
+  let completed = 0;
+  let total = 0;
+
+  for (const iso of listShiftDatesInRange(
+    [period],
+    period.startDate,
+    period.endDate,
+  )) {
+    const shift = buildShift(period, iso);
+    if (shift === null) {
+      continue;
+    }
+    total += 1;
+    if (shift.endDateTime <= now) {
+      completed += 1;
+    }
+  }
+
+  return {
+    completed,
+    total,
+    progress: total === 0 ? 0 : completed / total,
+  };
+}
+
 function findActiveShift(
   periods: readonly RotationPeriod[],
   now: Date,

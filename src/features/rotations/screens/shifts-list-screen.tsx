@@ -1,10 +1,11 @@
+import { Ionicons } from '@expo/vector-icons';
 import { FlatList } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
+import { ScreenPageTitle } from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
-import { View } from '../../../tw';
-import { FAB_CLEARANCE, FloatingAddButton } from '../components/add-rotation-button';
+import { Pressable, View } from '../../../tw';
 import { RotationPeriodRow } from '../components/rotation-period-row';
 import { ShiftsEmptyState } from '../components/shifts-empty-state';
 import { formatPeriodRange } from '../format-period-range';
@@ -18,6 +19,10 @@ function keyExtractor(item: RotationPeriod) {
   return item.id;
 }
 
+function PeriodSeparator() {
+  return <View className="mx-4 h-px bg-neutral-200" />;
+}
+
 /** Shifts tab list of rotation periods. */
 export function ShiftsListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
@@ -25,22 +30,41 @@ export function ShiftsListScreen({ navigation }: Props) {
   const { periods } = useRotations();
 
   return (
-    <View className="flex-1">
+    <View className="flex-1 bg-white">
+      <ScreenPageTitle
+        title={t('tabs.shifts')}
+        right={
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('shifts.addA11y')}
+            onPress={() => {
+              navigation.navigate('AddRotation');
+            }}
+            className="px-2 active:opacity-60"
+            hitSlop={8}
+          >
+            <Ionicons name="add" size={28} color="#191C1A" />
+          </Pressable>
+        }
+      />
       <FlatList
         data={periods}
         keyExtractor={keyExtractor}
-        contentInsetAdjustmentBehavior="automatic"
         contentContainerStyle={{
           flexGrow: 1,
-          gap: 12,
           paddingTop: 12,
-          paddingBottom: FAB_CLEARANCE,
+          paddingBottom: 24,
         }}
+        ItemSeparatorComponent={PeriodSeparator}
         ListEmptyComponent={ShiftsEmptyState}
         renderItem={({ item }) => (
           <RotationPeriodRow
             label={item.label}
-            dateRange={formatPeriodRange(item.startDate, item.endDate, language)}
+            dateRange={formatPeriodRange(
+              item.startDate,
+              item.endDate,
+              language,
+            )}
             onPress={() => {
               navigation.navigate('RotationDetail', { periodId: item.id });
             }}
@@ -48,7 +72,6 @@ export function ShiftsListScreen({ navigation }: Props) {
         )}
         accessibilityLabel={t('tabs.shifts')}
       />
-      <FloatingAddButton />
     </View>
   );
 }
