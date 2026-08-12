@@ -20,7 +20,7 @@
       "timeUntilNext": "Próxima guardia",
       "shiftsRemaining": "Guardias restantes",
       "hoursWorked": "Horas trabajadas",
-      "nextFreeWeekend": "Fin de semana libre",
+      "nextFreeWeekend": "Siguiente fin libre",
       "hoursValue": "{{hours}}h",
       "now": "Ahora",
       "noneInPeriod": "Ninguno restante en este período"

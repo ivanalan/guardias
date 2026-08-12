@@ -20,7 +20,7 @@
       "timeUntilNext": "Next shift",
       "shiftsRemaining": "Shifts remaining",
       "hoursWorked": "Hours worked",
-      "nextFreeWeekend": "Free weekend",
+      "nextFreeWeekend": "Next free weekend",
       "hoursValue": "{{hours}}h",
       "now": "Now",
       "noneInPeriod": "None left in this period"

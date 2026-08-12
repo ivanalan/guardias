@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "guardias",
+    "name": "Guardias",
     "slug": "guardias",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,10 +15,26 @@
       "expo-image",
       "expo-font",
       "expo-status-bar",
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#FFFFFF",
+          "image": "./assets/adaptive-icon.png",
+          "imageWidth": 200
+        }
+      ]
     ],
     "ios": {
       "bundleIdentifier": "com.10alanm.guardias"
+    },
+    "android": {
+      "package": "com.10alanm.guardias",
+      "versionCode": 1,
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#FFFFFF"
+      }
     }
   }
 }
