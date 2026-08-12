@@ -1,11 +1,11 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import Svg, { Circle } from 'react-native-svg';
 
+import { BRAND_COLOR } from '../../../theme/brand';
 import { View } from '../../../tw';
 
 const DEFAULT_SIZE = 240;
 const DEFAULT_STROKE = 28;
-const ACCENT = '#E85D04';
 const ANIM_MS = 900;
 
 type ShiftsProgressRingProps = {
@@ -30,7 +30,7 @@ export function ShiftsProgressRing({
   progress,
   size = DEFAULT_SIZE,
   strokeWidth = DEFAULT_STROKE,
-  color = ACCENT,
+  color = BRAND_COLOR,
   children,
 }: ShiftsProgressRingProps) {
   const target = clamp01(progress);

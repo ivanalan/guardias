@@ -16,7 +16,17 @@
     "shiftsRemaining_other": "{{count}} guardias restantes",
     "shiftsCompleted": "guardias completadas",
     "progressOf": " / {{total}}",
-    "periodLabel": "{{label}}"
+    "periodLabel": "{{label}}",
+    "stats": {
+      "timeLeft": "Tiempo restante",
+      "timeUntilNext": "Próxima guardia",
+      "shiftsRemaining": "Guardias restantes",
+      "hoursWorked": "Horas trabajadas",
+      "nextFreeWeekend": "Fin de semana libre",
+      "hoursValue": "{{hours}}h",
+      "now": "Ahora",
+      "noneInPeriod": "Ninguno restante en este período"
+    }
   },
   "calendar": {
     "today": "Hoy",
@@ -25,7 +35,15 @@
     "shiftDay": "Guardia",
     "starts": "Inicia",
     "ends": "Termina",
-    "duration": "{{hours}} horas"
+    "duration": "{{hours}} horas",
+    "legend": {
+      "shiftDays_one": "Día de guardia",
+      "shiftDays_other": "Días de guardia",
+      "freeWeekends_one": "Fin de semana libre",
+      "freeWeekends_other": "Fines de semana libres",
+      "filterShiftsHint": "Resaltar días de guardia en el calendario",
+      "filterFreeWeekendsHint": "Resaltar fines de semana libres en el calendario"
+    }
   },
   "settings": {
     "title": "Ajustes",

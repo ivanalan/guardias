@@ -14,6 +14,12 @@ export type {
   HomepageShiftStatus,
   PeriodShiftProgress,
 } from './get-homepage-shift-status';
+export {
+  getNextFreeWeekend,
+  getPeriodHoursWorked,
+  getTimeUntilNextShift,
+} from './home-stats';
+export type { NextFreeWeekend } from './home-stats';
 export { isShiftDay } from './is-shift-day';
 export { listShiftDatesInRange } from './list-shift-dates-in-range';
 export { parseCalendarDate } from './parse-calendar-date';

@@ -14,6 +14,7 @@ import { DashboardStack } from './src/features/dashboard/dashboard-stack';
 import { RotationsProvider } from './src/features/rotations/rotations-context';
 import { PreferencesProvider } from './src/features/settings/preferences-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
+import { BRAND_COLOR } from './src/theme/brand';
 
 type TabParamList = {
   Home: undefined;
@@ -50,7 +51,7 @@ function RootNavigator() {
       <Tab.Navigator
         screenOptions={({ route }) => ({
           headerShown: false,
-          tabBarActiveTintColor: '#D1B20',
+          tabBarActiveTintColor: BRAND_COLOR,
           tabBarInactiveTintColor: '#49454F',
           tabBarLabel: t(tabTitleKeys[route.name]),
           tabBarIcon: ({ focused, color, size }) => {
