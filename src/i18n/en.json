@@ -16,7 +16,17 @@
     "shiftsRemaining_other": "{{count}} shifts remaining",
     "shiftsCompleted": "shifts completed",
     "progressOf": " / {{total}}",
-    "periodLabel": "{{label}}"
+    "periodLabel": "{{label}}",
+    "stats": {
+      "timeLeft": "Time left",
+      "timeUntilNext": "Next shift",
+      "shiftsRemaining": "Shifts remaining",
+      "hoursWorked": "Hours worked",
+      "nextFreeWeekend": "Free weekend",
+      "hoursValue": "{{hours}}h",
+      "now": "Now",
+      "noneInPeriod": "None left in this period"
+    }
   },
   "calendar": {
     "today": "Today",
@@ -25,7 +35,15 @@
     "shiftDay": "Shift",
     "starts": "Starts",
     "ends": "Ends",
-    "duration": "{{hours}} hours"
+    "duration": "{{hours}} hours",
+    "legend": {
+      "shiftDays_one": "Shift day",
+      "shiftDays_other": "Shift days",
+      "freeWeekends_one": "Free weekend",
+      "freeWeekends_other": "Free weekends",
+      "filterShiftsHint": "Highlight shift days on the calendar",
+      "filterFreeWeekendsHint": "Highlight free weekends on the calendar"
+    }
   },
   "settings": {
     "title": "Settings",

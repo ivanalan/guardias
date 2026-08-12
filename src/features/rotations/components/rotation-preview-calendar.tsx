@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { listShiftDatesInRange } from '../../../lib/shifts';
 import { Pressable, Text, View } from '../../../tw';
-import { CALENDAR_MARK_COLORS } from '../../calendar/calendar-mark-colors';
+import { CALENDAR_THEME } from '../../calendar/calendar-theme';
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
 import { buildMonthMarkedDates } from '../../calendar/month-marks';
 import type { RotationPeriod } from '../types';
@@ -82,16 +82,7 @@ export function RotationPreviewCalendar({ period, language }: Props) {
           firstDay={1}
           markingType="custom"
           markedDates={buildMonthMarkedDates([period], currentMonth)}
-          theme={{
-            todayTextColor: CALENDAR_MARK_COLORS.shiftBackground,
-            arrowColor: CALENDAR_MARK_COLORS.shiftBackground,
-            selectedDayBackgroundColor: CALENDAR_MARK_COLORS.shiftBackground,
-            selectedDayTextColor: '#ffffff',
-            monthTextColor: '#1C1B1F',
-            textSectionTitleColor: '#49454F',
-            dayTextColor: '#1C1B1F',
-            textDisabledColor: '#C4C4C4',
-          }}
+          theme={CALENDAR_THEME}
         />
       ) : null}
     </View>

@@ -19,10 +19,6 @@ function keyExtractor(item: RotationPeriod) {
   return item.id;
 }
 
-function PeriodSeparator() {
-  return <View className="mx-4 h-px bg-neutral-200" />;
-}
-
 /** Shifts tab list of rotation periods. */
 export function ShiftsListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
@@ -30,7 +26,7 @@ export function ShiftsListScreen({ navigation }: Props) {
   const { periods } = useRotations();
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-neutral-50">
       <ScreenPageTitle
         title={t('tabs.shifts')}
         right={
@@ -52,10 +48,11 @@ export function ShiftsListScreen({ navigation }: Props) {
         keyExtractor={keyExtractor}
         contentContainerStyle={{
           flexGrow: 1,
+          gap: 12,
+          paddingHorizontal: 24,
           paddingTop: 12,
           paddingBottom: 24,
         }}
-        ItemSeparatorComponent={PeriodSeparator}
         ListEmptyComponent={ShiftsEmptyState}
         renderItem={({ item }) => (
           <RotationPeriodRow

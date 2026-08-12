@@ -7,71 +7,123 @@ import { useTranslation } from 'react-i18next';
 import { ScreenPageTitle } from '../../../components/screen-page-title';
 import {
   getHomepageShiftStatus,
+  getNextFreeWeekend,
+  getPeriodHoursWorked,
   getPeriodShiftProgress,
+  getTimeUntilNextShift,
   type DurationParts,
+  type HomepageShiftStatus,
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { useRotations } from '../../rotations/rotations-context';
 import type { DashboardStackParamList } from '../dashboard-stack';
 import { ShiftsProgressRing } from '../components/shifts-progress-ring';
+import { StatsCard } from '../components/stats-card';
+import { StatsCardGrid } from '../components/stats-card-grid';
 
 const REFRESH_MS = 60_000;
 
 type Props = NativeStackScreenProps<DashboardStackParamList, 'HomeHome'>;
 
 type ActiveHomeProps = {
-  statusLabel: string;
-  duration: DurationParts;
-  periodLabel: string;
-  shiftsRemaining: number;
+  status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
+  now: Date;
   periodProgress: PeriodShiftProgress;
 };
 
-function ActiveHomeHero({
-  statusLabel,
-  duration,
-  periodLabel,
-  shiftsRemaining,
-  periodProgress,
-}: ActiveHomeProps) {
+function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
   const { t } = useTranslation();
+  const untilNext = getTimeUntilNextShift(status, now);
+  const hoursWorked = getPeriodHoursWorked(status.period, now);
+  const freeWeekend = getNextFreeWeekend(status.period, now);
+
+  const durationValue = (duration: DurationParts) =>
+    t('home.durationShort', {
+      days: duration.days,
+      hours: duration.hours,
+    });
 
   return (
-    <View className="flex-1 items-center gap-8 py-4">
-      <ShiftsProgressRing progress={periodProgress.progress}>
-        <View className="items-center gap-1">
-          <Text className="text-center text-sm opacity-60">{statusLabel}</Text>
-          <Text className="text-center text-3xl font-bold tracking-tight">
-            {t('home.durationShort', {
-              days: duration.days,
-              hours: duration.hours,
-            })}
-          </Text>
-        </View>
-      </ShiftsProgressRing>
-      <View className="items-center gap-2">
-        <Text className="text-5xl font-bold tracking-tight">
-          {periodProgress.completed}
-          <Text className="text-2xl font-semibold opacity-40">
-            {t('home.progressOf', { total: periodProgress.total })}
-          </Text>
+    <View className="w-full gap-8">
+      <View className="items-center gap-8 py-2">
+        <Text className="text-center text-lg font-medium">
+          {t('home.periodLabel', { label: status.period.label })}
         </Text>
-        <Text className="text-center text-sm opacity-60">
-          {t('home.shiftsCompleted')}
-        </Text>
-        <Text className="text-center text-base font-medium">
-          {t('home.periodLabel', { label: periodLabel })}
-        </Text>
-        <Text className="text-center text-sm opacity-60">
-          {t('home.shiftsRemaining', { count: shiftsRemaining })}
-        </Text>
+        <ShiftsProgressRing progress={periodProgress.progress}>
+          <View className="items-center gap-1">
+            <Text className="text-center text-4xl font-bold tracking-tight">
+              {periodProgress.completed}
+              <Text className="text-xl font-semibold opacity-40">
+                {t('home.progressOf', { total: periodProgress.total })}
+              </Text>
+            </Text>
+            <Text className="text-center text-sm opacity-60">
+              {t('home.shiftsCompleted')}
+            </Text>
+          </View>
+        </ShiftsProgressRing>
       </View>
+
+      <StatsCardGrid>
+        {status.kind === 'in_shift' ? (
+          <StatsCard
+            fullWidth
+            tint="violet"
+            icon="clock-outline"
+            value={durationValue(status.remainingInShift)}
+            subtitle={t('home.stats.timeLeft')}
+          />
+        ) : null}
+
+        {untilNext != null ? (
+          <StatsCard
+            tint="brand"
+            icon="calendar-clock"
+            value={durationValue(untilNext)}
+            subtitle={t('home.stats.timeUntilNext')}
+          />
+        ) : null}
+
+        <StatsCard
+          tint="indigo"
+          icon="clipboard-list-outline"
+          value={String(status.shiftsRemaining)}
+          subtitle={t('home.stats.shiftsRemaining')}
+        />
+
+        <StatsCard
+          tint="azure"
+          icon="timer-outline"
+          value={t('home.stats.hoursValue', { hours: hoursWorked })}
+          subtitle={t('home.stats.hoursWorked')}
+        />
+
+        {freeWeekend != null ? (
+          <StatsCard
+            tint="teal"
+            icon="umbrella-beach"
+            value={
+              freeWeekend.isNow
+                ? t('home.stats.now')
+                : durationValue(freeWeekend.until)
+            }
+            subtitle={t('home.stats.nextFreeWeekend')}
+          />
+        ) : (
+          <StatsCard
+            tint="teal"
+            icon="umbrella-beach"
+            value="—"
+            subtitle={t('home.stats.noneInPeriod')}
+          />
+        )}
+      </StatsCardGrid>
     </View>
   );
 }
 
-/** F3 homepage: countdown / in-shift status with period progress ring. */
+/** F3 homepage: period progress ring + stats card grid. */
 export function HomeScreen({ navigation }: Props) {
   const { t } = useTranslation();
   const { periods } = useRotations();
@@ -92,7 +144,7 @@ export function HomeScreen({ navigation }: Props) {
   const status = getHomepageShiftStatus(periods, now);
 
   return (
-    <View className="flex-1 bg-white">
+    <View className="flex-1 bg-neutral-50">
       <ScreenPageTitle
         title={t('tabs.home')}
         right={
@@ -126,27 +178,13 @@ export function HomeScreen({ navigation }: Props) {
               {t('home.emptyBody')}
             </Text>
           </View>
-        ) : null}
-
-        {status.kind === 'between_shifts' ? (
-          <ActiveHomeHero
-            statusLabel={t('home.nextShift')}
-            duration={status.untilStart}
-            periodLabel={status.period.label}
-            shiftsRemaining={status.shiftsRemaining}
+        ) : (
+          <ActiveHomeContent
+            status={status}
+            now={now}
             periodProgress={getPeriodShiftProgress(status.period, now)}
           />
-        ) : null}
-
-        {status.kind === 'in_shift' ? (
-          <ActiveHomeHero
-            statusLabel={t('home.inShift')}
-            duration={status.remainingInShift}
-            periodLabel={status.period.label}
-            shiftsRemaining={status.shiftsRemaining}
-            periodProgress={getPeriodShiftProgress(status.period, now)}
-          />
-        ) : null}
+        )}
       </ScrollView>
     </View>
   );

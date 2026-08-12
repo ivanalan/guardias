@@ -189,13 +189,15 @@ export function getHomepageShiftStatus(
 
   if (currentShift !== null) {
     const period = periodById(periods, currentShift.rotationPeriodId);
+    // Scope "next" to this period only — homepage cards are per-rotation.
+    const nextInPeriod = findNextShift([period], now, period.endDate);
     return {
       kind: 'in_shift',
       period,
       currentShift,
       remainingInShift: formatDurationParts(now, currentShift.endDateTime),
       shiftsRemaining: countShiftsRemaining(period, now),
-      nextShift,
+      nextShift: nextInPeriod,
     };
   }
 

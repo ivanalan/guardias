@@ -1,4 +1,4 @@
-import { listFreeWeekendDates } from './free-weekends';
+import { countFreeWeekends, listFreeWeekendDates } from './free-weekends';
 
 describe('listFreeWeekendDates', () => {
   it('marks Sat+Sun when both are free', () => {
@@ -23,5 +23,23 @@ describe('listFreeWeekendDates', () => {
     expect(
       listFreeWeekendDates(shifts, '2026-07-11', '2026-07-12'),
     ).toEqual([]);
+  });
+});
+
+describe('countFreeWeekends', () => {
+  it('counts free weekend pairs, not individual days', () => {
+    const shifts = new Set<string>(['2026-07-01', '2026-07-05']);
+    // Only Jul 11–12 is free in this range
+    expect(countFreeWeekends(shifts, '2026-07-01', '2026-07-12')).toBe(1);
+  });
+
+  it('counts a month-edge half-weekend as one pair', () => {
+    const shifts = new Set<string>();
+    expect(countFreeWeekends(shifts, '2026-08-01', '2026-08-01')).toBe(1);
+  });
+
+  it('returns 0 when no free weekends', () => {
+    const shifts = new Set<string>(['2026-07-11']);
+    expect(countFreeWeekends(shifts, '2026-07-11', '2026-07-12')).toBe(0);
   });
 });
