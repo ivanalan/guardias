@@ -4,11 +4,11 @@
 
 - [x] App icon at `assets/icon.png` (1024×1024)
 - [x] Adaptive foreground at `assets/adaptive-icon.png` (transparent PNG)
-- [x] `app.json` Android package `com.10alanm.guardias`, `versionCode`, adaptive icon
+- [x] `app.json` Android package `com.alanmatias.guardias`, `versionCode`, adaptive icon
 - [x] `eas.json` with production `app-bundle` profile
 - [ ] Publish legal pages (see below)
 - [ ] Expo account + EAS project linked (`npx eas-cli init` / `eas build:configure` if needed)
-- [ ] Google Play Console app created for `com.10alanm.guardias`
+- [ ] Google Play Console app created for `com.alanmatias.guardias`
 
 ## Publish Privacy Policy and Terms
 

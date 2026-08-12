@@ -26,10 +26,10 @@
       ]
     ],
     "ios": {
-      "bundleIdentifier": "com.10alanm.guardias"
+      "bundleIdentifier": "com.alanmatias.guardias"
     },
     "android": {
-      "package": "com.10alanm.guardias",
+      "package": "com.alanmatias.guardias",
       "versionCode": 1,
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",

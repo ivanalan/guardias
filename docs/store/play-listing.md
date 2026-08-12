@@ -5,7 +5,7 @@ Copy these into Play Console for **en-US** and **es-MX** (or `es`) store listing
 Privacy Policy URL: `https://alanmatias.com/guardias/privacy.html`  
 Terms (optional): `https://alanmatias.com/guardias/terms.html`
 
-Package name: `com.10alanm.guardias`  
+Package name: `com.alanmatias.guardias`  
 App name (device): Guardias
 
 ---
