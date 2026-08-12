@@ -2,6 +2,19 @@
 export const BRAND_COLOR = '#2F69F3';
 
 /**
+ * Shared selected-state chrome for chips, tiles, choice rows, and filters.
+ * Soft fill + brand border/foreground — same look as the calendar legend tile.
+ */
+export const BRAND_SELECTION = {
+  /** Soft fill (~8% opacity) for bordered surfaces and choice rows. */
+  background: `${BRAND_COLOR}14`,
+  /** Lighter fill (~4%) for denser list rows (date/time pickers, etc.). */
+  backgroundSubtle: `${BRAND_COLOR}0A`,
+  border: BRAND_COLOR,
+  foreground: BRAND_COLOR,
+} as const;
+
+/**
  * Nearby accents around {@link BRAND_COLOR} for dashboard shift stats icons.
  * Same neighborhood — a step toward violet or teal — so cards read apart.
  */

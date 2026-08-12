@@ -1,5 +1,7 @@
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
+import type { CompositeScreenProps } from '@react-navigation/native';
+import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -15,7 +17,9 @@ import {
   type HomepageShiftStatus,
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
+import type { TabParamList } from '../../../navigation/types';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
 import { useRotations } from '../../rotations/rotations-context';
 import type { DashboardStackParamList } from '../dashboard-stack';
 import { ShiftsProgressRing } from '../components/shifts-progress-ring';
@@ -24,7 +28,10 @@ import { StatsCardGrid } from '../components/stats-card-grid';
 
 const REFRESH_MS = 60_000;
 
-type Props = NativeStackScreenProps<DashboardStackParamList, 'HomeHome'>;
+type Props = CompositeScreenProps<
+  NativeStackScreenProps<DashboardStackParamList, 'HomeHome'>,
+  BottomTabScreenProps<TabParamList>
+>;
 
 type ActiveHomeProps = {
   status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
@@ -170,14 +177,11 @@ export function HomeScreen({ navigation }: Props) {
         contentContainerClassName="flex-grow gap-8 p-6"
       >
         {status.kind === 'idle' ? (
-          <View className="flex-1 items-center justify-center gap-2 py-16">
-            <Text className="text-center text-lg font-semibold">
-              {t('home.emptyTitle')}
-            </Text>
-            <Text className="text-center text-sm opacity-60">
-              {t('home.emptyBody')}
-            </Text>
-          </View>
+          <ShiftsEmptyState
+            onAddPress={() => {
+              navigation.navigate('Shifts', { screen: 'AddRotation' });
+            }}
+          />
         ) : (
           <ActiveHomeContent
             status={status}

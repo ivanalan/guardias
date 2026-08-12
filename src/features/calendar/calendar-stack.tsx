@@ -1,5 +1,4 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useTranslation } from 'react-i18next';
 
 import { CalendarScreen } from './screens/calendar-screen';
 import { DayDetailScreen } from './screens/day-detail-screen';
@@ -13,8 +12,6 @@ const Stack = createNativeStackNavigator<CalendarStackParamList>();
 
 /** Native stack for the Calendar tab. */
 export function CalendarStack() {
-  const { t } = useTranslation();
-
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -28,9 +25,10 @@ export function CalendarStack() {
         name="DayDetail"
         component={DayDetailScreen}
         options={{
-          title: t('calendar.dayDetailTitle'),
+          headerShown: false,
           presentation: 'formSheet',
           sheetAllowedDetents: 'fitToContents',
+          sheetGrabberVisible: true,
         }}
       />
     </Stack.Navigator>

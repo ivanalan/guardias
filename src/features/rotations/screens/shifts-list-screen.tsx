@@ -53,7 +53,13 @@ export function ShiftsListScreen({ navigation }: Props) {
           paddingTop: 12,
           paddingBottom: 24,
         }}
-        ListEmptyComponent={ShiftsEmptyState}
+        ListEmptyComponent={
+          <ShiftsEmptyState
+            onAddPress={() => {
+              navigation.navigate('AddRotation');
+            }}
+          />
+        }
         renderItem={({ item }) => (
           <RotationPeriodRow
             label={item.label}

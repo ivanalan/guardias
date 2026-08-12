@@ -2,7 +2,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { BRAND_ACCENT_TINTS } from '../../../theme/brand';
+import { BRAND_ACCENT_TINTS, BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarLegendFilter } from '../build-marked-dates';
 import { CALENDAR_MARK_COLORS } from '../calendar-mark-colors';
@@ -41,8 +41,8 @@ export function CalendarMonthLegend({
         iconColor={BRAND_ACCENT_TINTS.brand}
         selected={filter === 'shifts'}
         muted={filter === 'freeWeekends'}
-        selectedBackground="rgba(47, 105, 243, 0.08)"
-        selectedBorder={CALENDAR_MARK_COLORS.shiftBackground}
+        selectedBackground={BRAND_SELECTION.background}
+        selectedBorder={BRAND_SELECTION.border}
         onPress={() => toggle('shifts')}
       />
       <LegendTile

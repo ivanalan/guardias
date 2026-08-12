@@ -1,9 +1,13 @@
+import { useLayoutEffect } from 'react';
 import { Alert } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
-import { Pressable, Text, View } from '../../../tw';
+import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { StatsCard } from '../../dashboard/components/stats-card';
+import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
 import { formatFormDate, formatPeriodRange } from '../format-period-range';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
@@ -16,19 +20,46 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods, deletePeriod } = useRotations();
   const period = periods.find((item) => item.id === route.params.periodId);
+  const periodId = period?.id;
+
+  useLayoutEffect(() => {
+    if (periodId == null) {
+      navigation.setOptions({ headerRight: undefined });
+      return;
+    }
+
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          accessibilityRole="button"
+          accessibilityLabel={t('shifts.detail.edit')}
+          onPress={() => {
+            navigation.navigate('EditRotation', { periodId });
+          }}
+          className="px-2 active:opacity-60"
+          hitSlop={8}
+        >
+          <Ionicons name="create-outline" size={24} color="#191C1A" />
+        </Pressable>
+      ),
+    });
+  }, [navigation, periodId, t]);
 
   if (period == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-white p-6">
+      <View className="flex-1 items-center justify-center gap-2 bg-neutral-50 p-6">
         <Text className="text-base">{t('shifts.detail.notFound')}</Text>
       </View>
     );
   }
 
-  const patternLabel =
-    period.pattern.cycleDays === 4
-      ? t('shifts.form.patternAD')
-      : t('shifts.form.patternAC');
+  const isAD = period.pattern.cycleDays === 4;
+  const patternTitle = isAD
+    ? t('shifts.form.patternADTitle')
+    : t('shifts.form.patternACTitle');
+  const patternSubtitle = isAD
+    ? t('shifts.form.patternADSubtitle')
+    : t('shifts.form.patternACSubtitle');
   const dateRange = formatPeriodRange(
     period.startDate,
     period.endDate,
@@ -44,7 +75,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
       : t('shifts.detail.noVacation');
 
   // Locals so the Alert callback keeps narrowed values (TS nest-function quirk).
-  const periodId = period.id;
+  const deletePeriodId = period.id;
   const periodLabel = period.label;
 
   function confirmDelete() {
@@ -57,7 +88,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           text: t('shifts.detail.delete'),
           style: 'destructive',
           onPress: () => {
-            deletePeriod(periodId);
+            deletePeriod(deletePeriodId);
             navigation.goBack();
           },
         },
@@ -66,65 +97,66 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View className="flex-1 gap-6 bg-white p-6">
-      <View className="gap-1">
-        <Text className="text-2xl font-semibold">{period.label}</Text>
-        <Text className="text-base opacity-70">{dateRange}</Text>
-      </View>
-
-      <DetailRow
-        label={t('shifts.form.schedule')}
-        value={`${patternLabel} · ${period.pattern.offset}`}
-      />
-      <DetailRow
-        label={t('shifts.form.shiftStartTime')}
-        value={period.shiftStartTime}
-      />
-      <DetailRow label={t('shifts.form.vacation')} value={vacationLabel} />
-      <DetailRow
-        label={t('shifts.form.startDate')}
-        value={formatFormDate(period.startDate, language)}
-      />
-      <DetailRow
-        label={t('shifts.form.endDate')}
-        value={formatFormDate(period.endDate, language)}
-      />
-
-      <View className="mt-auto gap-3">
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('shifts.detail.edit')}
-          onPress={() => {
-            navigation.navigate('EditRotation', { periodId });
-          }}
-          className="items-center rounded-xl bg-neutral-900 px-4 py-3 active:opacity-80"
-          style={{ borderCurve: 'continuous' }}
-        >
-          <Text className="text-base font-medium text-white">
-            {t('shifts.detail.edit')}
+    <View className="flex-1 bg-neutral-50">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="flex-grow gap-8 p-6"
+      >
+        <View className="gap-1">
+          <Text className="text-2xl font-bold tracking-tight">
+            {period.label}
           </Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('shifts.detail.delete')}
-          onPress={confirmDelete}
-          className="items-center rounded-xl border border-red-600 px-4 py-3 active:opacity-70"
-          style={{ borderCurve: 'continuous' }}
-        >
-          <Text className="text-base font-medium text-red-600">
-            {t('shifts.detail.delete')}
-          </Text>
-        </Pressable>
-      </View>
-    </View>
-  );
-}
+          <Text className="text-base opacity-50">{dateRange}</Text>
+        </View>
 
-function DetailRow({ label, value }: { label: string; value: string }) {
-  return (
-    <View className="gap-1">
-      <Text className="text-sm opacity-70">{label}</Text>
-      <Text className="text-base">{value}</Text>
+        <StatsCardGrid>
+          <StatsCard
+            tint="brand"
+            icon="calendar-sync"
+            value={`${patternTitle} · ${period.pattern.offset}`}
+            subtitle={patternSubtitle}
+          />
+          <StatsCard
+            tint="indigo"
+            icon="clock-outline"
+            value={period.shiftStartTime}
+            subtitle={t('shifts.form.shiftStartTime')}
+          />
+          <StatsCard
+            tint="azure"
+            icon="calendar-start"
+            value={formatFormDate(period.startDate, language)}
+            subtitle={t('shifts.form.startDate')}
+          />
+          <StatsCard
+            tint="violet"
+            icon="calendar-end"
+            value={formatFormDate(period.endDate, language)}
+            subtitle={t('shifts.form.endDate')}
+          />
+          <StatsCard
+            fullWidth
+            tint="teal"
+            icon="umbrella-beach"
+            value={vacationLabel}
+            subtitle={t('shifts.form.vacation')}
+          />
+        </StatsCardGrid>
+
+        <View className="mt-auto pt-2">
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('shifts.detail.delete')}
+            onPress={confirmDelete}
+            className="items-center rounded-xl border border-red-600/80 bg-white px-4 py-3 active:opacity-70"
+            style={{ borderCurve: 'continuous' }}
+          >
+            <Text className="text-base font-medium text-red-600">
+              {t('shifts.detail.delete')}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
     </View>
   );
 }

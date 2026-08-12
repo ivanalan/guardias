@@ -14,13 +14,8 @@ import { DashboardStack } from './src/features/dashboard/dashboard-stack';
 import { RotationsProvider } from './src/features/rotations/rotations-context';
 import { PreferencesProvider } from './src/features/settings/preferences-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
+import type { TabParamList } from './src/navigation/types';
 import { BRAND_COLOR } from './src/theme/brand';
-
-type TabParamList = {
-  Home: undefined;
-  Calendar: undefined;
-  Shifts: undefined;
-};
 
 type TabKey = keyof TabParamList;
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];

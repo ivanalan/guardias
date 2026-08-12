@@ -1,12 +1,20 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { ScrollView, Switch } from 'react-native';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
+import { LayoutAnimation, ScrollView, Switch } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { parseISO } from 'date-fns';
 import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
+import { BRAND_COLOR, BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, Text, TextInput, View } from '../../../tw';
 import { RotationPreviewCalendar } from '../components/rotation-preview-calendar';
 import {
@@ -75,6 +83,18 @@ function initialFormState(existing: RotationPeriod | undefined) {
     vacationStartDate: existing.vacationStartDate ?? existing.startDate,
     vacationEndDate: existing.vacationEndDate ?? existing.endDate,
   };
+}
+
+function isLabelError(error: RotationValidationError | null): boolean {
+  return error === 'labelRequired';
+}
+
+function isPeriodError(error: RotationValidationError | null): boolean {
+  return error === 'dateOrder' || error === 'dateOverlap';
+}
+
+function isVacationError(error: RotationValidationError | null): boolean {
+  return error === 'vacationOrder' || error === 'vacationOutOfBounds';
 }
 
 /** Add or edit rotation form (F1 / F4). */
@@ -229,10 +249,16 @@ export function AddRotationScreen({ navigation, route }: Props) {
   }
 
   function onVacationToggle(enabled: boolean) {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
     setVacationEnabled(enabled);
     if (enabled) {
       setVacationStartDate(startDate);
       setVacationEndDate(endDate);
+    } else if (
+      activePicker === 'vacationStart' ||
+      activePicker === 'vacationEnd'
+    ) {
+      setActivePicker(null);
     }
     setError(null);
   }
@@ -298,7 +324,12 @@ export function AddRotationScreen({ navigation, route }: Props) {
           onPress={save}
           className="px-2 active:opacity-60"
         >
-          <Text className="text-base font-semibold">{t('shifts.save')}</Text>
+          <Text
+            className="text-base font-semibold"
+            style={{ color: BRAND_COLOR }}
+          >
+            {t('shifts.save')}
+          </Text>
         </Pressable>
       ),
     });
@@ -323,7 +354,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   if (editingId != null && existing == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-white p-6">
+      <View className="flex-1 items-center justify-center gap-2 bg-neutral-50 p-6">
         <Text className="text-base">{t('shifts.detail.notFound')}</Text>
       </View>
     );
@@ -332,28 +363,16 @@ export function AddRotationScreen({ navigation, route }: Props) {
   return (
     <ScrollView
       ref={scrollRef}
-      style={{ flex: 1 }}
+      className="flex-1 bg-neutral-50"
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
         paddingBottom: shouldScrollPickerIntoView ? 60 : 32,
       }}
     >
-      <View className="gap-6 px-4 pt-4 pb-8">
-        {error ? (
-          <Text className="text-sm text-red-600">
-            {t(`shifts.errors.${error}`)}
-          </Text>
-        ) : null}
-
-        <View className="gap-2">
-          <Text className="text-sm font-medium text-neutral-600">
-            {t('shifts.form.name')}
-          </Text>
-          <View
-            className="rounded-xl border border-neutral-200 bg-white px-4 py-3"
-            style={{ borderCurve: 'continuous' }}
-          >
+      <View className="gap-5 px-4 pt-4 pb-8">
+        <FormSection title={t('shifts.form.sectionBasics')}>
+          <View className="px-4 py-3">
             <TextInput
               value={label}
               onChangeText={(text) => {
@@ -361,194 +380,238 @@ export function AddRotationScreen({ navigation, route }: Props) {
                 setError(null);
               }}
               placeholder={t('shifts.form.namePlaceholder')}
+              placeholderTextColor="#a3a3a3"
               returnKeyType="done"
               accessibilityLabel={t('shifts.form.name')}
               className="text-base text-neutral-900"
               style={{ height: 24, padding: 0 }}
             />
           </View>
-        </View>
+          {isLabelError(error) ? (
+            <FieldError message={t(`shifts.errors.${error}`)} />
+          ) : null}
+        </FormSection>
 
-        <View className="flex-row gap-3">
-          <DateField
+        <FormSection title={t('shifts.form.sectionPeriod')}>
+          <FormRow
             label={t('shifts.form.startDate')}
             valueLabel={formatFormDate(startDate, language)}
             selected={activePicker === 'start'}
             onPress={() => togglePicker('start')}
           />
-          <DateField
+          {activePicker === 'start' ? (
+            <PickerSlot>
+              <DateTimePicker
+                value={parseISO(startDate)}
+                mode="date"
+                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                onValueChange={onStartDateValueChange}
+                onDismiss={dismissPicker}
+              />
+            </PickerSlot>
+          ) : null}
+          <RowDivider />
+          <FormRow
             label={t('shifts.form.endDate')}
             valueLabel={formatFormDate(endDate, language)}
             selected={activePicker === 'end'}
             onPress={() => togglePicker('end')}
           />
-        </View>
+          {activePicker === 'end' ? (
+            <PickerSlot>
+              <DateTimePicker
+                value={parseISO(endDate)}
+                mode="date"
+                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={parseISO(startDate)}
+                onValueChange={onEndDateValueChange}
+                onDismiss={dismissPicker}
+              />
+            </PickerSlot>
+          ) : null}
+          {isPeriodError(error) ? (
+            <FieldError message={t(`shifts.errors.${error}`)} />
+          ) : null}
+        </FormSection>
 
-        {activePicker === 'start' ? (
-          <DateTimePicker
-            value={parseISO(startDate)}
-            mode="date"
-            display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
-            onValueChange={onStartDateValueChange}
-            onDismiss={dismissPicker}
+        <FormSection title={t('shifts.form.sectionSchedule')}>
+          <ChoiceRow
+            title={t('shifts.form.patternADTitle')}
+            subtitle={t('shifts.form.patternADSubtitle')}
+            accessibilityLabel={t('shifts.form.patternAD')}
+            selected={cycleDays === 4}
+            onPress={() => selectCycleDays(4)}
           />
-        ) : null}
-
-        {activePicker === 'end' ? (
-          <DateTimePicker
-            value={parseISO(endDate)}
-            mode="date"
-            display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
-            minimumDate={parseISO(startDate)}
-            onValueChange={onEndDateValueChange}
-            onDismiss={dismissPicker}
+          <RowDivider />
+          <ChoiceRow
+            title={t('shifts.form.patternACTitle')}
+            subtitle={t('shifts.form.patternACSubtitle')}
+            accessibilityLabel={t('shifts.form.patternAC')}
+            selected={cycleDays === 3}
+            onPress={() => selectCycleDays(3)}
           />
-        ) : null}
-
-        <View className="gap-2">
-          <Text className="text-sm font-medium text-neutral-600">
-            {t('shifts.form.schedule')}
-          </Text>
-          <View className="gap-2">
-            <PatternOption
-              selected={cycleDays === 4}
-              label={t('shifts.form.patternAD')}
-              onPress={() => selectCycleDays(4)}
-            />
-            <PatternOption
-              selected={cycleDays === 3}
-              label={t('shifts.form.patternAC')}
-              onPress={() => selectCycleDays(3)}
-            />
-          </View>
-        </View>
-
-        <View className="gap-2">
-          <Text className="text-sm font-medium text-neutral-600">
-            {t('shifts.form.offset')}
-          </Text>
-          <View className="flex-row gap-2">
-            {offsets.map((letter) => {
-              const selected = offset === letter;
-              return (
-                <Pressable
-                  key={letter}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected }}
-                  accessibilityLabel={letter}
-                  onPress={() => setOffset(letter)}
-                  className={`flex-1 items-center rounded-xl border py-3 active:opacity-70 ${
-                    selected
-                      ? 'border-neutral-900 bg-white'
-                      : 'border-neutral-200 bg-white'
-                  }`}
-                  style={{ borderCurve: 'continuous' }}
-                >
-                  <Text
-                    className={`text-base font-semibold ${
-                      selected ? 'text-neutral-900' : 'text-neutral-800'
+          <RowDivider />
+          <View className="flex-row items-center justify-between gap-3 px-4 py-3">
+            <Text className="flex-shrink text-base text-neutral-900">
+              {t('shifts.form.offset')}
+            </Text>
+            <View className="flex-row gap-2">
+              {offsets.map((letter) => {
+                const selected = offset === letter;
+                return (
+                  <Pressable
+                    key={letter}
+                    accessibilityRole="button"
+                    accessibilityState={{ selected }}
+                    accessibilityLabel={letter}
+                    onPress={() => setOffset(letter)}
+                    className={`min-w-14 items-center rounded-xl border px-2 py-2 active:opacity-70 ${
+                      selected ? '' : 'border-neutral-200 bg-white'
                     }`}
+                    style={[
+                      { borderCurve: 'continuous' },
+                      selected
+                        ? {
+                            backgroundColor: BRAND_SELECTION.background,
+                            borderColor: BRAND_SELECTION.border,
+                          }
+                        : undefined,
+                    ]}
                   >
-                    {letter}
-                  </Text>
-                </Pressable>
-              );
-            })}
+                    <Text
+                      className={`text-lg font-semibold ${
+                        selected ? '' : 'text-neutral-800'
+                      }`}
+                      style={
+                        selected
+                          ? { color: BRAND_SELECTION.foreground }
+                          : undefined
+                      }
+                    >
+                      {letter}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
           </View>
-        </View>
+        </FormSection>
 
-        <RotationPreviewCalendar period={draftPeriod} language={language} />
-
-        <View className="gap-2">
-          <Text className="text-sm font-medium text-neutral-600">
-            {t('shifts.form.shiftStartTime')}
-          </Text>
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={`${t('shifts.form.shiftStartTime')}: ${shiftStartTime}`}
-            accessibilityState={{ selected: activePicker === 'shiftStart' }}
+        <FormSection title={t('shifts.form.sectionDetails')}>
+          <FormRow
+            label={t('shifts.form.shiftStartTime')}
+            valueLabel={shiftStartTime}
+            selected={activePicker === 'shiftStart'}
             onPress={() => togglePicker('shiftStart')}
-            className={`rounded-xl border px-4 py-3 active:opacity-70 ${
-              activePicker === 'shiftStart'
-                ? 'border-neutral-900 bg-white'
-                : 'border-neutral-200 bg-white'
-            }`}
-            style={{ borderCurve: 'continuous' }}
-          >
-            <Text className="text-base text-neutral-900">{shiftStartTime}</Text>
-          </Pressable>
-        </View>
-
-        {activePicker === 'shiftStart' ? (
-          <DateTimePicker
-            value={parseHHMM(shiftStartTime)}
-            mode="time"
-            display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
-            onValueChange={onShiftStartValueChange}
-            onDismiss={dismissPicker}
           />
-        ) : null}
-
-        <View className="flex-row items-center justify-between py-1">
-          <Text className="text-base text-neutral-900">
-            {t('shifts.form.vacation')}
-          </Text>
-          <Switch
-            value={vacationEnabled}
-            onValueChange={onVacationToggle}
-            trackColor={{ false: '#d4d4d4', true: '#404040' }}
-            thumbColor="#ffffff"
-          />
-        </View>
-
-        {vacationEnabled ? (
-          <View className="gap-3">
-            <View className="flex-row gap-3">
-              <DateField
+          {activePicker === 'shiftStart' ? (
+            <PickerSlot>
+              <DateTimePicker
+                value={parseHHMM(shiftStartTime)}
+                mode="time"
+                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                onValueChange={onShiftStartValueChange}
+                onDismiss={dismissPicker}
+              />
+            </PickerSlot>
+          ) : null}
+          <RowDivider />
+          <View className="flex-row items-center justify-between px-4 py-3">
+            <Text className="text-base text-neutral-900">
+              {t('shifts.form.vacation')}
+            </Text>
+            <Switch
+              value={vacationEnabled}
+              onValueChange={onVacationToggle}
+              trackColor={{ false: '#d4d4d4', true: BRAND_COLOR }}
+              thumbColor="#ffffff"
+            />
+          </View>
+          {vacationEnabled ? (
+            <>
+              <RowDivider />
+              <FormRow
                 label={t('shifts.form.vacationStart')}
                 valueLabel={formatFormDate(vacationStartDate, language)}
                 selected={activePicker === 'vacationStart'}
                 onPress={() => togglePicker('vacationStart')}
               />
-              <DateField
+              {activePicker === 'vacationStart' ? (
+                <PickerSlot>
+                  <DateTimePicker
+                    value={parseISO(vacationStartDate)}
+                    mode="date"
+                    display={
+                      process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'
+                    }
+                    minimumDate={parseISO(startDate)}
+                    maximumDate={parseISO(endDate)}
+                    onValueChange={onVacationStartValueChange}
+                    onDismiss={dismissPicker}
+                  />
+                </PickerSlot>
+              ) : null}
+              <RowDivider />
+              <FormRow
                 label={t('shifts.form.vacationEnd')}
                 valueLabel={formatFormDate(vacationEndDate, language)}
                 selected={activePicker === 'vacationEnd'}
                 onPress={() => togglePicker('vacationEnd')}
               />
-            </View>
+              {activePicker === 'vacationEnd' ? (
+                <PickerSlot>
+                  <DateTimePicker
+                    value={parseISO(vacationEndDate)}
+                    mode="date"
+                    display={
+                      process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'
+                    }
+                    minimumDate={parseISO(vacationStartDate)}
+                    maximumDate={parseISO(endDate)}
+                    onValueChange={onVacationEndValueChange}
+                    onDismiss={dismissPicker}
+                  />
+                </PickerSlot>
+              ) : null}
+            </>
+          ) : null}
+          {isVacationError(error) ? (
+            <FieldError message={t(`shifts.errors.${error}`)} />
+          ) : null}
+        </FormSection>
 
-            {activePicker === 'vacationStart' ? (
-              <DateTimePicker
-                value={parseISO(vacationStartDate)}
-                mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={parseISO(startDate)}
-                maximumDate={parseISO(endDate)}
-                onValueChange={onVacationStartValueChange}
-                onDismiss={dismissPicker}
-              />
-            ) : null}
-
-            {activePicker === 'vacationEnd' ? (
-              <DateTimePicker
-                value={parseISO(vacationEndDate)}
-                mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
-                minimumDate={parseISO(vacationStartDate)}
-                maximumDate={parseISO(endDate)}
-                onValueChange={onVacationEndValueChange}
-                onDismiss={dismissPicker}
-              />
-            ) : null}
-          </View>
-        ) : null}
+        <View className="gap-2">
+          <Text className="px-1 text-sm font-medium text-neutral-500">
+            {t('shifts.form.sectionPreview')}
+          </Text>
+          <RotationPreviewCalendar period={draftPeriod} language={language} />
+        </View>
       </View>
     </ScrollView>
   );
 }
 
-function DateField({
+function FormSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <View className="gap-2">
+      <Text className="px-1 text-sm font-medium text-neutral-500">{title}</Text>
+      <View
+        className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white"
+        style={{ borderCurve: 'continuous' }}
+      >
+        {children}
+      </View>
+    </View>
+  );
+}
+
+function FormRow({
   label,
   valueLabel,
   selected,
@@ -560,51 +623,108 @@ function DateField({
   onPress: () => void;
 }) {
   return (
-    <View className="flex-1 gap-2">
-      <Text className="text-sm font-medium text-neutral-600">{label}</Text>
-      <Pressable
-        accessibilityRole="button"
-        accessibilityLabel={`${label}: ${valueLabel}`}
-        accessibilityState={{ selected }}
-        onPress={onPress}
-        className={`rounded-xl border px-3 py-3 active:opacity-70 ${
-          selected
-            ? 'border-neutral-900 bg-white'
-            : 'border-neutral-200 bg-white'
-        }`}
-        style={{ borderCurve: 'continuous' }}
-      >
-        <Text className="text-base text-neutral-900">{valueLabel}</Text>
-      </Pressable>
-    </View>
+    <Pressable
+      accessibilityRole="button"
+      accessibilityLabel={`${label}: ${valueLabel}`}
+      accessibilityState={{ selected }}
+      onPress={onPress}
+      className="flex-row items-center justify-between gap-3 px-4 py-3.5 active:opacity-70"
+      style={
+        selected
+          ? { backgroundColor: BRAND_SELECTION.backgroundSubtle }
+          : undefined
+      }
+    >
+      <Text className="flex-shrink text-base text-neutral-900">{label}</Text>
+      <View className="min-w-0 flex-row items-center gap-1">
+        <Text
+          className="text-base"
+          style={{
+            color: selected ? BRAND_SELECTION.foreground : '#737373',
+          }}
+          numberOfLines={1}
+        >
+          {valueLabel}
+        </Text>
+        <Ionicons
+          name="chevron-forward"
+          size={16}
+          color={selected ? BRAND_SELECTION.foreground : '#a3a3a3'}
+        />
+      </View>
+    </Pressable>
   );
 }
 
-function PatternOption({
+function ChoiceRow({
+  title,
+  subtitle,
+  accessibilityLabel,
   selected,
-  label,
   onPress,
 }: {
+  title: string;
+  subtitle: string;
+  accessibilityLabel: string;
   selected: boolean;
-  label: string;
   onPress: () => void;
 }) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
       onPress={onPress}
-      className={`rounded-xl border px-4 py-3 active:opacity-70 ${
-        selected ? 'border-neutral-900 bg-white' : 'border-neutral-200 bg-white'
-      }`}
-      style={{ borderCurve: 'continuous' }}
+      className="flex-row items-center justify-between gap-3 px-4 py-3.5 active:opacity-70"
+      style={
+        selected ? { backgroundColor: BRAND_SELECTION.background } : undefined
+      }
     >
-      <Text
-        className={`text-base ${selected ? 'font-semibold text-neutral-900' : 'text-neutral-800'}`}
-      >
-        {label}
-      </Text>
+      <View className="min-w-0 flex-1 gap-0.5">
+        <Text
+          className={`text-base ${selected ? 'font-semibold' : 'text-neutral-900'}`}
+          style={
+            selected ? { color: BRAND_SELECTION.foreground } : undefined
+          }
+        >
+          {title}
+        </Text>
+        <Text
+          className={`text-sm ${selected ? '' : 'text-neutral-500'}`}
+          style={
+            selected ? { color: BRAND_SELECTION.foreground } : undefined
+          }
+        >
+          {subtitle}
+        </Text>
+      </View>
+      {selected ? (
+        <Ionicons
+          name="checkmark"
+          size={20}
+          color={BRAND_SELECTION.foreground}
+        />
+      ) : null}
     </Pressable>
+  );
+}
+
+function RowDivider() {
+  return <View className="ml-4 h-px bg-neutral-100" />;
+}
+
+function PickerSlot({ children }: { children: ReactNode }) {
+  return (
+    <View className="items-center border-t border-neutral-100 bg-neutral-50/80 py-1">
+      {children}
+    </View>
+  );
+}
+
+function FieldError({ message }: { message: string }) {
+  return (
+    <View className="border-t border-red-100 px-4 py-2.5">
+      <Text className="text-sm text-red-600">{message}</Text>
+    </View>
   );
 }

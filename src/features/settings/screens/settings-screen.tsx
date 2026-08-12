@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { usePreferences } from '../preferences-context';
 import type { AppPreferences } from '../types';
@@ -44,19 +45,24 @@ export function SettingsScreen() {
                 accessibilityState={{ selected }}
                 accessibilityLabel={label}
                 onPress={() => setLocale(option.value)}
-                className={`rounded-xl border px-4 py-3 active:opacity-70 ${
+                className="rounded-xl border px-4 py-3 active:opacity-70"
+                style={[
+                  { borderCurve: 'continuous' },
                   selected
-                    ? 'border-neutral-900 bg-white'
-                    : 'border-neutral-200 bg-white'
-                }`}
-                style={{ borderCurve: 'continuous' }}
+                    ? {
+                        backgroundColor: BRAND_SELECTION.background,
+                        borderColor: BRAND_SELECTION.border,
+                      }
+                    : { borderColor: '#e5e5e5', backgroundColor: '#ffffff' },
+                ]}
               >
                 <Text
-                  className={`text-base ${
-                    selected
-                      ? 'font-semibold text-neutral-900'
-                      : 'text-neutral-800'
-                  }`}
+                  className={`text-base ${selected ? 'font-semibold' : ''}`}
+                  style={{
+                    color: selected
+                      ? BRAND_SELECTION.foreground
+                      : '#262626',
+                  }}
                 >
                   {label}
                 </Text>
