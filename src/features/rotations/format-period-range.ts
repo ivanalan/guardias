@@ -30,6 +30,14 @@ export function formatFormDate(isoDate: string, language: 'en' | 'es'): string {
   return format(parseISO(isoDate), 'MMM d, yyyy', { locale: locales[language] });
 }
 
+/** Short date for preview teasers, e.g. "Jul 1". */
+export function formatShortFormDate(
+  isoDate: string,
+  language: 'en' | 'es',
+): string {
+  return format(parseISO(isoDate), 'MMM d', { locale: locales[language] });
+}
+
 /** `HH:mm` from a Date (local). */
 export function toHHMM(date: Date): string {
   return format(date, 'HH:mm');
