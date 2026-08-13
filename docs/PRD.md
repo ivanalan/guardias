@@ -55,6 +55,8 @@ Within a fixed-length cycle, the doctor is assigned a **letter** (A, B, C for A-
 
 **Calendar anchor:** January 1 of each calendar year is always **A**. Letters then advance one step per calendar day (A→B→C→D→A… for A-D; A→B→C→A… for A-C). The rotation period’s start/end dates only bound when the doctor is on that letter — they do **not** restart the cycle. After a leap day, counting continues; at each new year the cycle resets so Jan 1 is A again (so Dec 31 and Jan 1 can both be A).
 
+**Optional first-shift override:** If the hospital calendar no longer matches the Jan 1 rule, the user can set a **first shift date** on the period. When set, that day is a shift and subsequent shifts fall every `cycleDays` afterward (continuous; no Jan 1 reset). The letter (A/B/C/D) is still stored as the user’s assignment identity. When unset, the year-anchored letter calendar applies.
+
 **A-D example (4-day cycle, MVP standard) — days from Jan 1:**
 
 
@@ -105,11 +107,12 @@ The user creates a rotation period by specifying:
   - **A-C (every 3 days)** — user picks letter A, B, or C
 - Start date (first day of rotation)
 - End date (last day of rotation)
+- **First shift date** — defaults to the first day on/after the start date that matches the chosen letter on the Jan 1 calendar; user may edit it to re-phase the every-N pattern when the hospital calendar differs
 - **Calendar color** — preset swatch used to highlight that period’s shift days on the calendar (default brand blue)
 - **Optional vacation period** — start and end dates during which no shifts are scheduled, even if the rotation pattern would otherwise assign one (e.g. approved leave mid-trimester)
 - **Optional shift start time** — time of day each shift begins (default **07:00**)
 
-All shifts are **24 hours**. The app calculates shift dates from the year-anchored letter calendar (Jan 1 = A) and the chosen letter, within the period’s start/end dates and excluding any vacation dates. Users manage periods from the rotation list (see F4).
+All shifts are **24 hours**. By default the app calculates shift dates from the year-anchored letter calendar (Jan 1 = A) and the chosen letter, within the period’s start/end dates and excluding any vacation dates. If the user overrides the first shift date, shifts are that date and every cycle length afterward instead. Users manage periods from the rotation list (see F4).
 
 ### F2 — Calendar view
 
@@ -237,6 +240,7 @@ All data is stored locally on-device using AsyncStorage. No backend or authentic
 | pattern           | RotationPattern        | How shift days are determined (see below)               |
 | startDate         | ISO date string        | First day of rotation                                   |
 | endDate           | ISO date string        | Last day of rotation                                    |
+| firstShiftDate    | ISO date string \| null | Phase override: `null` = Jan 1 letter calendar; set = that day is a shift, then every `cycleDays` |
 | vacationStartDate | ISO date string \| null | Optional vacation block start (inclusive)              |
 | vacationEndDate   | ISO date string \| null | Optional vacation block end (inclusive)                |
 | shiftStartTime    | string                 | Local time each shift starts, `HH:mm` (default `07:00`) |
@@ -286,7 +290,7 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 | Homepage (F3)       | Time to next shift, shifts remaining, shifts worked, current-shift countdown; Settings entry (language)                                      |
 | Calendar View (F2)  | Monthly calendar; day-tap bottom sheet; legend (shift days + free weekends) with opacity filter                                             |
 | Shifts list (F4)    | List of rotation periods (label + date range); FAB to add                                                                                   |
-| Add / Edit Rotation | Form: required label, A-C or A-D + offset, start/end date, optional vacation, shift start time (default 07:00); duration fixed at 24 h      |
+| Add / Edit Rotation | Form: required label, A-C or A-D + offset, start/end date, first shift date (default from Jan 1 letter), optional vacation, shift start time (default 07:00); duration fixed at 24 h |
 | Rotation Detail     | Label, hours worked / next shift summary, date range, shifts completed / remaining; edit action                                             |
 | Shift Detail (F6)   | Past shifts: date, hours worked; future shifts: start/end time, duration (24 h), label; step count *(v2.0)*                                 |
 | Settings (F5)       | Language (English / Español / System default); future: notifications, theme                                                               |
@@ -296,9 +300,10 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 
 ## 7. Edge Cases & Risks
 
-- Rotation periods that span a year boundary (Dec → Jan) — Jan 1 resets to A (Dec 31 and Jan 1 may both be A)
+- Rotation periods that span a year boundary (Dec → Jan) — Jan 1 resets to A when using the default letter calendar (Dec 31 and Jan 1 may both be A); with a first-shift override, the every-N cycle continues across the year boundary
 - Leap years affecting shift date calculations (leap day advances the letter)
 - Schedules starting mid-cycle (user joins on a non-A calendar day; start date only bounds the period)
+- First-shift override that does not match the Jan 1 letter for the stored offset (letter remains identity; dates follow the override)
 - A-C vs A-D offset letter mapping (A–C only for 3-day cycles)
 - Vacation period overlapping scheduled shift days — those days must show as free
 - Vacation period partially outside rotation bounds — validate or clamp to rotation dates

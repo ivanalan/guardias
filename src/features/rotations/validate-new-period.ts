@@ -5,12 +5,15 @@ export type RotationValidationError =
   | 'dateOrder'
   | 'vacationOrder'
   | 'vacationOutOfBounds'
-  | 'dateOverlap';
+  | 'dateOverlap'
+  | 'firstShiftOutOfBounds';
 
 export type PeriodFormInput = {
   label: string;
   startDate: string;
   endDate: string;
+  /** Override ISO date, or null when using the Jan 1 default. */
+  firstShiftDate: string | null;
   vacationEnabled: boolean;
   vacationStartDate: string;
   vacationEndDate: string;
@@ -65,6 +68,14 @@ export function validatePeriodForm(
     ) != null
   ) {
     return 'dateOverlap';
+  }
+
+  if (
+    input.firstShiftDate != null &&
+    (input.firstShiftDate < input.startDate ||
+      input.firstShiftDate > input.endDate)
+  ) {
+    return 'firstShiftOutOfBounds';
   }
 
   if (!input.vacationEnabled) {

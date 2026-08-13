@@ -9,6 +9,7 @@ function period(
   return {
     id: 'period-1',
     label: 'Internal medicine',
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',

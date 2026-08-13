@@ -32,6 +32,11 @@ export type RotationPeriod = {
   /** ISO date `YYYY-MM-DD` */
   endDate: string;
   pattern: RotationPattern;
+  /**
+   * Phase override: `null` = Jan 1 letter calendar + `pattern.offset`;
+   * ISO date = that day is a shift, then every `pattern.cycleDays`.
+   */
+  firstShiftDate: string | null;
   /** Inclusive vacation block start, or null if none. */
   vacationStartDate: string | null;
   /** Inclusive vacation block end, or null if none. */

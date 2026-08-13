@@ -8,6 +8,7 @@ function period(
   return {
     label: 'Test',
     pattern: { cycleDays: 4, offset: 'A' },
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',

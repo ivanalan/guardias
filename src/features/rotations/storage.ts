@@ -12,6 +12,8 @@ function normalizePeriod(raw: unknown): RotationPeriod | null {
   const period = raw as RotationPeriod;
   return {
     ...period,
+    firstShiftDate:
+      typeof period.firstShiftDate === 'string' ? period.firstShiftDate : null,
     color: normalizeRotationColor(period.color),
   };
 }
