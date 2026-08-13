@@ -38,6 +38,13 @@
       "month": "Month",
       "scroll": "Scroll"
     },
+    "shareA11y": "Share shifts calendar file",
+    "shareDialogTitle": "Share shifts",
+    "sharePickTitle": "Export rotation",
+    "sharePickCancel": "Cancel",
+    "shareEmptyTitle": "Nothing to export",
+    "shareEmptyBody": "Add a rotation with shift days before exporting.",
+    "shareUnavailable": "Sharing is not available on this device.",
     "legend": {
       "shiftDays_one": "Shift day",
       "shiftDays_other": "Shift days",

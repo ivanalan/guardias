@@ -38,6 +38,13 @@
       "month": "Mes",
       "scroll": "Lista"
     },
+    "shareA11y": "Compartir archivo de guardias",
+    "shareDialogTitle": "Compartir guardias",
+    "sharePickTitle": "Exportar rotación",
+    "sharePickCancel": "Cancelar",
+    "shareEmptyTitle": "Nada que exportar",
+    "shareEmptyBody": "Agrega una rotación con días de guardia antes de exportar.",
+    "shareUnavailable": "Compartir no está disponible en este dispositivo.",
     "legend": {
       "shiftDays_one": "Día de guardia",
       "shiftDays_other": "Días de guardia",
