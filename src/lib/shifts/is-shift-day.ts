@@ -1,6 +1,10 @@
-import { differenceInCalendarDays } from 'date-fns';
+import { addDays, differenceInCalendarDays, format } from 'date-fns';
 
-import type { OffsetLetter, RotationPeriod } from '@/features/rotations/types';
+import type {
+  OffsetLetter,
+  RotationPattern,
+  RotationPeriod,
+} from '@/features/rotations/types';
 
 import { parseCalendarDate } from './parse-calendar-date';
 
@@ -31,9 +35,56 @@ function calendarLetterIndex(isoDate: string, cycleDays: number): number {
   return ((daysFromJan1 % cycleDays) + cycleDays) % cycleDays;
 }
 
+function matchesYearCalendarLetter(
+  isoDate: string,
+  cycleDays: number,
+  offset: OffsetLetter,
+): boolean {
+  return calendarLetterIndex(isoDate, cycleDays) === OFFSET_INDEX[offset];
+}
+
+function matchesFirstShiftCycle(
+  isoDate: string,
+  firstShiftDate: string,
+  cycleDays: number,
+): boolean {
+  const days = differenceInCalendarDays(
+    parseCalendarDate(isoDate),
+    parseCalendarDate(firstShiftDate),
+  );
+  return ((days % cycleDays) + cycleDays) % cycleDays === 0;
+}
+
+/**
+ * First shift day on/after `startDate` within `[startDate, endDate]` under the
+ * Jan 1 = A letter calendar (ignores any first-shift override).
+ */
+export function getDefaultFirstShiftDate(
+  startDate: string,
+  endDate: string,
+  pattern: Pick<RotationPattern, 'cycleDays' | 'offset'>,
+): string | null {
+  if (endDate < startDate) {
+    return null;
+  }
+
+  let cursor = startDate;
+  while (cursor <= endDate) {
+    if (
+      matchesYearCalendarLetter(cursor, pattern.cycleDays, pattern.offset)
+    ) {
+      return cursor;
+    }
+    cursor = format(addDays(parseCalendarDate(cursor), 1), 'yyyy-MM-dd');
+  }
+
+  return null;
+}
+
 /**
  * Whether `isoDate` (`YYYY-MM-DD`) is a scheduled shift day for this period.
- * Uses the year-anchored A/B/C/D calendar + pattern offset; vacation days are never shifts.
+ * Uses `firstShiftDate` every-N cycle when set; otherwise year-anchored A/B/C/D
+ * + pattern offset. Vacation days are never shifts.
  */
 export function isShiftDay(period: RotationPeriod, isoDate: string): boolean {
   if (isoDate < period.startDate || isoDate > period.endDate) {
@@ -43,8 +94,17 @@ export function isShiftDay(period: RotationPeriod, isoDate: string): boolean {
     return false;
   }
 
-  return (
-    calendarLetterIndex(isoDate, period.pattern.cycleDays) ===
-    OFFSET_INDEX[period.pattern.offset]
+  if (period.firstShiftDate != null) {
+    return matchesFirstShiftCycle(
+      isoDate,
+      period.firstShiftDate,
+      period.pattern.cycleDays,
+    );
+  }
+
+  return matchesYearCalendarLetter(
+    isoDate,
+    period.pattern.cycleDays,
+    period.pattern.offset,
   );
 }

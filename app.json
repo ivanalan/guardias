@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
     "web": {
       "favicon": "./assets/favicon.png",
       "bundler": "metro"
@@ -14,7 +14,12 @@
       "expo-localization",
       "expo-image",
       "expo-font",
-      "expo-status-bar",
+      [
+        "expo-status-bar",
+        {
+          "style": "dark"
+        }
+      ],
       "@react-native-community/datetimepicker",
       [
         "expo-splash-screen",

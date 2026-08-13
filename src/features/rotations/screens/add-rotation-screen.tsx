@@ -5,7 +5,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { LayoutAnimation, ScrollView, Switch } from 'react-native';
+import { Alert, LayoutAnimation, ScrollView, Switch } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -14,6 +14,7 @@ import * as Crypto from 'expo-crypto';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
+import { getDefaultFirstShiftDate } from '../../../lib/shifts';
 import { BRAND_COLOR, BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, Text, TextInput, View } from '../../../tw';
 import { RotationColorSwatches } from '../components/rotation-color-swatches';
@@ -48,10 +49,17 @@ type Props = NativeStackScreenProps<
 >;
 
 type ActivePicker =
-  'start' | 'end' | 'shiftStart' | 'vacationStart' | 'vacationEnd' | null;
+  | 'start'
+  | 'end'
+  | 'firstShift'
+  | 'shiftStart'
+  | 'vacationStart'
+  | 'vacationEnd'
+  | null;
 
 /** Pickers low on the form — scroll them into view when opened. */
 const BOTTOM_PICKERS: ReadonlySet<Exclude<ActivePicker, null>> = new Set([
+  'firstShift',
   'shiftStart',
   'vacationStart',
   'vacationEnd',
@@ -69,6 +77,7 @@ function initialFormState(existing: RotationPeriod | undefined) {
       endDate: end,
       cycleDays: DEFAULT_PATTERN.cycleDays,
       offset: DEFAULT_PATTERN.offset,
+      firstShiftOverride: null as string | null,
       shiftStartTime: DEFAULT_SHIFT_START_TIME,
       color: DEFAULT_ROTATION_COLOR,
       vacationEnabled: false,
@@ -85,6 +94,7 @@ function initialFormState(existing: RotationPeriod | undefined) {
     endDate: existing.endDate,
     cycleDays: existing.pattern.cycleDays,
     offset: existing.pattern.offset,
+    firstShiftOverride: existing.firstShiftDate,
     shiftStartTime: existing.shiftStartTime,
     color: existing.color,
     vacationEnabled:
@@ -104,8 +114,41 @@ function isPeriodError(error: RotationValidationError | null): boolean {
   return error === 'dateOrder' || error === 'dateOverlap';
 }
 
+function isScheduleError(error: RotationValidationError | null): boolean {
+  return error === 'firstShiftOutOfBounds';
+}
+
 function isVacationError(error: RotationValidationError | null): boolean {
   return error === 'vacationOrder' || error === 'vacationOutOfBounds';
+}
+
+/** Persist null when the visible first shift matches the Jan 1 default. */
+function firstShiftDateForSave(
+  override: string | null,
+  defaultFirstShift: string | null,
+): string | null {
+  if (override == null || override === defaultFirstShift) {
+    return null;
+  }
+  return override;
+}
+
+type FormSnapshot = ReturnType<typeof initialFormState>;
+
+function isFormDirty(snapshot: FormSnapshot, current: FormSnapshot): boolean {
+  return (
+    snapshot.label !== current.label ||
+    snapshot.startDate !== current.startDate ||
+    snapshot.endDate !== current.endDate ||
+    snapshot.cycleDays !== current.cycleDays ||
+    snapshot.offset !== current.offset ||
+    snapshot.firstShiftOverride !== current.firstShiftOverride ||
+    snapshot.shiftStartTime !== current.shiftStartTime ||
+    snapshot.color !== current.color ||
+    snapshot.vacationEnabled !== current.vacationEnabled ||
+    snapshot.vacationStartDate !== current.vacationStartDate ||
+    snapshot.vacationEndDate !== current.vacationEndDate
+  );
 }
 
 /** Add or edit rotation form (F1 / F4). */
@@ -124,12 +167,19 @@ export function AddRotationScreen({ navigation, route }: Props) {
       ? periods.find((item) => item.id === editingId)
       : undefined;
 
-  const initial = initialFormState(existing);
+  const initialSnapshotRef = useRef<FormSnapshot | null>(null);
+  if (initialSnapshotRef.current == null) {
+    initialSnapshotRef.current = initialFormState(existing);
+  }
+  const initial = initialSnapshotRef.current;
   const [label, setLabel] = useState(initial.label);
   const [startDate, setStartDate] = useState(initial.startDate);
   const [endDate, setEndDate] = useState(initial.endDate);
   const [cycleDays, setCycleDays] = useState<CycleDays>(initial.cycleDays);
   const [offset, setOffset] = useState<OffsetLetter>(initial.offset);
+  const [firstShiftOverride, setFirstShiftOverride] = useState<string | null>(
+    initial.firstShiftOverride,
+  );
   const [shiftStartTime, setShiftStartTime] = useState(initial.shiftStartTime);
   const [color, setColor] = useState(initial.color);
   const [vacationEnabled, setVacationEnabled] = useState(
@@ -153,10 +203,38 @@ export function AddRotationScreen({ navigation, route }: Props) {
   const prevActivePickerRef = useRef<ActivePicker>(null);
   const startAtPickerOpenRef = useRef<string | null>(null);
   const vacationStartAtPickerOpenRef = useRef<string | null>(null);
+  const allowLeaveRef = useRef(false);
+
+  const isDirty = isFormDirty(initial, {
+    label,
+    startDate,
+    endDate,
+    cycleDays,
+    offset,
+    firstShiftOverride,
+    shiftStartTime,
+    color,
+    vacationEnabled,
+    vacationStartDate,
+    vacationEndDate,
+  });
+  const isDirtyRef = useRef(isDirty);
+  isDirtyRef.current = isDirty;
 
   const offsets = OFFSETS_FOR_CYCLE[cycleDays];
   const shouldScrollPickerIntoView =
     activePicker != null && BOTTOM_PICKERS.has(activePicker);
+
+  const defaultFirstShift = getDefaultFirstShiftDate(startDate, endDate, {
+    cycleDays,
+    offset,
+  });
+  const displayedFirstShift =
+    firstShiftOverride ?? defaultFirstShift ?? startDate;
+  const persistedFirstShift = firstShiftDateForSave(
+    firstShiftOverride,
+    defaultFirstShift,
+  );
 
   const draftPeriod: RotationPeriod = {
     id: editingId ?? 'draft',
@@ -164,6 +242,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     startDate,
     endDate,
     pattern: { cycleDays, offset },
+    firstShiftDate: persistedFirstShift,
     vacationStartDate: vacationEnabled ? vacationStartDate : null,
     vacationEndDate: vacationEnabled ? vacationEndDate : null,
     shiftStartTime,
@@ -180,6 +259,30 @@ export function AddRotationScreen({ navigation, route }: Props) {
     }, 50);
     return () => clearTimeout(timeoutId);
   }, [shouldScrollPickerIntoView, activePicker]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
+      if (allowLeaveRef.current || !isDirtyRef.current) {
+        return;
+      }
+
+      e.preventDefault();
+
+      Alert.alert(t('shifts.discardTitle'), t('shifts.discardBody'), [
+        { text: t('shifts.keepEditing'), style: 'cancel' },
+        {
+          text: t('shifts.discardConfirm'),
+          style: 'destructive',
+          onPress: () => {
+            allowLeaveRef.current = true;
+            navigation.dispatch(e.data.action);
+          },
+        },
+      ]);
+    });
+
+    return unsubscribe;
+  }, [navigation, t]);
 
   // When start / vacation-start pickers close after a real change, fill end if untouched.
   useEffect(() => {
@@ -227,6 +330,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setOffset((prev) => (OFFSETS_FOR_CYCLE[next].includes(prev) ? prev : 'A'));
   }
 
+  function selectOffset(letter: OffsetLetter) {
+    setOffset(letter);
+    setError(null);
+  }
+
   function togglePicker(field: Exclude<ActivePicker, null>) {
     setActivePicker((prev) => (prev === field ? null : field));
   }
@@ -256,6 +364,14 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setEndDateTouched(true);
     setEndDate(nextEnd);
     setVacationEndDate((prev) => (prev > nextEnd ? nextEnd : prev));
+    setError(null);
+  }
+
+  function onFirstShiftValueChange(_event: unknown, selected: Date) {
+    if (process.env.EXPO_OS === 'android') {
+      setActivePicker(null);
+    }
+    setFirstShiftOverride(toISODate(selected));
     setError(null);
   }
 
@@ -313,6 +429,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         label,
         startDate,
         endDate,
+        firstShiftDate: persistedFirstShift,
         vacationEnabled,
         vacationStartDate,
         vacationEndDate,
@@ -335,6 +452,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         startDate,
         endDate,
         pattern: { cycleDays, offset },
+        firstShiftDate: persistedFirstShift,
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
         shiftStartTime,
@@ -347,6 +465,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         startDate,
         endDate,
         pattern: { cycleDays, offset },
+        firstShiftDate: persistedFirstShift,
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
         shiftStartTime,
@@ -354,6 +473,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         createdAt: new Date().toISOString(),
       });
     }
+    allowLeaveRef.current = true;
     navigation.goBack();
   }
 
@@ -382,6 +502,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     endDate,
     cycleDays,
     offset,
+    firstShiftOverride,
     shiftStartTime,
     color,
     vacationEnabled,
@@ -507,7 +628,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
                     accessibilityRole="button"
                     accessibilityState={{ selected }}
                     accessibilityLabel={letter}
-                    onPress={() => setOffset(letter)}
+                    onPress={() => selectOffset(letter)}
                     className={`min-w-12 items-center rounded-xl border px-2 py-2 active:opacity-70 ${
                       selected ? '' : 'border-neutral-200 bg-white'
                     }`}
@@ -538,6 +659,29 @@ export function AddRotationScreen({ navigation, route }: Props) {
               })}
             </View>
           </View>
+          <RowDivider />
+          <FormRow
+            label={t('shifts.form.firstShiftDate')}
+            valueLabel={formatFormDate(displayedFirstShift, language)}
+            selected={activePicker === 'firstShift'}
+            onPress={() => togglePicker('firstShift')}
+          />
+          {activePicker === 'firstShift' ? (
+            <PickerSlot>
+              <DateTimePicker
+                value={parseISO(displayedFirstShift)}
+                mode="date"
+                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                minimumDate={parseISO(startDate)}
+                maximumDate={parseISO(endDate)}
+                onValueChange={onFirstShiftValueChange}
+                onDismiss={dismissPicker}
+              />
+            </PickerSlot>
+          ) : null}
+          {isScheduleError(error) ? (
+            <FieldError message={t(`shifts.errors.${error}`)} />
+          ) : null}
         </FormSection>
 
         <FormSection title={t('shifts.form.color')}>

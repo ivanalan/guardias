@@ -12,6 +12,7 @@ function period(
   return {
     label: 'Test',
     pattern: { cycleDays: 4, offset: 'A' },
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
@@ -66,6 +67,7 @@ describe('validatePeriodForm', () => {
           label: 'ER',
           startDate: '2026-09-01',
           endDate: '2026-10-01',
+          firstShiftDate: null,
           vacationEnabled: false,
           vacationStartDate: '2026-09-01',
           vacationEndDate: '2026-09-01',
@@ -82,6 +84,43 @@ describe('validatePeriodForm', () => {
           label: 'Internal medicine',
           startDate: '2026-07-01',
           endDate: '2026-09-30',
+          firstShiftDate: null,
+          vacationEnabled: false,
+          vacationStartDate: '2026-07-01',
+          vacationEndDate: '2026-07-01',
+        },
+        periods,
+        '1',
+      ),
+    ).toBeNull();
+  });
+
+  it('rejects firstShiftDate outside the period', () => {
+    expect(
+      validatePeriodForm(
+        {
+          label: 'ER',
+          startDate: '2026-07-01',
+          endDate: '2026-09-30',
+          firstShiftDate: '2026-06-30',
+          vacationEnabled: false,
+          vacationStartDate: '2026-07-01',
+          vacationEndDate: '2026-07-01',
+        },
+        periods,
+        '1',
+      ),
+    ).toBe('firstShiftOutOfBounds');
+  });
+
+  it('allows firstShiftDate within the period', () => {
+    expect(
+      validatePeriodForm(
+        {
+          label: 'ER',
+          startDate: '2026-07-01',
+          endDate: '2026-09-30',
+          firstShiftDate: '2026-07-02',
           vacationEnabled: false,
           vacationStartDate: '2026-07-01',
           vacationEndDate: '2026-07-01',

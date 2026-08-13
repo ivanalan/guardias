@@ -8,6 +8,7 @@ function period(
 ): RotationPeriod {
   return {
     label: 'Internal medicine',
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',

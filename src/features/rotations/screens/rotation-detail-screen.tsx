@@ -5,6 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
+import { getDefaultFirstShiftDate } from '../../../lib/shifts';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
@@ -73,6 +74,13 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           language,
         )
       : t('shifts.detail.noVacation');
+  const firstShiftIso =
+    period.firstShiftDate ??
+    getDefaultFirstShiftDate(
+      period.startDate,
+      period.endDate,
+      period.pattern,
+    );
 
   // Locals so the Alert callback keeps narrowed values (TS nest-function quirk).
   const deletePeriodId = period.id;
@@ -134,6 +142,15 @@ export function RotationDetailScreen({ navigation, route }: Props) {
             value={formatFormDate(period.endDate, language)}
             subtitle={t('shifts.form.endDate')}
           />
+          {firstShiftIso != null ? (
+            <StatsCard
+              fullWidth
+              tint="indigo"
+              icon="calendar-check"
+              value={formatFormDate(firstShiftIso, language)}
+              subtitle={t('shifts.form.firstShiftDate')}
+            />
+          ) : null}
           <StatsCard
             fullWidth
             tint="teal"

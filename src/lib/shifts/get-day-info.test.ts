@@ -8,6 +8,7 @@ function period(
 ): RotationPeriod {
   return {
     label: 'Test',
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',

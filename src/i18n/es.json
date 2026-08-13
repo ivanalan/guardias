@@ -73,6 +73,10 @@
     "addTitle": "Agregar rotación",
     "editTitle": "Editar rotación",
     "save": "Guardar",
+    "discardTitle": "¿Descartar cambios?",
+    "discardBody": "Tienes ediciones sin guardar.",
+    "discardConfirm": "Descartar",
+    "keepEditing": "Seguir editando",
     "sectionCurrent": "Actual",
     "sectionFuture": "Próximas",
     "sectionPast": "Pasadas",
@@ -104,6 +108,7 @@
       "patternACTitle": "A-C",
       "patternACSubtitle": "Cada 3 días",
       "offset": "Guardia",
+      "firstShiftDate": "Primera guardia",
       "preview": "Vista previa",
       "previewShiftCount_one": "{{count}} día de guardia",
       "previewShiftCount_other": "{{count}} días de guardia",
@@ -121,7 +126,8 @@
       "dateOrder": "La fecha de fin debe ser posterior a la de inicio.",
       "vacationOrder": "El fin de vacaciones debe ser igual o posterior al inicio.",
       "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación.",
-      "dateOverlap": "Este rango de fechas se traslapa con otra rotación."
+      "dateOverlap": "Este rango de fechas se traslapa con otra rotación.",
+      "firstShiftOutOfBounds": "La primera guardia debe estar dentro de las fechas de la rotación."
     }
   }
 }

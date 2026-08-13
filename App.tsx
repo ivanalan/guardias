@@ -79,7 +79,7 @@ function RootNavigator() {
         <Tab.Screen name="Calendar" component={CalendarStack} />
         <Tab.Screen name="Shifts" component={ShiftsStack} />
       </Tab.Navigator>
-      <StatusBar style="auto" />
+      <StatusBar style="dark" />
     </NavigationContainer>
   );
 }

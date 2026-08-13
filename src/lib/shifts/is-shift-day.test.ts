@@ -1,6 +1,6 @@
 import type { RotationPeriod } from '@/features/rotations/types';
 
-import { isShiftDay } from './is-shift-day';
+import { getDefaultFirstShiftDate, isShiftDay } from './is-shift-day';
 
 function period(
   overrides: Partial<RotationPeriod> &
@@ -9,6 +9,7 @@ function period(
   return {
     id: 'test',
     label: 'Test',
+    firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
@@ -17,6 +18,27 @@ function period(
     ...overrides,
   };
 }
+
+describe('getDefaultFirstShiftDate', () => {
+  it('returns the first Jan 1 letter match on/after startDate', () => {
+    // Jul 1 2026 = B; letter D → Jul 3
+    expect(
+      getDefaultFirstShiftDate('2026-07-01', '2026-07-31', {
+        cycleDays: 4,
+        offset: 'D',
+      }),
+    ).toBe('2026-07-03');
+  });
+
+  it('returns null when no letter day falls in the range', () => {
+    expect(
+      getDefaultFirstShiftDate('2026-07-01', '2026-07-02', {
+        cycleDays: 4,
+        offset: 'D',
+      }),
+    ).toBeNull();
+  });
+});
 
 describe('isShiftDay', () => {
   it('anchors A-D to Jan 1 of the year (A), independent of period start', () => {
@@ -109,5 +131,49 @@ describe('isShiftDay', () => {
     expect(isShiftDay(p, '2024-02-29')).toBe(false);
     expect(isShiftDay(p, '2024-03-01')).toBe(true);
     expect(isShiftDay(p, '2024-03-05')).toBe(true);
+  });
+
+  it('uses firstShiftDate every-N cycle when overridden (keeps letter as identity)', () => {
+    // Jan 1 D days would be Jul 3, 7, 11…; override starts Jul 2 → 2, 6, 10…
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-16',
+      pattern: { cycleDays: 4, offset: 'D' },
+      firstShiftDate: '2026-07-02',
+    });
+
+    expect(isShiftDay(p, '2026-07-01')).toBe(false);
+    expect(isShiftDay(p, '2026-07-02')).toBe(true);
+    expect(isShiftDay(p, '2026-07-03')).toBe(false);
+    expect(isShiftDay(p, '2026-07-06')).toBe(true);
+    expect(isShiftDay(p, '2026-07-10')).toBe(true);
+    expect(isShiftDay(p, '2026-07-14')).toBe(true);
+  });
+
+  it('still uses Jan 1 letter D when firstShiftDate is null', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-16',
+      pattern: { cycleDays: 4, offset: 'D' },
+      firstShiftDate: null,
+    });
+
+    expect(isShiftDay(p, '2026-07-02')).toBe(false);
+    expect(isShiftDay(p, '2026-07-03')).toBe(true);
+    expect(isShiftDay(p, '2026-07-07')).toBe(true);
+  });
+
+  it('excludes vacation days under firstShiftDate override', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-16',
+      pattern: { cycleDays: 4, offset: 'D' },
+      firstShiftDate: '2026-07-02',
+      vacationStartDate: '2026-07-06',
+      vacationEndDate: '2026-07-06',
+    });
+
+    expect(isShiftDay(p, '2026-07-06')).toBe(false);
+    expect(isShiftDay(p, '2026-07-10')).toBe(true);
   });
 });

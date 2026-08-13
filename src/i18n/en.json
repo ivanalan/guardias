@@ -73,6 +73,10 @@
     "addTitle": "Add rotation",
     "editTitle": "Edit rotation",
     "save": "Save",
+    "discardTitle": "Discard changes?",
+    "discardBody": "You have unsaved edits.",
+    "discardConfirm": "Discard",
+    "keepEditing": "Keep editing",
     "sectionCurrent": "Current",
     "sectionFuture": "Upcoming",
     "sectionPast": "Past",
@@ -104,6 +108,7 @@
       "patternACTitle": "A-C",
       "patternACSubtitle": "Every 3 days",
       "offset": "Shift",
+      "firstShiftDate": "First shift",
       "preview": "Preview",
       "previewShiftCount_one": "{{count}} shift day",
       "previewShiftCount_other": "{{count}} shift days",
@@ -121,7 +126,8 @@
       "dateOrder": "End date must be after the start date.",
       "vacationOrder": "Vacation end must be on or after vacation start.",
       "vacationOutOfBounds": "Vacation must fall within the rotation dates.",
-      "dateOverlap": "This date range overlaps another rotation."
+      "dateOverlap": "This date range overlaps another rotation.",
+      "firstShiftOutOfBounds": "First shift must fall within the rotation dates."
     }
   }
 }
