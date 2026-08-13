@@ -20,6 +20,15 @@ type RotationsContextValue = {
 
 const RotationsContext = createContext<RotationsContextValue | null>(null);
 
+/** Ascending by start date (`YYYY-MM-DD` string compare). */
+function sortPeriodsByStartDate(
+  periods: readonly RotationPeriod[],
+): RotationPeriod[] {
+  return [...periods].sort((a, b) =>
+    a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0,
+  );
+}
+
 /** Rotation periods hydrated from AsyncStorage (offline-first). */
 export function RotationsProvider({ children }: { children: ReactNode }) {
   const [periods, setPeriods] = useState<RotationPeriod[]>([]);
@@ -36,10 +45,11 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
 
       if (stored == null) {
         // First launch: seed demo data, then persist so reloads keep edits.
-        setPeriods(MOCK_ROTATION_PERIODS);
-        await saveRotationPeriods(MOCK_ROTATION_PERIODS);
+        const seeded = sortPeriodsByStartDate(MOCK_ROTATION_PERIODS);
+        setPeriods(seeded);
+        await saveRotationPeriods(seeded);
       } else {
-        setPeriods(stored);
+        setPeriods(sortPeriodsByStartDate(stored));
       }
 
       if (!cancelled) {
@@ -55,7 +65,7 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
 
   const addPeriod = useCallback((period: RotationPeriod) => {
     setPeriods((prev) => {
-      const next = [...prev, period];
+      const next = sortPeriodsByStartDate([...prev, period]);
       void saveRotationPeriods(next);
       return next;
     });
@@ -63,7 +73,9 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
 
   const updatePeriod = useCallback((period: RotationPeriod) => {
     setPeriods((prev) => {
-      const next = prev.map((item) => (item.id === period.id ? period : item));
+      const next = sortPeriodsByStartDate(
+        prev.map((item) => (item.id === period.id ? period : item)),
+      );
       void saveRotationPeriods(next);
       return next;
     });

@@ -1,7 +1,7 @@
 /** Cycle length: `3` = A-C, `4` = A-D (PRD MVP). */
 export type CycleDays = 3 | 4;
 
-/** Starting letter within the cycle. `D` only valid for A-D. */
+/** Letter on the year-anchored calendar (Jan 1 = A). `D` only valid for A-D. */
 export type OffsetLetter = 'A' | 'B' | 'C' | 'D';
 
 export type RotationPattern = {
@@ -38,6 +38,8 @@ export type RotationPeriod = {
   vacationEndDate: string | null;
   /** Local time each shift starts, `HH:mm`. */
   shiftStartTime: string;
+  /** Calendar mark color for shift days (`#RRGGBB`). */
+  color: string;
   /** ISO datetime when the period was created. */
   createdAt: string;
 };

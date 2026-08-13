@@ -3,51 +3,13 @@ import { addDays, format, getDay } from 'date-fns';
 import type { RotationPeriod } from '@/features/rotations/types';
 import { listFreeWeekendDates } from '@/features/calendar/free-weekends';
 
-import { buildShift, SHIFT_DURATION_HOURS } from './build-shift';
-import { findPeriodForDate } from './find-period-for-date';
 import {
   formatDurationParts,
-  getPeriodShiftProgress,
   type DurationParts,
   type HomepageShiftStatus,
 } from './get-homepage-shift-status';
 import { listShiftDatesInRange } from './list-shift-dates-in-range';
 import { parseCalendarDate } from './parse-calendar-date';
-
-/**
- * Hours worked in `period` so far: finished shifts × 24h, plus floored
- * elapsed hours of an in-progress shift in this period (capped at 24).
- */
-export function getPeriodHoursWorked(
-  period: RotationPeriod,
-  now: Date,
-): number {
-  const { completed } = getPeriodShiftProgress(period, now);
-  let hours = completed * SHIFT_DURATION_HOURS;
-
-  const todayIso = format(now, 'yyyy-MM-dd');
-  const yesterdayIso = format(addDays(now, -1), 'yyyy-MM-dd');
-
-  for (const iso of [yesterdayIso, todayIso]) {
-    const covering = findPeriodForDate([period], iso);
-    if (covering === undefined || covering.id !== period.id) {
-      continue;
-    }
-    const shift = buildShift(period, iso);
-    if (
-      shift !== null &&
-      shift.startDateTime <= now &&
-      now < shift.endDateTime
-    ) {
-      const elapsedMs = now.getTime() - shift.startDateTime.getTime();
-      const elapsedHours = Math.floor(elapsedMs / (1000 * 60 * 60));
-      hours += Math.min(SHIFT_DURATION_HOURS, Math.max(0, elapsedHours));
-      break;
-    }
-  }
-
-  return hours;
-}
 
 /**
  * Countdown to the next shift start from homepage status, or `null` when

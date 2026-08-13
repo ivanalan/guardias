@@ -3,7 +3,10 @@ import './src/global.css';
 import { StatusBar } from 'expo-status-bar';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { I18nextProvider, useTranslation } from 'react-i18next';
 import type { ComponentProps } from 'react';
@@ -21,6 +24,9 @@ type TabKey = keyof TabParamList;
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 const Tab = createBottomTabNavigator<TabParamList>();
+
+/** Content height above the home-indicator / system inset. */
+const TAB_BAR_CONTENT_HEIGHT = 72;
 
 const tabIcons: Record<TabKey, { focused: IconName; unfocused: IconName }> = {
   Home: { focused: 'home', unfocused: 'home-outline' },
@@ -40,6 +46,7 @@ const tabTitleKeys: Record<
 
 function RootNavigator() {
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   return (
     <NavigationContainer>
@@ -49,6 +56,12 @@ function RootNavigator() {
           tabBarActiveTintColor: BRAND_COLOR,
           tabBarInactiveTintColor: '#49454F',
           tabBarLabel: t(tabTitleKeys[route.name]),
+          safeAreaInsets: { bottom: 0 },
+          tabBarStyle: {
+            height: TAB_BAR_CONTENT_HEIGHT + insets.bottom,
+            paddingTop: 12,
+            paddingBottom: insets.bottom,
+          },
           tabBarIcon: ({ focused, color, size }) => {
             const icons = tabIcons[route.name];
             return (

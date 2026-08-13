@@ -12,49 +12,52 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
 }
 
 describe('isShiftDay', () => {
-  it('marks every 4th day starting at A (A-D)', () => {
+  it('anchors A-D to Jan 1 of the year (A), independent of period start', () => {
+    // 2026-01-01 = A. 2026-07-01 = B, so offset A shifts are Jul 4, 8, 12, …
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-16',
       pattern: { cycleDays: 4, offset: 'A' },
     });
 
-    expect(isShiftDay(p, '2026-07-01')).toBe(true);
-    expect(isShiftDay(p, '2026-07-02')).toBe(false);
-    expect(isShiftDay(p, '2026-07-05')).toBe(true);
-    expect(isShiftDay(p, '2026-07-09')).toBe(true);
-    expect(isShiftDay(p, '2026-07-13')).toBe(true);
+    expect(isShiftDay(p, '2026-07-01')).toBe(false);
+    expect(isShiftDay(p, '2026-07-04')).toBe(true);
+    expect(isShiftDay(p, '2026-07-08')).toBe(true);
+    expect(isShiftDay(p, '2026-07-12')).toBe(true);
+    expect(isShiftDay(p, '2026-07-16')).toBe(true);
   });
 
-  it('respects B offset within A-D', () => {
+  it('respects B offset within A-D on the year calendar', () => {
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-10',
       pattern: { cycleDays: 4, offset: 'B' },
     });
 
-    expect(isShiftDay(p, '2026-07-01')).toBe(false);
-    expect(isShiftDay(p, '2026-07-02')).toBe(true);
-    expect(isShiftDay(p, '2026-07-06')).toBe(true);
+    expect(isShiftDay(p, '2026-07-01')).toBe(true);
+    expect(isShiftDay(p, '2026-07-02')).toBe(false);
+    expect(isShiftDay(p, '2026-07-05')).toBe(true);
   });
 
-  it('uses a 3-day cycle for A-C', () => {
+  it('uses a 3-day cycle for A-C anchored to Jan 1', () => {
+    // 2026-07-01 = B on A-C; A days are Jul 3, 6, 9, …
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-10',
       pattern: { cycleDays: 3, offset: 'A' },
     });
 
-    expect(isShiftDay(p, '2026-07-01')).toBe(true);
-    expect(isShiftDay(p, '2026-07-02')).toBe(false);
-    expect(isShiftDay(p, '2026-07-04')).toBe(true);
-    expect(isShiftDay(p, '2026-07-07')).toBe(true);
+    expect(isShiftDay(p, '2026-07-01')).toBe(false);
+    expect(isShiftDay(p, '2026-07-03')).toBe(true);
+    expect(isShiftDay(p, '2026-07-06')).toBe(true);
+    expect(isShiftDay(p, '2026-07-09')).toBe(true);
   });
 
   it('returns false outside the period bounds', () => {
@@ -73,36 +76,38 @@ describe('isShiftDay', () => {
       startDate: '2026-07-01',
       endDate: '2026-07-31',
       pattern: { cycleDays: 4, offset: 'A' },
-      vacationStartDate: '2026-07-05',
-      vacationEndDate: '2026-07-06',
+      vacationStartDate: '2026-07-04',
+      vacationEndDate: '2026-07-05',
     });
 
-    expect(isShiftDay(p, '2026-07-01')).toBe(true);
-    expect(isShiftDay(p, '2026-07-05')).toBe(false);
-    expect(isShiftDay(p, '2026-07-09')).toBe(true);
+    expect(isShiftDay(p, '2026-07-04')).toBe(false);
+    expect(isShiftDay(p, '2026-07-08')).toBe(true);
   });
 
-  it('handles a year boundary', () => {
+  it('resets the letter calendar on Jan 1 of each year', () => {
+    // 2025-12-31 and 2026-01-01 are both A when each year starts at A.
     const p = period({
-      startDate: '2025-12-30',
+      startDate: '2025-12-28',
       endDate: '2026-01-10',
       pattern: { cycleDays: 4, offset: 'A' },
     });
 
-    expect(isShiftDay(p, '2025-12-30')).toBe(true);
-    expect(isShiftDay(p, '2026-01-03')).toBe(true);
-    expect(isShiftDay(p, '2026-01-07')).toBe(true);
+    expect(isShiftDay(p, '2025-12-31')).toBe(true);
+    expect(isShiftDay(p, '2026-01-01')).toBe(true);
+    expect(isShiftDay(p, '2026-01-05')).toBe(true);
   });
 
-  it('handles leap day in the cycle', () => {
+  it('counts leap day in the year-day cycle', () => {
+    // 2024-01-01 = A → 2024-02-28 = C, 2024-02-29 = D, 2024-03-01 = A.
     const p = period({
       startDate: '2024-02-28',
       endDate: '2024-03-05',
       pattern: { cycleDays: 4, offset: 'A' },
     });
 
-    expect(isShiftDay(p, '2024-02-28')).toBe(true);
+    expect(isShiftDay(p, '2024-02-28')).toBe(false);
     expect(isShiftDay(p, '2024-02-29')).toBe(false);
-    expect(isShiftDay(p, '2024-03-03')).toBe(true);
+    expect(isShiftDay(p, '2024-03-01')).toBe(true);
+    expect(isShiftDay(p, '2024-03-05')).toBe(true);
   });
 });

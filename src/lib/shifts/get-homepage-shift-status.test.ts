@@ -16,6 +16,7 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -52,7 +53,7 @@ describe('getHomepageShiftStatus', () => {
     id: 'p1',
     startDate: '2026-07-01',
     endDate: '2026-07-31',
-    pattern: { cycleDays: 4, offset: 'A' },
+    pattern: { cycleDays: 4, offset: 'B' },
   });
 
   it('returns idle when there are no periods', () => {
@@ -74,7 +75,7 @@ describe('getHomepageShiftStatus', () => {
   });
 
   it('returns between_shifts with countdown to the next start', () => {
-    // Jul 1 is A; next is Jul 5. Now = Jul 2 10:00 → 2d 21h until Jul 5 07:00.
+    // Jul 1 is B; next is Jul 5. Now = Jul 2 10:00 → 2d 21h until Jul 5 07:00.
     const status = getHomepageShiftStatus(
       [julyPeriod],
       localDate(2026, 6, 2, 10, 0),
@@ -133,7 +134,7 @@ describe('getHomepageShiftStatus', () => {
       id: 'p1',
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
       vacationStartDate: '2026-07-05',
       vacationEndDate: '2026-07-05',
     });
@@ -147,7 +148,7 @@ describe('getHomepageShiftStatus', () => {
     if (status.kind !== 'between_shifts') {
       return;
     }
-    // Jul 5 skipped; next A day is Jul 9.
+    // Jul 5 skipped; next B day is Jul 9.
     expect(status.nextShift.date).toBe('2026-07-09');
   });
 
@@ -158,17 +159,19 @@ describe('getHomepageShiftStatus', () => {
       endDate: '2027-01-15',
       pattern: { cycleDays: 4, offset: 'A' },
     });
-    // Dec 20 is A (day 0). Next after Dec 28 is Jan 1 2027.
+    // Dec 31 and Jan 1 are both A (year calendar resets). During Dec 31 shift,
+    // the following A day is Jan 1 2027.
     const status = getHomepageShiftStatus(
       [span],
-      localDate(2026, 11, 29, 12, 0),
+      localDate(2026, 11, 31, 12, 0),
     );
 
-    expect(status.kind).toBe('between_shifts');
-    if (status.kind !== 'between_shifts') {
+    expect(status.kind).toBe('in_shift');
+    if (status.kind !== 'in_shift') {
       return;
     }
-    expect(status.nextShift.date).toBe('2027-01-01');
+    expect(status.currentShift.date).toBe('2026-12-31');
+    expect(status.nextShift?.date).toBe('2027-01-01');
   });
 
   it('uses the upcoming period when current calendar day has no period', () => {
@@ -188,9 +191,9 @@ describe('getHomepageShiftStatus', () => {
     if (status.kind !== 'between_shifts') {
       return;
     }
-    // Oct 1 is Thursday; B offset on A-D starting Oct 1 → first B is Oct 2.
+    // Oct 1 2026 is B on the year calendar.
     expect(status.period.id).toBe('p2');
-    expect(status.nextShift.date).toBe('2026-10-02');
+    expect(status.nextShift.date).toBe('2026-10-01');
   });
 });
 
@@ -199,7 +202,7 @@ describe('getPeriodShiftProgress', () => {
     id: 'p1',
     startDate: '2026-07-01',
     endDate: '2026-07-31',
-    pattern: { cycleDays: 4, offset: 'A' },
+    pattern: { cycleDays: 4, offset: 'B' },
   });
 
   it('returns zeros before the period starts', () => {
@@ -229,7 +232,7 @@ describe('getPeriodShiftProgress', () => {
       id: 'p1',
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
       vacationStartDate: '2026-07-05',
       vacationEndDate: '2026-07-05',
     });
@@ -244,7 +247,7 @@ describe('getPeriodShiftProgress', () => {
   });
 
   it('returns full progress after the last shift ends', () => {
-    // Last A day in July 2026 is Jul 29 (01,05,09,13,17,21,25,29).
+    // Last B day in July 2026 is Jul 29 (01,05,09,13,17,21,25,29).
     const afterLast = getPeriodShiftProgress(
       julyPeriod,
       localDate(2026, 6, 30, 8),

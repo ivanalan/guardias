@@ -1,3 +1,4 @@
+import { ROTATION_COLORS } from '../rotation-colors';
 import type { RotationPeriod } from '../types';
 
 /** Static seed data for the list UI slice. Swap to `[]` to QA empty state. */
@@ -11,6 +12,7 @@ export const MOCK_ROTATION_PERIODS: RotationPeriod[] = [
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: ROTATION_COLORS[0],
     createdAt: '2026-06-01T12:00:00.000Z',
   },
   {
@@ -22,6 +24,7 @@ export const MOCK_ROTATION_PERIODS: RotationPeriod[] = [
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: ROTATION_COLORS[1],
     createdAt: '2026-09-15T12:00:00.000Z',
   },
 ];

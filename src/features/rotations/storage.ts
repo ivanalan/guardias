@@ -1,8 +1,20 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { normalizeRotationColor } from './rotation-colors';
 import type { RotationPeriod } from './types';
 
 const STORAGE_KEY = 'guardias.rotationPeriods';
+
+function normalizePeriod(raw: unknown): RotationPeriod | null {
+  if (raw == null || typeof raw !== 'object') {
+    return null;
+  }
+  const period = raw as RotationPeriod;
+  return {
+    ...period,
+    color: normalizeRotationColor(period.color),
+  };
+}
 
 /** Returns stored periods, or `null` if nothing has been saved yet. */
 export async function loadRotationPeriods(): Promise<RotationPeriod[] | null> {
@@ -16,7 +28,9 @@ export async function loadRotationPeriods(): Promise<RotationPeriod[] | null> {
     if (!Array.isArray(parsed)) {
       return null;
     }
-    return parsed as RotationPeriod[];
+    return parsed
+      .map(normalizePeriod)
+      .filter((period): period is RotationPeriod => period != null);
   } catch {
     return null;
   }

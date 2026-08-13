@@ -1,14 +1,19 @@
 import { Ionicons } from '@expo/vector-icons';
-import { FlatList } from 'react-native';
+import { format } from 'date-fns';
+import { SectionList } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
 import { ScreenPageTitle } from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
-import { Pressable, View } from '../../../tw';
+import { Pressable, Text, View } from '../../../tw';
 import { RotationPeriodRow } from '../components/rotation-period-row';
 import { ShiftsEmptyState } from '../components/shifts-empty-state';
 import { formatPeriodRange } from '../format-period-range';
+import {
+  groupPeriodsByRecency,
+  type PeriodRecencySection,
+} from '../group-periods-by-recency';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
 import type { RotationPeriod } from '../types';
@@ -24,6 +29,8 @@ export function ShiftsListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
+  const sections = groupPeriodsByRecency(periods, todayIso);
 
   return (
     <View className="flex-1 bg-neutral-50">
@@ -43,16 +50,17 @@ export function ShiftsListScreen({ navigation }: Props) {
           </Pressable>
         }
       />
-      <FlatList
-        data={periods}
+      <SectionList
+        sections={sections}
         keyExtractor={keyExtractor}
         contentContainerStyle={{
           flexGrow: 1,
-          gap: 12,
+          gap: 8,
           paddingHorizontal: 24,
           paddingTop: 12,
-          paddingBottom: 24,
+          paddingBottom: 12,
         }}
+        stickySectionHeadersEnabled={false}
         ListEmptyComponent={
           <ShiftsEmptyState
             onAddPress={() => {
@@ -60,6 +68,15 @@ export function ShiftsListScreen({ navigation }: Props) {
             }}
           />
         }
+        renderSectionHeader={({
+          section,
+        }: {
+          section: PeriodRecencySection;
+        }) => (
+          <Text className="px-1 pt-2 text-sm font-medium text-neutral-500">
+            {t(`shifts.${section.titleKey}`)}
+          </Text>
+        )}
         renderItem={({ item }) => (
           <RotationPeriodRow
             label={item.label}
@@ -68,6 +85,7 @@ export function ShiftsListScreen({ navigation }: Props) {
               item.endDate,
               language,
             )}
+            color={item.color}
             onPress={() => {
               navigation.navigate('RotationDetail', { periodId: item.id });
             }}

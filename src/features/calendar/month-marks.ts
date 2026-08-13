@@ -8,17 +8,22 @@ import {
 import { getMonthMarkInputs } from './month-legend-stats';
 
 /**
- * Shift + free-weekend marks for the month containing `monthDate`
- * (`YYYY-MM-DD`). Optional `filter` dims non-selected mark types.
+ * Shift, vacation, and free-weekend marks for the month containing
+ * `monthDate` (`YYYY-MM-DD`). Optional `filter` dims non-selected mark types.
  */
 export function buildMonthMarkedDates(
   periods: readonly RotationPeriod[],
   monthDate: string,
   filter: CalendarLegendFilter = null,
 ): MarkedDates {
-  const { shiftsInMonth, freeWeekendDates } = getMonthMarkInputs(
+  const { shiftMarks, freeWeekendDates, vacationDates } = getMonthMarkInputs(
     periods,
     monthDate,
   );
-  return buildMarkedDates(shiftsInMonth, freeWeekendDates, filter);
+  return buildMarkedDates(
+    shiftMarks,
+    freeWeekendDates,
+    vacationDates,
+    filter,
+  );
 }

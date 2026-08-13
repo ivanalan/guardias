@@ -12,16 +12,18 @@ type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 type Props = {
   shiftDayCount: number;
   freeWeekendCount: number;
+  vacationDayCount: number;
   filter: CalendarLegendFilter;
   onFilterChange: (filter: CalendarLegendFilter) => void;
 };
 
-type TileKind = 'shifts' | 'freeWeekends';
+type TileKind = 'shifts' | 'freeWeekends' | 'vacation';
 
-/** Dual summary tiles: month counts + tap-to-emphasize calendar filter. */
+/** Summary tiles: month counts + tap-to-emphasize calendar filter. */
 export function CalendarMonthLegend({
   shiftDayCount,
   freeWeekendCount,
+  vacationDayCount,
   filter,
   onFilterChange,
 }: Props) {
@@ -32,7 +34,7 @@ export function CalendarMonthLegend({
   };
 
   return (
-    <View className="mt-4 flex-row gap-3">
+    <View className="mt-4 flex-row flex-wrap gap-3">
       <LegendTile
         count={shiftDayCount}
         label={t('calendar.legend.shiftDays', { count: shiftDayCount })}
@@ -40,7 +42,7 @@ export function CalendarMonthLegend({
         icon="clipboard-list-outline"
         iconColor={BRAND_ACCENT_TINTS.brand}
         selected={filter === 'shifts'}
-        muted={filter === 'freeWeekends'}
+        muted={filter != null && filter !== 'shifts'}
         selectedBackground={BRAND_SELECTION.background}
         selectedBorder={BRAND_SELECTION.border}
         onPress={() => toggle('shifts')}
@@ -52,11 +54,25 @@ export function CalendarMonthLegend({
         icon="umbrella-beach"
         iconColor={BRAND_ACCENT_TINTS.teal}
         selected={filter === 'freeWeekends'}
-        muted={filter === 'shifts'}
+        muted={filter != null && filter !== 'freeWeekends'}
         selectedBackground={CALENDAR_MARK_COLORS.freeWeekendBackground}
         selectedBorder={CALENDAR_MARK_COLORS.freeWeekendText}
         onPress={() => toggle('freeWeekends')}
       />
+      {vacationDayCount > 0 ? (
+        <LegendTile
+          count={vacationDayCount}
+          label={t('calendar.legend.vacationDays', { count: vacationDayCount })}
+          accessibilityHint={t('calendar.legend.filterVacationHint')}
+          icon="airplane"
+          iconColor={CALENDAR_MARK_COLORS.vacationText}
+          selected={filter === 'vacation'}
+          muted={filter != null && filter !== 'vacation'}
+          selectedBackground={CALENDAR_MARK_COLORS.vacationBackground}
+          selectedBorder={CALENDAR_MARK_COLORS.vacationText}
+          onPress={() => toggle('vacation')}
+        />
+      ) : null}
     </View>
   );
 }
@@ -103,6 +119,7 @@ function LegendTile({
           ? '0 4px 12px rgba(0, 0, 0, 0.06)'
           : '0 2px 8px rgba(0, 0, 0, 0.04)',
         opacity: muted ? 0.45 : 1,
+        minWidth: '30%',
       }}
     >
       <MaterialCommunityIcons name={icon} size={20} color={iconColor} />

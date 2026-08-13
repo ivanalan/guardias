@@ -16,7 +16,6 @@ export type {
 } from './get-homepage-shift-status';
 export {
   getNextFreeWeekend,
-  getPeriodHoursWorked,
   getTimeUntilNextShift,
 } from './home-stats';
 export type { NextFreeWeekend } from './home-stats';

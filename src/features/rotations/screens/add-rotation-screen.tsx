@@ -16,14 +16,17 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { BRAND_COLOR, BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, Text, TextInput, View } from '../../../tw';
+import { RotationColorSwatches } from '../components/rotation-color-swatches';
 import { RotationPreviewCalendar } from '../components/rotation-preview-calendar';
 import {
   defaultRotationEndISO,
+  defaultVacationEndWithinPeriod,
   formatFormDate,
   parseHHMM,
   toHHMM,
   toISODate,
 } from '../format-period-range';
+import { DEFAULT_ROTATION_COLOR } from '../rotation-colors';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
 import {
@@ -54,6 +57,8 @@ const BOTTOM_PICKERS: ReadonlySet<Exclude<ActivePicker, null>> = new Set([
   'vacationEnd',
 ]);
 
+const FORM_ROW_CLASS = 'h-14 flex-row items-center gap-3 px-4';
+
 function initialFormState(existing: RotationPeriod | undefined) {
   if (existing == null) {
     const start = toISODate(new Date());
@@ -65,12 +70,15 @@ function initialFormState(existing: RotationPeriod | undefined) {
       cycleDays: DEFAULT_PATTERN.cycleDays,
       offset: DEFAULT_PATTERN.offset,
       shiftStartTime: DEFAULT_SHIFT_START_TIME,
+      color: DEFAULT_ROTATION_COLOR,
       vacationEnabled: false,
       vacationStartDate: start,
-      vacationEndDate: end,
+      vacationEndDate: defaultVacationEndWithinPeriod(start, end),
     };
   }
 
+  const vacationStart =
+    existing.vacationStartDate ?? existing.startDate;
   return {
     label: existing.label,
     startDate: existing.startDate,
@@ -78,10 +86,13 @@ function initialFormState(existing: RotationPeriod | undefined) {
     cycleDays: existing.pattern.cycleDays,
     offset: existing.pattern.offset,
     shiftStartTime: existing.shiftStartTime,
+    color: existing.color,
     vacationEnabled:
       existing.vacationStartDate != null && existing.vacationEndDate != null,
-    vacationStartDate: existing.vacationStartDate ?? existing.startDate,
-    vacationEndDate: existing.vacationEndDate ?? existing.endDate,
+    vacationStartDate: vacationStart,
+    vacationEndDate:
+      existing.vacationEndDate ??
+      defaultVacationEndWithinPeriod(vacationStart, existing.endDate),
   };
 }
 
@@ -120,6 +131,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
   const [cycleDays, setCycleDays] = useState<CycleDays>(initial.cycleDays);
   const [offset, setOffset] = useState<OffsetLetter>(initial.offset);
   const [shiftStartTime, setShiftStartTime] = useState(initial.shiftStartTime);
+  const [color, setColor] = useState(initial.color);
   const [vacationEnabled, setVacationEnabled] = useState(
     initial.vacationEnabled,
   );
@@ -131,10 +143,16 @@ export function AddRotationScreen({ navigation, route }: Props) {
   );
   const [activePicker, setActivePicker] = useState<ActivePicker>(null);
   const [endDateTouched, setEndDateTouched] = useState(false);
+  const [vacationEndTouched, setVacationEndTouched] = useState(
+    () =>
+      existing?.vacationStartDate != null &&
+      existing.vacationEndDate != null,
+  );
   const [error, setError] = useState<RotationValidationError | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const prevActivePickerRef = useRef<ActivePicker>(null);
   const startAtPickerOpenRef = useRef<string | null>(null);
+  const vacationStartAtPickerOpenRef = useRef<string | null>(null);
 
   const offsets = OFFSETS_FOR_CYCLE[cycleDays];
   const shouldScrollPickerIntoView =
@@ -149,6 +167,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     vacationStartDate: vacationEnabled ? vacationStartDate : null,
     vacationEndDate: vacationEnabled ? vacationEndDate : null,
     shiftStartTime,
+    color,
     createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
   };
 
@@ -162,29 +181,46 @@ export function AddRotationScreen({ navigation, route }: Props) {
     return () => clearTimeout(timeoutId);
   }, [shouldScrollPickerIntoView, activePicker]);
 
-  // When the start picker closes after a real start change, fill end if untouched.
+  // When start / vacation-start pickers close after a real change, fill end if untouched.
   useEffect(() => {
     const prev = prevActivePickerRef.current;
     prevActivePickerRef.current = activePicker;
 
     if (activePicker === 'start' && prev !== 'start') {
       startAtPickerOpenRef.current = startDate;
-      return;
+    } else if (prev === 'start' && activePicker !== 'start') {
+      if (
+        !endDateTouched &&
+        startAtPickerOpenRef.current != null &&
+        startDate !== startAtPickerOpenRef.current
+      ) {
+        setEndDate(defaultRotationEndISO(parseISO(startDate)));
+      }
+      startAtPickerOpenRef.current = null;
     }
 
-    if (prev !== 'start' || activePicker === 'start') {
-      return;
+    if (activePicker === 'vacationStart' && prev !== 'vacationStart') {
+      vacationStartAtPickerOpenRef.current = vacationStartDate;
+    } else if (prev === 'vacationStart' && activePicker !== 'vacationStart') {
+      if (
+        !vacationEndTouched &&
+        vacationStartAtPickerOpenRef.current != null &&
+        vacationStartDate !== vacationStartAtPickerOpenRef.current
+      ) {
+        setVacationEndDate(
+          defaultVacationEndWithinPeriod(vacationStartDate, endDate),
+        );
+      }
+      vacationStartAtPickerOpenRef.current = null;
     }
-
-    if (
-      !endDateTouched &&
-      startAtPickerOpenRef.current != null &&
-      startDate !== startAtPickerOpenRef.current
-    ) {
-      setEndDate(defaultRotationEndISO(parseISO(startDate)));
-    }
-    startAtPickerOpenRef.current = null;
-  }, [activePicker, startDate, endDateTouched]);
+  }, [
+    activePicker,
+    startDate,
+    endDate,
+    endDateTouched,
+    vacationStartDate,
+    vacationEndTouched,
+  ]);
 
   function selectCycleDays(next: CycleDays) {
     setCycleDays(next);
@@ -236,7 +272,9 @@ export function AddRotationScreen({ navigation, route }: Props) {
     }
     const next = toISODate(selected);
     setVacationStartDate(next);
-    setVacationEndDate((prevEnd) => (next > prevEnd ? next : prevEnd));
+    if (vacationEndTouched) {
+      setVacationEndDate((prevEnd) => (next > prevEnd ? next : prevEnd));
+    }
     setError(null);
   }
 
@@ -244,6 +282,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     if (process.env.EXPO_OS === 'android') {
       setActivePicker(null);
     }
+    setVacationEndTouched(true);
     setVacationEndDate(toISODate(selected));
     setError(null);
   }
@@ -253,7 +292,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setVacationEnabled(enabled);
     if (enabled) {
       setVacationStartDate(startDate);
-      setVacationEndDate(endDate);
+      setVacationEndDate(defaultVacationEndWithinPeriod(startDate, endDate));
+      setVacationEndTouched(false);
     } else if (
       activePicker === 'vacationStart' ||
       activePicker === 'vacationEnd'
@@ -298,6 +338,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
         shiftStartTime,
+        color,
       });
     } else {
       addPeriod({
@@ -309,6 +350,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
         shiftStartTime,
+        color,
         createdAt: new Date().toISOString(),
       });
     }
@@ -341,6 +383,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     cycleDays,
     offset,
     shiftStartTime,
+    color,
     vacationEnabled,
     vacationStartDate,
     vacationEndDate,
@@ -451,11 +494,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
             onPress={() => selectCycleDays(3)}
           />
           <RowDivider />
-          <View className="flex-row items-center justify-between gap-3 px-4 py-3">
-            <Text className="flex-shrink text-base text-neutral-900">
+          <View className="flex-row items-center gap-3 px-4 py-3">
+            <Text className="shrink-0 text-base text-neutral-900">
               {t('shifts.form.offset')}
             </Text>
-            <View className="flex-row gap-2">
+            <View className="min-w-0 flex-1 flex-row flex-wrap justify-end gap-2">
               {offsets.map((letter) => {
                 const selected = offset === letter;
                 return (
@@ -465,7 +508,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
                     accessibilityState={{ selected }}
                     accessibilityLabel={letter}
                     onPress={() => setOffset(letter)}
-                    className={`min-w-14 items-center rounded-xl border px-2 py-2 active:opacity-70 ${
+                    className={`min-w-12 items-center rounded-xl border px-2 py-2 active:opacity-70 ${
                       selected ? '' : 'border-neutral-200 bg-white'
                     }`}
                     style={[
@@ -497,6 +540,10 @@ export function AddRotationScreen({ navigation, route }: Props) {
           </View>
         </FormSection>
 
+        <FormSection title={t('shifts.form.color')}>
+          <RotationColorSwatches value={color} onChange={setColor} />
+        </FormSection>
+
         <FormSection title={t('shifts.form.sectionDetails')}>
           <FormRow
             label={t('shifts.form.shiftStartTime')}
@@ -516,8 +563,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
             </PickerSlot>
           ) : null}
           <RowDivider />
-          <View className="flex-row items-center justify-between px-4 py-3">
-            <Text className="text-base text-neutral-900">
+          <View className={FORM_ROW_CLASS}>
+            <Text
+              className="min-w-0 flex-1 text-base text-neutral-900"
+              numberOfLines={1}
+            >
               {t('shifts.form.vacation')}
             </Text>
             <Switch
@@ -628,15 +678,20 @@ function FormRow({
       accessibilityLabel={`${label}: ${valueLabel}`}
       accessibilityState={{ selected }}
       onPress={onPress}
-      className="flex-row items-center justify-between gap-3 px-4 py-3.5 active:opacity-70"
+      className={`${FORM_ROW_CLASS} active:opacity-70`}
       style={
         selected
           ? { backgroundColor: BRAND_SELECTION.backgroundSubtle }
           : undefined
       }
     >
-      <Text className="flex-shrink text-base text-neutral-900">{label}</Text>
-      <View className="min-w-0 flex-row items-center gap-1">
+      <Text
+        className="shrink-0 text-base text-neutral-900"
+        numberOfLines={1}
+      >
+        {label}
+      </Text>
+      <View className="min-w-0 flex-1 flex-row items-center justify-end gap-1">
         <Text
           className="text-base"
           style={{

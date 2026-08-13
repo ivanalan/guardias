@@ -11,6 +11,7 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -27,11 +28,12 @@ describe('listShiftDatesInRange', () => {
       }),
     ];
 
+    // Jan 1 2026 = A → Jul A days are 4, 8, 12, 16.
     expect(listShiftDatesInRange(periods, '2026-07-01', '2026-07-16')).toEqual([
-      '2026-07-01',
-      '2026-07-05',
-      '2026-07-09',
-      '2026-07-13',
+      '2026-07-04',
+      '2026-07-08',
+      '2026-07-12',
+      '2026-07-16',
     ]);
   });
 
@@ -51,10 +53,10 @@ describe('listShiftDatesInRange', () => {
       }),
     ];
 
-    // Sep 27 is the last A shift in period 1; Oct 2 is the first B shift in period 2.
+    // Sep 30 is the last A in period 1; Oct 1 is B (first B shift in period 2).
     expect(listShiftDatesInRange(periods, '2026-09-27', '2026-10-04')).toEqual([
-      '2026-09-27',
-      '2026-10-02',
+      '2026-09-30',
+      '2026-10-01',
     ]);
   });
 

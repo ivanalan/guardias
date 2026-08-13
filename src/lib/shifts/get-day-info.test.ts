@@ -11,6 +11,7 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -23,7 +24,7 @@ describe('getDayInfo', () => {
       label: 'Pediatrics',
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
     }),
   ];
 
@@ -38,6 +39,26 @@ describe('getDayInfo', () => {
     expect(getDayInfo(periods, '2026-07-02')).toEqual({
       kind: 'free',
       date: '2026-07-02',
+    });
+  });
+
+  it('returns vacation on a vacation day that would otherwise be a shift', () => {
+    const withVacation = [
+      period({
+        id: 'p1',
+        label: 'Pediatrics',
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        pattern: { cycleDays: 4, offset: 'A' },
+        vacationStartDate: '2026-07-04',
+        vacationEndDate: '2026-07-05',
+      }),
+    ];
+
+    expect(getDayInfo(withVacation, '2026-07-04')).toEqual({
+      kind: 'vacation',
+      date: '2026-07-04',
+      rotationLabel: 'Pediatrics',
     });
   });
 
@@ -68,10 +89,11 @@ describe('getDayInfo', () => {
         label: 'Late',
         startDate: '2026-04-01',
         endDate: '2026-06-30',
-        pattern: { cycleDays: 4, offset: 'A' },
+        pattern: { cycleDays: 4, offset: 'C' },
       }),
     ];
 
+    // 2026-04-01 is C on the year calendar.
     const info = getDayInfo(sequential, '2026-04-01');
     expect(info.kind).toBe('shift');
     if (info.kind === 'shift') {

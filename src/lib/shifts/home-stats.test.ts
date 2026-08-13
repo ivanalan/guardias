@@ -1,15 +1,10 @@
 import type { RotationPeriod } from '@/features/rotations/types';
 
-import {
-  getHomepageShiftStatus,
-  getPeriodShiftProgress,
-} from './get-homepage-shift-status';
+import { getHomepageShiftStatus } from './get-homepage-shift-status';
 import {
   getNextFreeWeekend,
-  getPeriodHoursWorked,
   getTimeUntilNextShift,
 } from './home-stats';
-import { SHIFT_DURATION_HOURS } from './build-shift';
 
 function period(
   overrides: Partial<RotationPeriod> &
@@ -20,6 +15,7 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -35,37 +31,12 @@ function localDate(
   return new Date(year, monthIndex, day, hour, minute, 0, 0);
 }
 
-describe('getPeriodHoursWorked', () => {
-  const julyPeriod = period({
-    id: 'p1',
-    startDate: '2026-07-01',
-    endDate: '2026-07-31',
-    pattern: { cycleDays: 4, offset: 'A' },
-  });
-
-  it('counts finished shifts × 24 with no active shift', () => {
-    // After Jul 1 shift ends (Jul 2 08:00); one completed shift.
-    const now = localDate(2026, 6, 2, 8, 0);
-    const { completed } = getPeriodShiftProgress(julyPeriod, now);
-    expect(completed).toBe(1);
-    expect(getPeriodHoursWorked(julyPeriod, now)).toBe(
-      completed * SHIFT_DURATION_HOURS,
-    );
-  });
-
-  it('adds floored elapsed hours during an in-progress shift', () => {
-    // Jul 1 07:00 start; now Jul 1 15:30 → 8h elapsed + 0 completed.
-    const now = localDate(2026, 6, 1, 15, 30);
-    expect(getPeriodHoursWorked(julyPeriod, now)).toBe(8);
-  });
-});
-
 describe('getTimeUntilNextShift', () => {
   const julyPeriod = period({
     id: 'p1',
     startDate: '2026-07-01',
     endDate: '2026-07-31',
-    pattern: { cycleDays: 4, offset: 'A' },
+    pattern: { cycleDays: 4, offset: 'B' },
   });
 
   it('returns untilStart when between shifts', () => {
@@ -91,7 +62,7 @@ describe('getTimeUntilNextShift', () => {
 });
 
 describe('getNextFreeWeekend', () => {
-  // A-D offset A: shifts Jul 1, 5, 9, 13, 17, 21, 25, 29.
+  // A-D offset B (Jul 1 2026 = B): shifts Jul 1, 5, 9, 13, 17, 21, 25, 29.
   // Free weekends: Sat+Sun both free.
   // Jul 4–5: Jul 5 is shift → not free.
   // Jul 11–12: both free.
@@ -99,7 +70,7 @@ describe('getNextFreeWeekend', () => {
     id: 'p1',
     startDate: '2026-07-01',
     endDate: '2026-07-31',
-    pattern: { cycleDays: 4, offset: 'A' },
+    pattern: { cycleDays: 4, offset: 'B' },
   });
 
   it('finds the next free Saturday after now', () => {
@@ -126,7 +97,7 @@ describe('getNextFreeWeekend', () => {
       id: 'p-short',
       startDate: '2026-07-01',
       endDate: '2026-07-05',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
     });
     // Jul 4–5: Jul 5 is a shift → no free weekend in range.
     expect(getNextFreeWeekend(short, localDate(2026, 6, 1))).toBeNull();
