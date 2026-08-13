@@ -1,14 +1,16 @@
-import { useEffect, useState } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Alert, Platform, type LayoutChangeEvent } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Calendar, CalendarList, type DateData } from 'react-native-calendars';
 import { useTranslation } from 'react-i18next';
 
 import { ScreenPageTitle } from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
-import { View } from '../../../tw';
+import { Pressable, View } from '../../../tw';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
+import type { RotationPeriod } from '../../rotations/types';
 import type { CalendarStackParamList } from '../calendar-stack';
 import {
   buildMarkedDates,
@@ -18,8 +20,10 @@ import { CALENDAR_LIST_THEME, CALENDAR_THEME } from '../calendar-theme';
 import type { CalendarViewMode } from '../calendar-view-mode';
 import { CalendarMonthLegend } from '../components/calendar-month-legend';
 import { CalendarViewToggle } from '../components/calendar-view-toggle';
+import { ExportPeriodPickerModal } from '../components/export-period-picker-modal';
 import { configureCalendarLocale } from '../configure-calendar-locale';
 import { getMarkInputsForMonthWindow } from '../month-legend-stats';
+import { shareShiftsIcs } from '../share-shifts-ics';
 
 type Props = NativeStackScreenProps<CalendarStackParamList, 'CalendarHome'>;
 
@@ -39,6 +43,10 @@ export function CalendarScreen({ navigation }: Props) {
   const [scrollAnchor, setScrollAnchor] = useState(visibleMonth);
   const [listSize, setListSize] = useState<ListSize | null>(null);
   const [filter, setFilter] = useState<CalendarLegendFilter>(null);
+  const [sharing, setSharing] = useState(false);
+  const [pickerVisible, setPickerVisible] = useState(false);
+  // iOS cannot present the share sheet while the picker Modal is dismissing.
+  const pendingExportRef = useRef<RotationPeriod | null>(null);
 
   useEffect(() => {
     configureCalendarLocale(language, t('calendar.today'));
@@ -71,6 +79,66 @@ export function CalendarScreen({ navigation }: Props) {
     navigation.navigate('DayDetail', { date: day.dateString });
   };
 
+  const runExport = async (period: RotationPeriod) => {
+    if (sharing) {
+      return;
+    }
+    setSharing(true);
+    try {
+      const result = await shareShiftsIcs(
+        period,
+        t('calendar.shareDialogTitle'),
+      );
+      if (!result.ok) {
+        if (result.reason === 'empty') {
+          Alert.alert(
+            t('calendar.shareEmptyTitle'),
+            t('calendar.shareEmptyBody'),
+          );
+        } else {
+          Alert.alert(t('calendar.shareUnavailable'));
+        }
+      }
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  const flushPendingExport = () => {
+    const period = pendingExportRef.current;
+    if (period == null) {
+      return;
+    }
+    pendingExportRef.current = null;
+    void runExport(period);
+  };
+
+  const queueExportAfterPicker = (period: RotationPeriod) => {
+    pendingExportRef.current = period;
+    setPickerVisible(false);
+    // Android often skips Modal onDismiss; delay past the dismiss animation.
+    if (Platform.OS !== 'ios') {
+      setTimeout(() => {
+        flushPendingExport();
+      }, 300);
+    }
+  };
+
+  const onSharePress = () => {
+    if (sharing) {
+      return;
+    }
+    if (periods.length === 0) {
+      Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
+      return;
+    }
+    if (periods.length === 1) {
+      void runExport(periods[0]!);
+      return;
+    }
+    setPickerVisible(true);
+  };
+
   const onListContainerLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     const next = {
@@ -90,9 +158,25 @@ export function CalendarScreen({ navigation }: Props) {
       <ScreenPageTitle
         title={t('tabs.calendar')}
         right={
-          <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('calendar.shareA11y')}
+            onPress={onSharePress}
+            disabled={sharing}
+            className="px-2 active:opacity-60"
+            hitSlop={8}
+          >
+            <MaterialCommunityIcons
+              name="share-variant"
+              size={24}
+              color="#191C1A"
+            />
+          </Pressable>
         }
       />
+      <View className="px-6 pb-3">
+        <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
+      </View>
       <View className="flex-1 px-4 pb-4">
         <View
           className={viewMode === 'scroll' ? 'min-h-0 flex-1' : undefined}
@@ -151,6 +235,17 @@ export function CalendarScreen({ navigation }: Props) {
           />
         ) : null}
       </View>
+      <ExportPeriodPickerModal
+        visible={pickerVisible}
+        periods={periods}
+        language={language}
+        onSelect={queueExportAfterPicker}
+        onCancel={() => {
+          pendingExportRef.current = null;
+          setPickerVisible(false);
+        }}
+        onDismiss={flushPendingExport}
+      />
     </View>
   );
 }
