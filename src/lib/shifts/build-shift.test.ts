@@ -12,6 +12,7 @@ function period(
     vacationStartDate: null,
     vacationEndDate: null,
     shiftStartTime: '07:00',
+    color: '#2F69F3',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -22,9 +23,10 @@ describe('buildShift', () => {
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
     });
 
+    // Jul 1 2026 is B; Jul 2 is C.
     expect(buildShift(p, '2026-07-02')).toBeNull();
   });
 
@@ -32,7 +34,7 @@ describe('buildShift', () => {
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
       shiftStartTime: '07:00',
     });
 
@@ -56,7 +58,7 @@ describe('buildShift', () => {
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
       shiftStartTime: '19:30',
     });
 
@@ -73,7 +75,7 @@ describe('buildShift', () => {
     const p = period({
       startDate: '2026-07-01',
       endDate: '2026-07-31',
-      pattern: { cycleDays: 4, offset: 'A' },
+      pattern: { cycleDays: 4, offset: 'B' },
       vacationStartDate: '2026-07-05',
       vacationEndDate: '2026-07-06',
     });

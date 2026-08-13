@@ -51,27 +51,29 @@ Guardia rotations are named by how often a doctor is on call within a repeating 
 
 Other every-N named patterns (A-B, A-E, A-F, …) and custom rotations are deferred (see below).
 
-Within a fixed-length cycle, the doctor is assigned a **starting offset** that determines which days in the cycle are shift days (A, B, C for A-C; A, B, C, D for A-D).
+Within a fixed-length cycle, the doctor is assigned a **letter** (A, B, C for A-C; A, B, C, D for A-D) that selects which days of the shared hospital calendar are their shift days.
 
-**A-D example (4-day cycle, MVP standard):**
+**Calendar anchor:** January 1 of each calendar year is always **A**. Letters then advance one step per calendar day (A→B→C→D→A… for A-D; A→B→C→A… for A-C). The rotation period’s start/end dates only bound when the doctor is on that letter — they do **not** restart the cycle. After a leap day, counting continues; at each new year the cycle resets so Jan 1 is A again (so Dec 31 and Jan 1 can both be A).
 
-
-| Starting offset | Shift days in cycle |
-| --------------- | ------------------- |
-| A               | Days 1, 5, 9, 13…   |
-| B               | Days 2, 6, 10, 14…  |
-| C               | Days 3, 7, 11, 15…  |
-| D               | Days 4, 8, 12, 16…  |
+**A-D example (4-day cycle, MVP standard) — days from Jan 1:**
 
 
-**A-C example (3-day cycle):**
+| Letter | Shift days (0-based from Jan 1) |
+| ------ | ------------------------------- |
+| A      | Days 0, 4, 8, 12…                |
+| B      | Days 1, 5, 9, 13…                |
+| C      | Days 2, 6, 10, 14…               |
+| D      | Days 3, 7, 11, 15…               |
 
 
-| Starting offset | Shift days in cycle |
-| --------------- | ------------------- |
-| A               | Days 1, 4, 7, 10…   |
-| B               | Days 2, 5, 8, 11…   |
-| C               | Days 3, 6, 9, 12…   |
+**A-C example (3-day cycle) — days from Jan 1:**
+
+
+| Letter | Shift days (0-based from Jan 1) |
+| ------ | ------------------------------- |
+| A      | Days 0, 3, 6, 9…                 |
+| B      | Days 1, 4, 7, 10…                |
+| C      | Days 2, 5, 8, 11…                |
 
 
 ### Custom rotation patterns (v3.0)
@@ -99,14 +101,15 @@ The user creates a rotation period by specifying:
 
 - **Required label** (e.g. "Internal medicine", "Pediatrics – Jan 2025")
 - **Rotation pattern:**
-  - **A-D (every 4 days)** — MVP default; user picks starting offset A, B, C, or D
-  - **A-C (every 3 days)** — user picks starting offset A, B, or C
+  - **A-D (every 4 days)** — MVP default; user picks letter A, B, C, or D on the year calendar
+  - **A-C (every 3 days)** — user picks letter A, B, or C
 - Start date (first day of rotation)
 - End date (last day of rotation)
+- **Calendar color** — preset swatch used to highlight that period’s shift days on the calendar (default brand blue)
 - **Optional vacation period** — start and end dates during which no shifts are scheduled, even if the rotation pattern would otherwise assign one (e.g. approved leave mid-trimester)
 - **Optional shift start time** — time of day each shift begins (default **07:00**)
 
-All shifts are **24 hours**. The app automatically calculates all shift dates from the pattern and start date, excluding any vacation dates. Users manage periods from the rotation list (see F4).
+All shifts are **24 hours**. The app calculates shift dates from the year-anchored letter calendar (Jan 1 = A) and the chosen letter, within the period’s start/end dates and excluding any vacation dates. Users manage periods from the rotation list (see F4).
 
 ### F2 — Calendar view
 
@@ -135,6 +138,7 @@ The app's default landing screen. It surfaces at-a-glance statistics for the cur
 
 - Time until the next shift starts (days and hours)
 - Number of shifts remaining in the current rotation period
+- Number of shifts already worked in the current rotation period
 - If currently in a shift: time remaining in the current shift
 
 **Planned beyond MVP (v1.1):** cumulative career stats on the homepage — total hours worked and total shifts completed across all past rotation periods.
@@ -147,7 +151,7 @@ The **Shifts** tab shows a **list of rotation periods** (label + date range). Fr
 - Open a period's **rotation detail** (tap a list row)
 - Edit or delete a period from detail / edit flows
 
-The add/edit form collects all F1 fields (required label, A-C or A-D pattern + offset, start/end date, optional vacation, optional shift start time). Shift duration is fixed at 24 hours and is not user-editable in MVP.
+The add/edit form collects all F1 fields (required label, A-C or A-D pattern + offset, start/end date, calendar color from presets, optional vacation, optional shift start time). Shift duration is fixed at 24 hours and is not user-editable in MVP.
 
 **MVP scope:** multiple sequential, non-overlapping rotation periods. Periods that intersect the visible month are shown on the calendar (F2). Overlapping date ranges are rejected with validation.
 
@@ -236,6 +240,7 @@ All data is stored locally on-device using AsyncStorage. No backend or authentic
 | vacationStartDate | ISO date string \| null | Optional vacation block start (inclusive)              |
 | vacationEndDate   | ISO date string \| null | Optional vacation block end (inclusive)                |
 | shiftStartTime    | string                 | Local time each shift starts, `HH:mm` (default `07:00`) |
+| color             | string                 | Calendar mark color `#RRGGBB` (preset palette; default brand blue) |
 | createdAt         | ISO datetime           | When the period was created                             |
 
 
@@ -247,7 +252,7 @@ Shift duration is not stored: all MVP shifts are **24 hours**.
 | Field     | Type                 | Description                                                                                          |
 | --------- | -------------------- | ---------------------------------------------------------------------------------------------------- |
 | cycleDays | `3` \| `4`           | Cycle length: `3` = A-C, `4` = A-D (MVP default)                                                     |
-| offset    | `A` \| `B` \| `C` \| `D` | Starting position within the cycle; letter maps to offset index (A=1, B=2, …). `D` only for A-D |
+| offset    | `A` \| `B` \| `C` \| `D` | Letter on the year-anchored calendar (Jan 1 = A). Index A=0, B=1, C=2, D=3. `D` only for A-D |
 
 
 Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`) are deferred to **v3.0**.
@@ -257,7 +262,7 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 
 | Field            | Type         | Description                                                    |
 | ---------------- | ------------ | -------------------------------------------------------------- |
-| startDateTime    | ISO datetime | Computed from pattern + rotation start date + `shiftStartTime` |
+| startDateTime    | ISO datetime | Computed from year calendar letter + `shiftStartTime`          |
 | endDateTime      | ISO datetime | Computed: startDateTime + 24 hours                             |
 | durationHours    | `24`         | Fixed for MVP                                                  |
 | rotationPeriodId | string       | Parent rotation period                                         |
@@ -278,7 +283,7 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 
 | Screen              | Key content                                                                                                                                 |
 | ------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Homepage (F3)       | Time to next shift, shifts remaining, current-shift countdown; Settings entry (language)                                                    |
+| Homepage (F3)       | Time to next shift, shifts remaining, shifts worked, current-shift countdown; Settings entry (language)                                      |
 | Calendar View (F2)  | Monthly calendar; day-tap bottom sheet; legend (shift days + free weekends) with opacity filter                                             |
 | Shifts list (F4)    | List of rotation periods (label + date range); FAB to add                                                                                   |
 | Add / Edit Rotation | Form: required label, A-C or A-D + offset, start/end date, optional vacation, shift start time (default 07:00); duration fixed at 24 h      |
@@ -291,9 +296,9 @@ Custom pattern fields (`type: CUSTOM`, `customMode`, `intervalDays`, `weekdays`)
 
 ## 7. Edge Cases & Risks
 
-- Rotation periods that span a year boundary (Dec → Jan)
-- Leap years affecting shift date calculations
-- Schedules starting mid-cycle (user joins rotation on day 2 of a 4-day cycle)
+- Rotation periods that span a year boundary (Dec → Jan) — Jan 1 resets to A (Dec 31 and Jan 1 may both be A)
+- Leap years affecting shift date calculations (leap day advances the letter)
+- Schedules starting mid-cycle (user joins on a non-A calendar day; start date only bounds the period)
 - A-C vs A-D offset letter mapping (A–C only for 3-day cycles)
 - Vacation period overlapping scheduled shift days — those days must show as free
 - Vacation period partially outside rotation bounds — validate or clamp to rotation dates
@@ -383,5 +388,6 @@ src/
 | July 2026 | F1: optional shift start time (default 07:00) and duration (default 24 h); F4 reframed as homepage; F5 scoped to single-period management for MVP; F7 shift detail for past/future shifts; cumulative stats and multi-period deferred to v1.1 |
 | July 2026 | MVP scope revision: A-C/A-D only; fixed 24 h shifts; required label; removed shift rules engine; calendar day sheet + two-item legend filter; multi-period rotation list; custom every-N/weekday patterns deferred to v3.0; features renumbered F1–F6 |
 | August 2026 | F5 Settings: language override (System / English / Español) persisted in AsyncStorage; device locale with Spanish fallback                                               |
+| August 2026 | F1: per-rotation calendar color from curated preset swatches; shift day marks use that color on the month calendar                                                     |
 
 

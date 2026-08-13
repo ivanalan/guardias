@@ -19,9 +19,8 @@
       "timeLeft": "Tiempo restante",
       "timeUntilNext": "Próxima guardia",
       "shiftsRemaining": "Guardias restantes",
-      "hoursWorked": "Horas trabajadas",
+      "shiftsWorked": "Guardias hechas",
       "nextFreeWeekend": "Siguiente fin libre",
-      "hoursValue": "{{hours}}h",
       "now": "Ahora",
       "noneInPeriod": "Ninguno restante en este período"
     }
@@ -30,17 +29,25 @@
     "today": "Hoy",
     "dayDetailTitle": "Día",
     "freeDay": "Día libre",
+    "vacationDay": "Vacaciones",
     "shiftDay": "Guardia",
     "startsOn": "Inicia {{date}}",
     "endsOn": "Termina {{date}}",
     "duration": "{{hours}} horas",
+    "viewMode": {
+      "month": "Mes",
+      "scroll": "Lista"
+    },
     "legend": {
       "shiftDays_one": "Día de guardia",
       "shiftDays_other": "Días de guardia",
       "freeWeekends_one": "Fin de semana libre",
       "freeWeekends_other": "Fines de semana libres",
+      "vacationDays_one": "Día de vacaciones",
+      "vacationDays_other": "Días de vacaciones",
       "filterShiftsHint": "Resaltar días de guardia en el calendario",
-      "filterFreeWeekendsHint": "Resaltar fines de semana libres en el calendario"
+      "filterFreeWeekendsHint": "Resaltar fines de semana libres en el calendario",
+      "filterVacationHint": "Resaltar días de vacaciones en el calendario"
     }
   },
   "settings": {
@@ -59,6 +66,9 @@
     "addTitle": "Agregar rotación",
     "editTitle": "Editar rotación",
     "save": "Guardar",
+    "sectionCurrent": "Actual",
+    "sectionFuture": "Próximas",
+    "sectionPast": "Pasadas",
     "detail": {
       "title": "Rotación",
       "notFound": "No se encontró esta rotación.",
@@ -93,6 +103,8 @@
       "previewShowCalendar": "Mostrar calendario",
       "previewHideCalendar": "Ocultar calendario",
       "shiftStartTime": "Inicio de guardia",
+      "color": "Color en el calendario",
+      "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacaciones",
       "vacationStart": "Inicio de vacaciones",
       "vacationEnd": "Fin de vacaciones"

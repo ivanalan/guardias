@@ -14,6 +14,20 @@ export const CALENDAR_THEME: NonNullable<CalendarProps['theme']> = {
   dayTextColor: '#1C1B1F',
   textDisabledColor: '#C4C4C4',
   textDayFontWeight: '400',
+  textMonthFontSize: 24,
   textMonthFontWeight: '500',
   textDayHeaderFontWeight: '500',
 };
+
+/**
+ * CalendarList's outer wrapper has no flex on native; without this the FlatList
+ * collapses to 0 height. Not part of the public Theme type.
+ */
+export const CALENDAR_LIST_THEME = {
+  ...CALENDAR_THEME,
+  'stylesheet.calendar-list.main': {
+    flatListContainer: {
+      flex: 1,
+    },
+  },
+} as NonNullable<CalendarProps['theme']>;

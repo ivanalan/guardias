@@ -5,11 +5,20 @@ import { findPeriodForDate } from './find-period-for-date';
 
 export type DayInfo =
   | { kind: 'free'; date: string }
+  | { kind: 'vacation'; date: string; rotationLabel: string }
   | { kind: 'shift'; date: string; shift: ComputedShift };
 
+function isOnVacation(period: RotationPeriod, isoDate: string): boolean {
+  const { vacationStartDate, vacationEndDate } = period;
+  if (vacationStartDate == null || vacationEndDate == null) {
+    return false;
+  }
+  return isoDate >= vacationStartDate && isoDate <= vacationEndDate;
+}
+
 /**
- * Classifies a calendar day for the day sheet: free, or a computed shift
- * from the period that covers that date.
+ * Classifies a calendar day for the day sheet: free, vacation, or a computed
+ * shift from the period that covers that date.
  */
 export function getDayInfo(
   periods: readonly RotationPeriod[],
@@ -18,6 +27,14 @@ export function getDayInfo(
   const period = findPeriodForDate(periods, isoDate);
   if (period == null) {
     return { kind: 'free', date: isoDate };
+  }
+
+  if (isOnVacation(period, isoDate)) {
+    return {
+      kind: 'vacation',
+      date: isoDate,
+      rotationLabel: period.label,
+    };
   }
 
   const shift = buildShift(period, isoDate);

@@ -19,9 +19,8 @@
       "timeLeft": "Time left",
       "timeUntilNext": "Next shift",
       "shiftsRemaining": "Shifts remaining",
-      "hoursWorked": "Hours worked",
+      "shiftsWorked": "Shifts worked",
       "nextFreeWeekend": "Next free weekend",
-      "hoursValue": "{{hours}}h",
       "now": "Now",
       "noneInPeriod": "None left in this period"
     }
@@ -30,17 +29,25 @@
     "today": "Today",
     "dayDetailTitle": "Day",
     "freeDay": "Free day",
+    "vacationDay": "Vacation",
     "shiftDay": "Shift",
     "startsOn": "Starts {{date}}",
     "endsOn": "Ends {{date}}",
     "duration": "{{hours}} hours",
+    "viewMode": {
+      "month": "Month",
+      "scroll": "Scroll"
+    },
     "legend": {
       "shiftDays_one": "Shift day",
       "shiftDays_other": "Shift days",
       "freeWeekends_one": "Free weekend",
       "freeWeekends_other": "Free weekends",
+      "vacationDays_one": "Vacation day",
+      "vacationDays_other": "Vacation days",
       "filterShiftsHint": "Highlight shift days on the calendar",
-      "filterFreeWeekendsHint": "Highlight free weekends on the calendar"
+      "filterFreeWeekendsHint": "Highlight free weekends on the calendar",
+      "filterVacationHint": "Highlight vacation days on the calendar"
     }
   },
   "settings": {
@@ -59,6 +66,9 @@
     "addTitle": "Add rotation",
     "editTitle": "Edit rotation",
     "save": "Save",
+    "sectionCurrent": "Current",
+    "sectionFuture": "Upcoming",
+    "sectionPast": "Past",
     "detail": {
       "title": "Rotation",
       "notFound": "This rotation was not found.",
@@ -93,6 +103,8 @@
       "previewShowCalendar": "Show calendar",
       "previewHideCalendar": "Hide calendar",
       "shiftStartTime": "Shift start time",
+      "color": "Calendar color",
+      "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacation days",
       "vacationStart": "Vacation start",
       "vacationEnd": "Vacation end"

@@ -10,7 +10,6 @@ import { ScreenPageTitle } from '../../../components/screen-page-title';
 import {
   getHomepageShiftStatus,
   getNextFreeWeekend,
-  getPeriodHoursWorked,
   getPeriodShiftProgress,
   getTimeUntilNextShift,
   type DurationParts,
@@ -18,6 +17,7 @@ import {
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
 import type { TabParamList } from '../../../navigation/types';
+import { getAccentTints } from '../../../theme/accent-tints';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
 import { useRotations } from '../../rotations/rotations-context';
@@ -42,8 +42,8 @@ type ActiveHomeProps = {
 function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
   const { t } = useTranslation();
   const untilNext = getTimeUntilNextShift(status, now);
-  const hoursWorked = getPeriodHoursWorked(status.period, now);
   const freeWeekend = getNextFreeWeekend(status.period, now);
+  const accents = getAccentTints(status.period.color);
 
   const durationValue = (duration: DurationParts) =>
     t('home.durationShort', {
@@ -57,7 +57,10 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
         <Text className="text-center text-lg font-medium">
           {t('home.periodLabel', { label: status.period.label })}
         </Text>
-        <ShiftsProgressRing progress={periodProgress.progress}>
+        <ShiftsProgressRing
+          progress={periodProgress.progress}
+          color={accents.brand}
+        >
           <View className="items-center gap-1">
             <Text className="text-center text-4xl font-bold tracking-tight">
               {periodProgress.completed}
@@ -76,6 +79,7 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
         {status.kind === 'in_shift' ? (
           <StatsCard
             fullWidth
+            accents={accents}
             tint="violet"
             icon="clock-outline"
             value={durationValue(status.remainingInShift)}
@@ -85,6 +89,7 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
 
         {untilNext != null ? (
           <StatsCard
+            accents={accents}
             tint="brand"
             icon="calendar-clock"
             value={durationValue(untilNext)}
@@ -93,6 +98,7 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
         ) : null}
 
         <StatsCard
+          accents={accents}
           tint="indigo"
           icon="clipboard-list-outline"
           value={String(status.shiftsRemaining)}
@@ -100,14 +106,16 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
         />
 
         <StatsCard
+          accents={accents}
           tint="azure"
-          icon="timer-outline"
-          value={t('home.stats.hoursValue', { hours: hoursWorked })}
-          subtitle={t('home.stats.hoursWorked')}
+          icon="clipboard-check-outline"
+          value={String(periodProgress.completed)}
+          subtitle={t('home.stats.shiftsWorked')}
         />
 
         {freeWeekend != null ? (
           <StatsCard
+            accents={accents}
             tint="teal"
             icon="umbrella-beach"
             value={
@@ -119,6 +127,7 @@ function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
           />
         ) : (
           <StatsCard
+            accents={accents}
             tint="teal"
             icon="umbrella-beach"
             value="—"

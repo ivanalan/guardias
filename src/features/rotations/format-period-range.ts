@@ -1,4 +1,4 @@
-import { addMonths, format, parseISO, subDays } from 'date-fns';
+import { addMonths, addWeeks, format, parseISO, subDays } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 
 const locales = { en: enUS, es } as const;
@@ -23,6 +23,23 @@ export function toISODate(date: Date): string {
 /** Inclusive end of a typical rotation: start + 2 months − 1 day. */
 export function defaultRotationEndISO(start: Date): string {
   return toISODate(subDays(addMonths(start, 2), 1));
+}
+
+/** Inclusive end of a default vacation block: start + 2 weeks − 1 day. */
+export function defaultVacationEndISO(start: Date): string {
+  return toISODate(subDays(addWeeks(start, 2), 1));
+}
+
+/**
+ * Default vacation end clamped to the rotation period end (`YYYY-MM-DD`).
+ * Vacation must stay within the rotation bounds.
+ */
+export function defaultVacationEndWithinPeriod(
+  vacationStartISO: string,
+  periodEndISO: string,
+): string {
+  const proposed = defaultVacationEndISO(parseISO(vacationStartISO));
+  return proposed > periodEndISO ? periodEndISO : proposed;
 }
 
 /** Formats an ISO date for the add/edit form, e.g. "Jul 1, 2026". */
