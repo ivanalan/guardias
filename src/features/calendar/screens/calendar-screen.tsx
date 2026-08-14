@@ -174,7 +174,7 @@ export function CalendarScreen({ navigation }: Props) {
           </Pressable>
         }
       />
-      <View className="px-6 pb-3">
+      <View className="px-6 mb-3 mt-3">
         <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
       </View>
       <View className="flex-1 px-4 pb-4">
