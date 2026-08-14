@@ -7,7 +7,6 @@ import {
   type ReactNode,
 } from 'react';
 
-import { MOCK_ROTATION_PERIODS } from './data/mock-rotation-periods';
 import { loadRotationPeriods, saveRotationPeriods } from './storage';
 import type { RotationPeriod } from './types';
 
@@ -44,10 +43,8 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
       }
 
       if (stored == null) {
-        // First launch: seed demo data, then persist so reloads keep edits.
-        const seeded = sortPeriodsByStartDate(MOCK_ROTATION_PERIODS);
-        setPeriods(seeded);
-        await saveRotationPeriods(seeded);
+        setPeriods([]);
+        await saveRotationPeriods([]);
       } else {
         setPeriods(sortPeriodsByStartDate(stored));
       }
