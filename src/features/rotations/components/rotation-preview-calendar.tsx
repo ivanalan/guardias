@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { listShiftDatesInRange } from '../../../lib/shifts';
+import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { BRAND_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import { CALENDAR_THEME } from '../../calendar/calendar-theme';
@@ -57,6 +58,9 @@ export function RotationPreviewCalendar({ period, language }: Props) {
     nextDates.length > 0
       ? nextDates.map((iso) => formatShortFormDate(iso, language)).join(', ')
       : null;
+  const toggleLabel = expanded
+    ? t('shifts.form.previewHideCalendar')
+    : t('shifts.form.previewShowCalendar');
 
   return (
     <View className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white">
@@ -65,11 +69,11 @@ export function RotationPreviewCalendar({ period, language }: Props) {
         accessibilityState={{ expanded }}
         accessibilityLabel={`${t('shifts.form.preview')}. ${countLabel}${
           datesLabel != null ? `. ${datesLabel}` : ''
-        }`}
+        }. ${toggleLabel}`}
         onPress={() => setExpanded((prev) => !prev)}
-        className="flex-row items-center justify-between px-4 py-3.5 active:opacity-70"
+        className="flex-row items-center px-4 py-3.5 active:opacity-70"
       >
-        <View className="flex-1 gap-0.5 pr-3">
+        <View className="min-w-0 flex-1 gap-0.5 pr-3">
           <Text className="text-base font-semibold text-neutral-900">
             {countLabel}
           </Text>
@@ -77,11 +81,12 @@ export function RotationPreviewCalendar({ period, language }: Props) {
             <Text className="text-sm text-neutral-500">{datesLabel}</Text>
           ) : null}
         </View>
-        <View className="flex-row items-center gap-1">
-          <Text className="text-sm" style={{ color: BRAND_COLOR }}>
-            {expanded
-              ? t('shifts.form.previewHideCalendar')
-              : t('shifts.form.previewShowCalendar')}
+        <View className="shrink-0 flex-row items-center gap-1">
+          <Text
+            className="shrink-0 text-sm"
+            style={[{ color: BRAND_COLOR }, ANDROID_TEXT_WIDTH_BUMP]}
+          >
+            {toggleLabel}
           </Text>
           <Ionicons
             name={expanded ? 'chevron-up' : 'chevron-down'}

@@ -5,7 +5,12 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Alert, LayoutAnimation, ScrollView, Switch } from 'react-native';
+import {
+  Alert,
+  LayoutAnimation,
+  ScrollView,
+  Switch,
+} from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -15,6 +20,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { getDefaultFirstShiftDate } from '../../../lib/shifts';
+import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { BRAND_COLOR, BRAND_SELECTION } from '../../../theme/brand';
 import { Pressable, Text, TextInput, View } from '../../../tw';
 import { RotationColorSwatches } from '../components/rotation-color-swatches';
@@ -615,8 +621,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
             onPress={() => selectCycleDays(3)}
           />
           <RowDivider />
-          <View className="flex-row items-center gap-3 px-4 py-3">
-            <Text className="shrink-0 text-base text-neutral-900">
+          <View className="h-14 flex-row items-center gap-3 px-4">
+            <Text
+              className="shrink-0 text-base text-neutral-900"
+              style={ANDROID_TEXT_WIDTH_BUMP}
+            >
               {t('shifts.form.offset')}
             </Text>
             <View className="min-w-0 flex-1 flex-row flex-wrap justify-end gap-2">
@@ -709,17 +718,19 @@ export function AddRotationScreen({ navigation, route }: Props) {
           <RowDivider />
           <View className={FORM_ROW_CLASS}>
             <Text
-              className="min-w-0 flex-1 text-base text-neutral-900"
-              numberOfLines={1}
+              className="shrink-0 text-base text-neutral-900"
+              style={ANDROID_TEXT_WIDTH_BUMP}
             >
               {t('shifts.form.vacation')}
             </Text>
-            <Switch
-              value={vacationEnabled}
-              onValueChange={onVacationToggle}
-              trackColor={{ false: '#d4d4d4', true: BRAND_COLOR }}
-              thumbColor="#ffffff"
-            />
+            <View className="ml-auto">
+              <Switch
+                value={vacationEnabled}
+                onValueChange={onVacationToggle}
+                trackColor={{ false: '#d4d4d4', true: BRAND_COLOR }}
+                thumbColor="#ffffff"
+              />
+            </View>
           </View>
           {vacationEnabled ? (
             <>
@@ -796,7 +807,7 @@ function FormSection({
     <View className="gap-2">
       <Text className="px-1 text-sm font-medium text-neutral-500">{title}</Text>
       <View
-        className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white"
+        className="rounded-2xl border border-neutral-200/80 bg-white"
         style={{ borderCurve: 'continuous' }}
       >
         {children}
@@ -831,17 +842,19 @@ function FormRow({
     >
       <Text
         className="shrink-0 text-base text-neutral-900"
-        numberOfLines={1}
+        style={ANDROID_TEXT_WIDTH_BUMP}
       >
         {label}
       </Text>
-      <View className="min-w-0 flex-1 flex-row items-center justify-end gap-1">
+      <View className="ml-auto shrink-0 flex-row items-center gap-1">
         <Text
           className="text-base"
-          style={{
-            color: selected ? BRAND_SELECTION.foreground : '#737373',
-          }}
-          numberOfLines={1}
+          style={[
+            {
+              color: selected ? BRAND_SELECTION.foreground : '#737373',
+            },
+            ANDROID_TEXT_WIDTH_BUMP,
+          ]}
         >
           {valueLabel}
         </Text>
