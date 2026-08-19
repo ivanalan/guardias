@@ -1,13 +1,16 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Platform, type LayoutChangeEvent } from 'react-native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { format } from 'date-fns';
 import { Calendar, CalendarList, type DateData } from 'react-native-calendars';
 import { useTranslation } from 'react-i18next';
 
-import { ScreenPageTitle } from '../../../components/screen-page-title';
+import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
+import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { Pressable, View } from '../../../tw';
+import { SCREEN_GUTTER } from '../../../theme/layout';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
 import type { RotationPeriod } from '../../rotations/types';
@@ -16,9 +19,18 @@ import {
   buildMarkedDates,
   type CalendarLegendFilter,
 } from '../build-marked-dates';
-import { CALENDAR_LIST_THEME, CALENDAR_THEME } from '../calendar-theme';
+import { buildCalendarDayMarkContext } from '../calendar-day-marker';
+import { CALENDAR_WEEK_ROW_GAP } from '../calendar-day-marker';
+import {
+  CALENDAR_CARD_STYLE,
+  CALENDAR_LIST_THEME,
+  CALENDAR_THEME,
+} from '../calendar-theme';
 import type { CalendarViewMode } from '../calendar-view-mode';
+import { createCalendarDayComponent } from '../components/calendar-day';
 import { CalendarMonthLegend } from '../components/calendar-month-legend';
+import { CalendarMonthHeader } from '../components/calendar-month-header';
+import { CalendarMonthTitle } from '../components/calendar-month-title';
 import { CalendarViewToggle } from '../components/calendar-view-toggle';
 import { ExportPeriodPickerModal } from '../components/export-period-picker-modal';
 import { configureCalendarLocale } from '../configure-calendar-locale';
@@ -59,6 +71,28 @@ export function CalendarScreen({ navigation }: Props) {
     monthInputs.freeWeekendDates,
     monthInputs.vacationDates,
     filter,
+  );
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
+  const markContext = useMemo(
+    () =>
+      buildCalendarDayMarkContext(
+        monthInputs.shiftMarks,
+        monthInputs.freeWeekendDates,
+        monthInputs.vacationDates,
+        filter,
+        todayIso,
+      ),
+    [
+      monthInputs.shiftMarks,
+      monthInputs.freeWeekendDates,
+      monthInputs.vacationDates,
+      filter,
+      todayIso,
+    ],
+  );
+  const DayComponent = useMemo(
+    () => createCalendarDayComponent(markContext),
+    [markContext],
   );
 
   useEffect(() => {
@@ -139,6 +173,20 @@ export function CalendarScreen({ navigation }: Props) {
     setPickerVisible(true);
   };
 
+  const onPreviousMonth = () => {
+    setVisibleMonth((prev) => {
+      const date = parseCalendarDate(prev);
+      return toISODate(new Date(date.getFullYear(), date.getMonth() - 1, 1));
+    });
+  };
+
+  const onNextMonth = () => {
+    setVisibleMonth((prev) => {
+      const date = parseCalendarDate(prev);
+      return toISODate(new Date(date.getFullYear(), date.getMonth() + 1, 1));
+    });
+  };
+
   const onListContainerLayout = (event: LayoutChangeEvent) => {
     const { width, height } = event.nativeEvent.layout;
     const next = {
@@ -154,7 +202,7 @@ export function CalendarScreen({ navigation }: Props) {
   };
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View className="flex-1 bg-canvas">
       <ScreenPageTitle
         title={t('tabs.calendar')}
         right={
@@ -168,40 +216,63 @@ export function CalendarScreen({ navigation }: Props) {
           >
             <MaterialCommunityIcons
               name="share-variant"
-              size={24}
+              size={SCREEN_PAGE_TITLE_ICON_SIZE}
               color="#191C1A"
             />
           </Pressable>
         }
       />
-      <View className="px-6 mb-3 mt-3">
+      <View className="mb-3 mt-3 px-gutter">
         <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
       </View>
-      <View className="flex-1 px-4 pb-4">
+      <View className="flex-1 px-gutter pb-4">
         <View
           className={viewMode === 'scroll' ? 'min-h-0 flex-1' : undefined}
           onLayout={onListContainerLayout}
         >
           {viewMode === 'month' ? (
-            <Calendar
-              key={`month-${language}`}
-              current={visibleMonth}
-              onMonthChange={(month: DateData) => {
-                setVisibleMonth(month.dateString);
-              }}
-              onDayPress={onDayPress}
-              enableSwipeMonths
-              firstDay={1}
-              markingType="custom"
-              markedDates={markedDates}
-              theme={CALENDAR_THEME}
-            />
+            <View
+              className="bg-white px-gutter py-5"
+              style={CALENDAR_CARD_STYLE}
+            >
+              <Calendar
+                key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
+                initialDate={visibleMonth}
+                onMonthChange={(month: DateData) => {
+                  setVisibleMonth(month.dateString);
+                }}
+                onDayPress={onDayPress}
+                enableSwipeMonths
+                hideArrows
+                firstDay={1}
+                monthFormat="MMMM"
+                markingType="custom"
+                markedDates={markedDates}
+                dayComponent={DayComponent}
+                renderHeader={(date) => (
+                  <CalendarMonthHeader
+                    date={date}
+                    monthFormat="MMMM"
+                    onPreviousMonth={onPreviousMonth}
+                    onNextMonth={onNextMonth}
+                  />
+                )}
+                theme={CALENDAR_THEME}
+              />
+            </View>
           ) : listSize != null ? (
             <CalendarList
-              key={`scroll-${language}-${scrollAnchor.slice(0, 7)}`}
+              key={`scroll-${language}-${scrollAnchor.slice(0, 7)}-${CALENDAR_WEEK_ROW_GAP}`}
               current={scrollAnchor}
               style={{ height: listSize.height }}
               calendarWidth={listSize.width}
+              calendarStyle={{
+                backgroundColor: '#FFFFFF',
+                paddingHorizontal: SCREEN_GUTTER,
+                paddingVertical: 20,
+                ...CALENDAR_CARD_STYLE,
+                marginBottom: 12,
+              }}
               onVisibleMonthsChange={(months: DateData[]) => {
                 const primary = months[0];
                 if (primary == null) {
@@ -214,13 +285,19 @@ export function CalendarScreen({ navigation }: Props) {
                 );
               }}
               onDayPress={onDayPress}
+              hideArrows
               pastScrollRange={24}
               futureScrollRange={24}
               showScrollIndicator
               removeClippedSubviews={false}
               firstDay={1}
+              monthFormat="MMMM"
               markingType="custom"
               markedDates={markedDates}
+              dayComponent={DayComponent}
+              renderHeader={(date) => (
+                <CalendarMonthTitle date={date} monthFormat="MMMM" />
+              )}
               theme={CALENDAR_LIST_THEME}
             />
           ) : null}

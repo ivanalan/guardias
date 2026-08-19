@@ -1,5 +1,6 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Ionicons } from '@expo/vector-icons';
+import { format } from 'date-fns';
 import { Calendar, type DateData } from 'react-native-calendars';
 import { useTranslation } from 'react-i18next';
 
@@ -8,9 +9,13 @@ import { listShiftDatesInRange } from '../../../lib/shifts';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { BRAND_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
+import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { CALENDAR_THEME } from '../../calendar/calendar-theme';
+import { createCalendarDayComponent } from '../../calendar/components/calendar-day';
+import { CalendarMonthTitle } from '../../calendar/components/calendar-month-title';
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
 import { buildMonthMarkedDates } from '../../calendar/month-marks';
+import { getMonthMarkInputs } from '../../calendar/month-legend-stats';
 import { formatShortFormDate } from '../format-period-range';
 import type { RotationPeriod } from '../types';
 
@@ -41,6 +46,35 @@ export function RotationPreviewCalendar({ period, language }: Props) {
       monthKey(prev) === monthKey(period.startDate) ? prev : period.startDate,
     );
   }, [period.startDate]);
+
+  const monthInputs = datesValid
+    ? getMonthMarkInputs([period], currentMonth)
+    : {
+        shiftMarks: [],
+        freeWeekendDates: [],
+        vacationDates: [],
+      };
+  const todayIso = format(new Date(), 'yyyy-MM-dd');
+  const markContext = useMemo(
+    () =>
+      buildCalendarDayMarkContext(
+        monthInputs.shiftMarks,
+        monthInputs.freeWeekendDates,
+        monthInputs.vacationDates,
+        null,
+        todayIso,
+      ),
+    [
+      monthInputs.shiftMarks,
+      monthInputs.freeWeekendDates,
+      monthInputs.vacationDates,
+      todayIso,
+    ],
+  );
+  const DayComponent = useMemo(
+    () => createCalendarDayComponent(markContext),
+    [markContext],
+  );
 
   if (!datesValid) {
     return null;
@@ -106,8 +140,13 @@ export function RotationPreviewCalendar({ period, language }: Props) {
             }}
             enableSwipeMonths
             firstDay={1}
+            monthFormat="MMMM"
             markingType="custom"
             markedDates={buildMonthMarkedDates([period], currentMonth)}
+            dayComponent={DayComponent}
+            renderHeader={(date) => (
+              <CalendarMonthTitle date={date} monthFormat="MMMM" />
+            )}
             theme={CALENDAR_THEME}
           />
         </View>

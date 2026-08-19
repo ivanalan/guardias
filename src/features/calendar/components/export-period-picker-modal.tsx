@@ -42,8 +42,8 @@ export function ExportPeriodPickerModal({
           onPress={onCancel}
           className="absolute inset-0"
         />
-        <View className="w-full max-h-[70%] rounded-t-3xl bg-neutral-50 px-4 pb-8 pt-4">
-          <Text className="mb-3 px-2 text-xl font-bold">
+        <View className="w-full max-h-[70%] rounded-t-3xl bg-canvas px-4 pb-8 pt-4">
+          <Text className="mb-3 px-2 font-serif text-xl">
             {t('calendar.sharePickTitle')}
           </Text>
           <ScrollView>
@@ -72,10 +72,10 @@ export function ExportPeriodPickerModal({
                     }}
                   />
                   <View className="min-w-0 flex-1 gap-0.5">
-                    <Text className="text-lg font-semibold">
+                    <Text className="font-serif text-lg">
                       {period.label}
                     </Text>
-                    <Text className="text-sm opacity-50">
+                    <Text className="font-mono text-sm opacity-50">
                       {formatPeriodRange(
                         period.startDate,
                         period.endDate,

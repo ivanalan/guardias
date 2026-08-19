@@ -524,7 +524,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   if (editingId != null && existing == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-neutral-50 p-6">
+      <View className="flex-1 items-center justify-center gap-2 bg-canvas p-gutter">
         <Text className="text-base">{t('shifts.detail.notFound')}</Text>
       </View>
     );
@@ -533,7 +533,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
   return (
     <ScrollView
       ref={scrollRef}
-      className="flex-1 bg-neutral-50"
+      className="flex-1 bg-canvas"
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{
@@ -927,7 +927,7 @@ function RowDivider() {
 
 function PickerSlot({ children }: { children: ReactNode }) {
   return (
-    <View className="items-center border-t border-neutral-100 bg-neutral-50/80 py-1">
+    <View className="items-center border-t border-neutral-100 bg-canvas py-1">
       {children}
     </View>
   );

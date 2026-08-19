@@ -4,7 +4,8 @@ import { SectionList } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
-import { ScreenPageTitle } from '../../../components/screen-page-title';
+import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
+import { SCREEN_GUTTER } from '../../../theme/layout';
 import type { AppLanguage } from '../../../i18n';
 import { Pressable, Text, View } from '../../../tw';
 import { RotationPeriodRow } from '../components/rotation-period-row';
@@ -33,7 +34,7 @@ export function ShiftsListScreen({ navigation }: Props) {
   const sections = groupPeriodsByRecency(periods, todayIso);
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View className="flex-1 bg-canvas">
       <ScreenPageTitle
         title={t('tabs.shifts')}
         right={
@@ -46,7 +47,7 @@ export function ShiftsListScreen({ navigation }: Props) {
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <Ionicons name="add" size={28} color="#191C1A" />
+            <Ionicons name="add" size={SCREEN_PAGE_TITLE_ICON_SIZE} color="#1C1B1F" />
           </Pressable>
         }
       />
@@ -55,8 +56,8 @@ export function ShiftsListScreen({ navigation }: Props) {
         keyExtractor={keyExtractor}
         contentContainerStyle={{
           flexGrow: 1,
-          gap: 8,
-          paddingHorizontal: 24,
+          gap: 12,
+          paddingHorizontal: SCREEN_GUTTER,
           paddingTop: 12,
           paddingBottom: 12,
         }}
@@ -73,18 +74,21 @@ export function ShiftsListScreen({ navigation }: Props) {
         }: {
           section: PeriodRecencySection;
         }) => (
-          <Text className="px-1 pt-2 text-sm font-medium text-neutral-500">
+          <Text className="px-1 pt-2 font-mono text-sm text-neutral-500">
             {t(`shifts.${section.titleKey}`)}
           </Text>
         )}
         renderItem={({ item }) => (
           <RotationPeriodRow
             label={item.label}
-            dateRange={formatPeriodRange(
-              item.startDate,
-              item.endDate,
-              language,
-            )}
+            meta={t('shifts.rowMeta', {
+              range: formatPeriodRange(
+                item.startDate,
+                item.endDate,
+                language,
+              ),
+              letter: item.pattern.offset,
+            })}
             color={item.color}
             onPress={() => {
               navigation.navigate('RotationDetail', { periodId: item.id });

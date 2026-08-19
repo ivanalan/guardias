@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
+import { INK_COLOR } from '../../../theme/brand';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarViewMode } from '../calendar-view-mode';
@@ -16,11 +17,7 @@ export function CalendarViewToggle({ value, onChange }: Props) {
   const { t } = useTranslation();
 
   return (
-    <View
-      accessibilityRole="tablist"
-      className="h-9 flex-row rounded-[9px] bg-neutral-200/90 p-0.5"
-      style={{ width: 200, borderCurve: 'continuous' }}
-    >
+    <View accessibilityRole="tablist" className="flex-row items-center gap-3">
       {MODES.map((mode) => {
         const selected = value === mode;
         const label = t(`calendar.viewMode.${mode}`);
@@ -31,22 +28,21 @@ export function CalendarViewToggle({ value, onChange }: Props) {
             accessibilityState={{ selected }}
             accessibilityLabel={label}
             onPress={() => onChange(mode)}
-            className={`min-w-0 flex-1 items-center justify-center rounded-lg active:opacity-80 ${
-              selected ? 'bg-white' : ''
-            }`}
+            className="active:opacity-80"
             style={[
-              { borderCurve: 'continuous' },
+              {
+                borderCurve: 'continuous',
+                borderRadius: 999,
+                paddingHorizontal: 16,
+                paddingVertical: 8,
+              },
               selected
-                ? {
-                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.12)',
-                  }
-                : undefined,
+                ? { backgroundColor: INK_COLOR }
+                : { backgroundColor: 'transparent' },
             ]}
           >
             <Text
-              className={`text-sm ${
-                selected ? 'font-semibold text-neutral-900' : 'text-neutral-900'
-              }`}
+              className={`text-sm font-mono ${selected ? 'text-white' : 'text-ink'}`}
               style={ANDROID_TEXT_WIDTH_BUMP}
             >
               {label}

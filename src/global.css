@@ -4,21 +4,25 @@
 
 @import 'nativewind/theme';
 
-/* Platform-specific font families */
-@media android {
-  :root {
-    --font-mono: monospace;
-    --font-rounded: normal;
-    --font-serif: serif;
-    --font-sans: normal;
+@layer theme {
+  @theme {
+    --font-serif: InstrumentSerif_400Regular;
+    --spacing-gutter: 24px;
+    --color-canvas: #f6f1ec;
+    --color-weekend: #085d3a;
+    --color-ink: #1c1b1f;
+    /* RN clips descenders when line-height equals font-size (Tailwind default). */
+    --text-5xl--line-height: 1.15;
   }
 }
 
-@media ios {
-  :root {
-    --font-mono: ui-monospace;
-    --font-serif: ui-serif;
-    --font-sans: system-ui;
-    --font-rounded: ui-rounded;
+/* nativewind/theme sets Georgia for serif; keep Instrument Serif. Mono stays Menlo / system. */
+:root {
+  @media ios {
+    --font-serif: InstrumentSerif_400Regular;
+  }
+
+  @media android {
+    --font-serif: InstrumentSerif_400Regular;
   }
 }

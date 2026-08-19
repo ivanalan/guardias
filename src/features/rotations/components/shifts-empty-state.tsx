@@ -30,10 +30,10 @@ export function ShiftsEmptyState({ onAddPress }: ShiftsEmptyStateProps) {
           color={BRAND_COLOR}
         />
       </View>
-      <Text className="text-center text-xl font-semibold tracking-tight">
+      <Text className="text-center font-serif text-xl tracking-tight">
         {t('shifts.emptyTitle')}
       </Text>
-      <Text className="text-center text-base opacity-60">
+      <Text className="text-center font-mono text-base opacity-60">
         {t('shifts.emptyBody')}
       </Text>
 
@@ -45,7 +45,7 @@ export function ShiftsEmptyState({ onAddPress }: ShiftsEmptyStateProps) {
         hitSlop={8}
       >
         <Text
-          className="text-base font-semibold"
+          className="text-base font-mono font-semibold"
           style={{ color: BRAND_COLOR }}
         >
           {t('shifts.emptyCta')}

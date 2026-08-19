@@ -1,0 +1,233 @@
+import type { ReactNode } from 'react';
+
+import {
+  CALENDAR_WEEK_ROW_GAP,
+  CELL_SIZE,
+  DAY_MARKER_INNER_RADIUS,
+  TODAY_BORDER_WIDTH,
+  TODAY_INNER_GAP,
+  dayMarkerStyle,
+  dayNumber,
+} from '../../calendar/calendar-day-marker';
+import { INK_COLOR, WEEKEND_COLOR } from '../../../theme/brand';
+import { Text, View } from '../../../tw';
+
+type TwoWeekCalendarProps = {
+  dates: readonly string[];
+  weekdayLabels: readonly string[];
+  todayIso: string;
+  shiftDates: ReadonlySet<string>;
+  freeWeekendDates: ReadonlySet<string>;
+  shiftColor: string;
+};
+
+/** Two-week Monday-start strip with shift dots and spanning weekend pills. */
+export function TwoWeekCalendar({
+  dates,
+  weekdayLabels,
+  todayIso,
+  shiftDates,
+  freeWeekendDates,
+  shiftColor,
+}: TwoWeekCalendarProps) {
+  const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
+
+  return (
+    <View
+      className="w-full bg-white px-gutter py-5"
+      style={{
+        borderCurve: 'continuous',
+        borderRadius: 32,
+        gap: CALENDAR_WEEK_ROW_GAP,
+      }}
+    >
+      <View className="flex-row">
+        {weekdayLabels.map((label, index) => (
+          <Text
+            key={`${label}-${index}`}
+            className="flex-1 text-center font-mono text-sm text-ink"
+          >
+            {label}
+          </Text>
+        ))}
+      </View>
+      {weeks.map((week) => (
+        <WeekRow
+          key={week[0]}
+          week={week}
+          todayIso={todayIso}
+          shiftDates={shiftDates}
+          freeWeekendDates={freeWeekendDates}
+          shiftColor={shiftColor}
+        />
+      ))}
+    </View>
+  );
+}
+
+type WeekRowProps = {
+  week: readonly string[];
+  todayIso: string;
+  shiftDates: ReadonlySet<string>;
+  freeWeekendDates: ReadonlySet<string>;
+  shiftColor: string;
+};
+
+function WeekRow({
+  week,
+  todayIso,
+  shiftDates,
+  freeWeekendDates,
+  shiftColor,
+}: WeekRowProps) {
+  const cells: ReactNode[] = [];
+
+  for (let index = 0; index < week.length; index += 1) {
+    const iso = week[index]!;
+    const next = week[index + 1];
+    const isWeekendStart =
+      index === 5 &&
+      next != null &&
+      freeWeekendDates.has(iso) &&
+      freeWeekendDates.has(next);
+
+    if (isWeekendStart) {
+      cells.push(
+        <View
+          key={iso}
+          className="flex-[2] flex-row items-center"
+          style={{
+            backgroundColor: WEEKEND_COLOR,
+            ...dayMarkerStyle,
+          }}
+        >
+          <DayCell
+            iso={iso}
+            todayIso={todayIso}
+            isShift={false}
+            onWeekend
+            shiftColor={shiftColor}
+          />
+          <DayCell
+            iso={next}
+            todayIso={todayIso}
+            isShift={false}
+            onWeekend
+            shiftColor={shiftColor}
+          />
+        </View>,
+      );
+      index += 1;
+      continue;
+    }
+
+    cells.push(
+      <View key={iso} className="flex-1">
+        <DayCell
+          iso={iso}
+          todayIso={todayIso}
+          isShift={shiftDates.has(iso)}
+          onWeekend={false}
+          shiftColor={shiftColor}
+        />
+      </View>,
+    );
+  }
+
+  return (
+    <View
+      className="flex-row items-center"
+      style={{ minHeight: CELL_SIZE + CALENDAR_WEEK_ROW_GAP }}
+    >
+      {cells}
+    </View>
+  );
+}
+
+type DayCellProps = {
+  iso: string;
+  todayIso: string;
+  isShift: boolean;
+  onWeekend: boolean;
+  shiftColor: string;
+};
+
+function DayCell({
+  iso,
+  todayIso,
+  isShift,
+  onWeekend,
+  shiftColor,
+}: DayCellProps) {
+  const isToday = iso === todayIso;
+  const label = dayNumber(iso);
+  const textClass = onWeekend
+    ? 'font-mono text-sm text-white'
+    : isShift
+      ? 'font-mono text-sm text-white'
+      : 'font-mono text-sm text-ink';
+
+  return (
+    <View
+      className="flex-1 items-center justify-center"
+      style={onWeekend ? undefined : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }}
+    >
+      {isToday && isShift ? (
+        <View
+          className="items-center justify-center"
+          style={{
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            borderWidth: TODAY_BORDER_WIDTH,
+            borderColor: INK_COLOR,
+            padding: TODAY_INNER_GAP,
+            ...dayMarkerStyle,
+          }}
+        >
+          <View
+            className="flex-1 self-stretch items-center justify-center"
+            style={{
+              backgroundColor: shiftColor,
+              borderCurve: 'continuous',
+              borderRadius: DAY_MARKER_INNER_RADIUS,
+            }}
+          >
+            <Text className={textClass}>{label}</Text>
+          </View>
+        </View>
+      ) : isToday ? (
+        <View
+          className="items-center justify-center"
+          style={{
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            borderWidth: TODAY_BORDER_WIDTH,
+            borderColor: INK_COLOR,
+            ...dayMarkerStyle,
+          }}
+        >
+          <Text className={textClass}>{label}</Text>
+        </View>
+      ) : isShift ? (
+        <View
+          className="items-center justify-center"
+          style={{
+            width: CELL_SIZE,
+            height: CELL_SIZE,
+            backgroundColor: shiftColor,
+            ...dayMarkerStyle,
+          }}
+        >
+          <Text className={textClass}>{label}</Text>
+        </View>
+      ) : (
+        <View
+          className="items-center justify-center"
+          style={{ width: CELL_SIZE, height: CELL_SIZE }}
+        >
+          <Text className={textClass}>{label}</Text>
+        </View>
+      )}
+    </View>
+  );
+}

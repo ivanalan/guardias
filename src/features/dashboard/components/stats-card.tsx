@@ -38,7 +38,7 @@ export function StatsCard({
       }`}
       style={{
         borderCurve: 'continuous',
-        borderRadius: 24,
+        borderRadius: 32,
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
       }}
     >
@@ -48,8 +48,8 @@ export function StatsCard({
         color={accents[tint]}
       />
       <View className="gap-1">
-        <Text className="text-2xl font-bold tracking-tight">{value}</Text>
-        <Text className="text-sm opacity-50">{subtitle}</Text>
+        <Text className="font-serif text-2xl tracking-tight">{value}</Text>
+        <Text className="font-mono text-sm opacity-50">{subtitle}</Text>
       </View>
     </View>
   );

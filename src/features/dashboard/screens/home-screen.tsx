@@ -4,27 +4,39 @@ import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
+import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
-import { ScreenPageTitle } from '../../../components/screen-page-title';
+import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
+import type { AppLanguage } from '../../../i18n';
 import {
   getHomepageShiftStatus,
   getNextFreeWeekend,
   getPeriodShiftProgress,
   getTimeUntilNextShift,
+  listShiftDatesInRange,
   type DurationParts,
   type HomepageShiftStatus,
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
 import type { TabParamList } from '../../../navigation/types';
-import { getAccentTints } from '../../../theme/accent-tints';
-import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { INK_COLOR } from '../../../theme/brand';
+import { Pressable, ScrollView, View } from '../../../tw';
+import { listFreeWeekendDates } from '../../calendar/free-weekends';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
 import { useRotations } from '../../rotations/rotations-context';
+import { NextShiftCard } from '../components/next-shift-card';
+import { ShiftsLeftCard } from '../components/shifts-left-card';
+import { TwoWeekCalendar } from '../components/two-week-calendar';
+import { WeekendBanner } from '../components/weekend-banner';
 import type { DashboardStackParamList } from '../dashboard-stack';
-import { ShiftsProgressRing } from '../components/shifts-progress-ring';
-import { StatsCard } from '../components/stats-card';
-import { StatsCardGrid } from '../components/stats-card-grid';
+import {
+  formatHomeDateTitle,
+  formatWeekendRange,
+  formatWeekdayLong,
+  weekdayInitials,
+} from '../format-home-copy';
+import { getTwoWeekDates } from '../two-week-dates';
 
 const REFRESH_MS = 60_000;
 
@@ -37,111 +49,98 @@ type ActiveHomeProps = {
   status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
   now: Date;
   periodProgress: PeriodShiftProgress;
+  language: AppLanguage;
 };
 
-function ActiveHomeContent({ status, now, periodProgress }: ActiveHomeProps) {
+function ActiveHomeContent({
+  status,
+  now,
+  periodProgress,
+  language,
+}: ActiveHomeProps) {
   const { t } = useTranslation();
   const untilNext = getTimeUntilNextShift(status, now);
   const freeWeekend = getNextFreeWeekend(status.period, now);
-  const accents = getAccentTints(status.period.color);
+  const todayIso = format(now, 'yyyy-MM-dd');
+  const windowDates = getTwoWeekDates(now);
+  const windowStart = windowDates[0]!;
+  const windowEnd = windowDates[13]!;
+  const shiftList = listShiftDatesInRange(
+    [status.period],
+    windowStart,
+    windowEnd,
+  );
+  const shiftDates = new Set(shiftList);
+  const freeWeekendDates = new Set(
+    listFreeWeekendDates(shiftDates, windowStart, windowEnd),
+  );
+  const remaining = Math.max(
+    0,
+    periodProgress.total - periodProgress.completed,
+  );
+  const color = status.period.color;
 
   const durationValue = (duration: DurationParts) =>
-    t('home.durationShort', {
+    t('home.durationLong', {
       days: duration.days,
       hours: duration.hours,
     });
 
+  const nextShiftCard =
+    status.kind === 'in_shift' ? (
+      <NextShiftCard
+        duration={durationValue(status.remainingInShift)}
+        caption={t('home.stats.timeLeft')}
+        weekday=""
+        weekdayColor={color}
+      />
+    ) : untilNext != null && status.kind === 'between_shifts' ? (
+      <NextShiftCard
+        duration={durationValue(untilNext)}
+        caption={`${t('home.nextShift')}: `}
+        weekday={formatWeekdayLong(status.nextShift.startDateTime, language)}
+        weekdayColor={color}
+      />
+    ) : null;
+
   return (
-    <View className="w-full gap-8">
-      <View className="items-center gap-8 py-2">
-        <Text className="text-center text-lg font-medium">
-          {t('home.periodLabel', { label: status.period.label })}
-        </Text>
-        <ShiftsProgressRing
-          progress={periodProgress.progress}
-          color={accents.brand}
-        >
-          <View className="items-center gap-1">
-            <Text className="text-center text-4xl font-bold tracking-tight">
-              {periodProgress.completed}
-              <Text className="text-xl font-semibold opacity-40">
-                {t('home.progressOf', { total: periodProgress.total })}
-              </Text>
-            </Text>
-            <Text className="text-center text-sm opacity-60">
-              {t('home.shiftsCompleted')}
-            </Text>
-          </View>
-        </ShiftsProgressRing>
-      </View>
-
-      <StatsCardGrid>
-        {status.kind === 'in_shift' ? (
-          <StatsCard
-            fullWidth
-            accents={accents}
-            tint="violet"
-            icon="clock-outline"
-            value={durationValue(status.remainingInShift)}
-            subtitle={t('home.stats.timeLeft')}
-          />
-        ) : null}
-
-        {untilNext != null ? (
-          <StatsCard
-            accents={accents}
-            tint="brand"
-            icon="calendar-clock"
-            value={durationValue(untilNext)}
-            subtitle={t('home.stats.timeUntilNext')}
-          />
-        ) : null}
-
-        <StatsCard
-          accents={accents}
-          tint="indigo"
-          icon="clipboard-list-outline"
-          value={String(status.shiftsRemaining)}
-          subtitle={t('home.stats.shiftsRemaining')}
+    <View className="w-full gap-4">
+      {freeWeekend != null ? (
+        <WeekendBanner
+          rangeLabel={formatWeekendRange(freeWeekend.saturdayIso, language)}
+          caption={
+            freeWeekend.isNow
+              ? t('home.stats.now')
+              : t('home.stats.nextFreeWeekend')
+          }
         />
+      ) : null}
 
-        <StatsCard
-          accents={accents}
-          tint="azure"
-          icon="clipboard-check-outline"
-          value={String(periodProgress.completed)}
-          subtitle={t('home.stats.shiftsWorked')}
-        />
+      <TwoWeekCalendar
+        dates={windowDates}
+        weekdayLabels={weekdayInitials(language)}
+        todayIso={todayIso}
+        shiftDates={shiftDates}
+        freeWeekendDates={freeWeekendDates}
+        shiftColor={color}
+      />
 
-        {freeWeekend != null ? (
-          <StatsCard
-            accents={accents}
-            tint="teal"
-            icon="umbrella-beach"
-            value={
-              freeWeekend.isNow
-                ? t('home.stats.now')
-                : durationValue(freeWeekend.until)
-            }
-            subtitle={t('home.stats.nextFreeWeekend')}
-          />
-        ) : (
-          <StatsCard
-            accents={accents}
-            tint="teal"
-            icon="umbrella-beach"
-            value="—"
-            subtitle={t('home.stats.noneInPeriod')}
-          />
-        )}
-      </StatsCardGrid>
+      <ShiftsLeftCard
+        remaining={remaining}
+        total={periodProgress.total}
+        color={color}
+        caption={t('home.shiftsLeft')}
+      />
+
+      {nextShiftCard}
     </View>
   );
 }
 
-/** F3 homepage: period progress ring + stats card grid. */
+/** F3 homepage: date header + weekend, two-week, remaining, next-shift widgets. */
 export function HomeScreen({ navigation }: Props) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
   const [now, setNow] = useState(() => new Date());
 
@@ -158,11 +157,14 @@ export function HomeScreen({ navigation }: Props) {
   );
 
   const status = getHomepageShiftStatus(periods, now);
+  const subtitle =
+    status.kind === 'idle' ? undefined : status.period.label;
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View className="flex-1 bg-canvas">
       <ScreenPageTitle
-        title={t('tabs.home')}
+        title={formatHomeDateTitle(now, language)}
+        subtitle={subtitle}
         right={
           <Pressable
             accessibilityRole="button"
@@ -175,15 +177,15 @@ export function HomeScreen({ navigation }: Props) {
           >
             <MaterialCommunityIcons
               name="cog-outline"
-              size={24}
-              color="#191C1A"
+              size={SCREEN_PAGE_TITLE_ICON_SIZE}
+              color={INK_COLOR}
             />
           </Pressable>
         }
       />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-8 p-6"
+        contentContainerClassName="flex-grow gap-4 p-gutter"
       >
         {status.kind === 'idle' ? (
           <ShiftsEmptyState
@@ -196,6 +198,7 @@ export function HomeScreen({ navigation }: Props) {
             status={status}
             now={now}
             periodProgress={getPeriodShiftProgress(status.period, now)}
+            language={language}
           />
         )}
       </ScrollView>

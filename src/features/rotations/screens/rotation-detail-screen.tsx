@@ -48,7 +48,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
 
   if (period == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-neutral-50 p-6">
+      <View className="flex-1 items-center justify-center gap-2 bg-canvas p-gutter">
         <Text className="text-base">{t('shifts.detail.notFound')}</Text>
       </View>
     );
@@ -105,16 +105,16 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <View className="flex-1 bg-canvas">
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-8 p-6"
+        contentContainerClassName="flex-grow gap-8 p-gutter"
       >
         <View className="gap-1">
-          <Text className="text-2xl font-bold tracking-tight">
+          <Text className="font-serif text-5xl tracking-tight">
             {period.label}
           </Text>
-          <Text className="text-base opacity-50">{dateRange}</Text>
+          <Text className="font-mono text-base opacity-50">{dateRange}</Text>
         </View>
 
         <StatsCardGrid>

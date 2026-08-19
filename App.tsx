@@ -1,6 +1,10 @@
 import './src/global.css';
 
+import { useEffect } from 'react';
 import { StatusBar } from 'expo-status-bar';
+import * as SplashScreen from 'expo-splash-screen';
+import { useFonts } from 'expo-font';
+import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {
@@ -19,6 +23,8 @@ import { PreferencesProvider } from './src/features/settings/preferences-context
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
 import type { TabParamList } from './src/navigation/types';
 import { BRAND_COLOR } from './src/theme/brand';
+
+void SplashScreen.preventAutoHideAsync();
 
 type TabKey = keyof TabParamList;
 type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
@@ -85,6 +91,20 @@ function RootNavigator() {
 }
 
 export default function App() {
+  const [fontsLoaded, fontError] = useFonts({
+    InstrumentSerif_400Regular,
+  });
+
+  useEffect(() => {
+    if (fontsLoaded || fontError != null) {
+      void SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded, fontError]);
+
+  if (!fontsLoaded && fontError == null) {
+    return null;
+  }
+
   return (
     <I18nextProvider i18n={i18n}>
       <SafeAreaProvider>

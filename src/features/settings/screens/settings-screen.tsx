@@ -26,12 +26,12 @@ export function SettingsScreen() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white"
+      className="flex-1 bg-canvas"
       contentInsetAdjustmentBehavior="automatic"
-      contentContainerClassName="gap-6 p-6"
+      contentContainerClassName="gap-6 p-gutter"
     >
       <View className="gap-2">
-        <Text className="text-sm font-medium text-neutral-600">
+        <Text className="font-mono text-sm font-medium text-neutral-600">
           {t('settings.language')}
         </Text>
         <View className="gap-2">
@@ -57,7 +57,7 @@ export function SettingsScreen() {
                 ]}
               >
                 <Text
-                  className={`text-base ${selected ? 'font-semibold' : ''}`}
+                  className={`font-mono text-base ${selected ? 'font-semibold' : ''}`}
                   style={{
                     color: selected
                       ? BRAND_SELECTION.foreground

@@ -27,10 +27,10 @@ export function DayDetailScreen({ route }: Props) {
 
   if (dayInfo.kind === 'free') {
     return (
-      <View className="gap-8 bg-white p-6">
+      <View className="gap-8 bg-canvas p-gutter">
         <View className="gap-1">
-          <Text className="text-3xl font-bold tracking-tight">{dateLabel}</Text>
-          <Text className="text-lg font-medium">{t('calendar.freeDay')}</Text>
+          <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
+          <Text className="font-mono text-lg">{t('calendar.freeDay')}</Text>
         </View>
       </View>
     );
@@ -38,11 +38,11 @@ export function DayDetailScreen({ route }: Props) {
 
   if (dayInfo.kind === 'vacation') {
     return (
-      <View className="gap-8 bg-white p-6">
+      <View className="gap-8 bg-canvas p-gutter">
         <View className="gap-1">
-          <Text className="text-3xl font-bold tracking-tight">{dateLabel}</Text>
-          <Text className="text-lg font-medium">{t('calendar.vacationDay')}</Text>
-          <Text className="text-base opacity-50">{dayInfo.rotationLabel}</Text>
+          <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
+          <Text className="font-mono text-lg">{t('calendar.vacationDay')}</Text>
+          <Text className="font-mono text-base opacity-50">{dayInfo.rotationLabel}</Text>
         </View>
       </View>
     );
@@ -51,10 +51,10 @@ export function DayDetailScreen({ route }: Props) {
   const { shift } = dayInfo;
 
   return (
-    <View className="gap-4 bg-white p-6">
+    <View className="gap-4 bg-canvas p-gutter">
       <View className="gap-1">
-        <Text className="text-3xl font-bold tracking-tight">{dateLabel}</Text>
-        <Text className="text-lg font-medium">{shift.rotationLabel}</Text>
+        <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
+        <Text className="font-mono text-lg">{shift.rotationLabel}</Text>
       </View>
       <StatsCardGrid>
         <StatsCard

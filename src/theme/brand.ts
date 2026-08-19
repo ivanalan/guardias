@@ -1,5 +1,17 @@
-/** Primary brand accent (strong blue on white). */
+/** Primary brand accent (strong blue). Default rotation swatch + tab tint. */
 export const BRAND_COLOR = '#2F69F3';
+
+/** App canvas from the visual mocks. */
+export const CANVAS_COLOR = '#F6F1EC';
+
+/** Primary text / icon ink. */
+export const INK_COLOR = '#1C1B1F';
+
+/** Free-weekend surfaces (sampled from Today mock). */
+export const WEEKEND_COLOR = '#085D3A';
+
+/** Unfilled progress-pill track. */
+export const PILL_TRACK_COLOR = '#E8E4DF';
 
 /**
  * Shared selected-state chrome for chips, tiles, choice rows, and filters.
