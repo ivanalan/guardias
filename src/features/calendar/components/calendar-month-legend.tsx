@@ -1,6 +1,5 @@
 import { useTranslation } from 'react-i18next';
 
-import { DEFAULT_ROTATION_COLOR } from '../../rotations/rotation-colors';
 import { WEEKEND_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarLegendFilter } from '../build-marked-dates';
@@ -10,6 +9,8 @@ type Props = {
   shiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
+  /** Period color for the shifts chip (border + selected fill). */
+  shiftColor: string;
   filter: CalendarLegendFilter;
   onFilterChange: (filter: CalendarLegendFilter) => void;
 };
@@ -21,6 +22,7 @@ export function CalendarMonthLegend({
   shiftDayCount,
   freeWeekendCount,
   vacationDayCount,
+  shiftColor,
   filter,
   onFilterChange,
 }: Props) {
@@ -35,7 +37,7 @@ export function CalendarMonthLegend({
       <LegendPill
         label={t('calendar.legend.shiftsSummary', { count: shiftDayCount })}
         accessibilityHint={t('calendar.legend.filterShiftsHint')}
-        borderColor={DEFAULT_ROTATION_COLOR}
+        borderColor={shiftColor}
         selected={filter === 'shifts'}
         muted={filter != null && filter !== 'shifts'}
         onPress={() => toggle('shifts')}

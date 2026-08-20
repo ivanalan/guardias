@@ -5,6 +5,7 @@ import type { DayProps } from 'react-native-calendars/src/calendar/day';
 import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import {
+  addCalendarDays,
   CALENDAR_WEEK_ROW_GAP,
   CELL_SIZE,
   DAY_MARKER_INNER_RADIUS,
@@ -15,8 +16,10 @@ import {
   dayNumber,
   getDayMarkKind,
   getMarkDimming,
+  isCalendarDatePast,
   isFreeWeekendSpanEnd,
   isFreeWeekendSpanStart,
+  markColorAlpha,
   resolveInkTextColor,
   resolveShiftColor,
   resolveShiftTextColor,
@@ -102,6 +105,7 @@ function CalendarDayInner({
   const label = dayNumber(iso);
   const markKind = getDayMarkKind(iso, markContext);
   const dimming = getMarkDimming(markContext.filter);
+  const isPast = isCalendarDatePast(iso, markContext.todayIso);
 
   const handlePress = () => {
     if (date != null) {
@@ -124,7 +128,11 @@ function CalendarDayInner({
     !inactive
   ) {
     // Background comes from Saturday’s 200%-wide pill; keep this cell above it.
-    const textColor = resolveShiftTextColor(dimming.dimFreeWeekends);
+    const weekendAlpha = markColorAlpha(
+      dimming.dimFreeWeekends,
+      isPast,
+    );
+    const textColor = resolveShiftTextColor(weekendAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -155,8 +163,16 @@ function CalendarDayInner({
     isFreeWeekendSpanStart(iso, markContext.freeWeekendSet, markKind) &&
     !inactive
   ) {
-    const weekendBg = resolveWeekendBackground(dimming.dimFreeWeekends);
-    const textColor = resolveShiftTextColor(dimming.dimFreeWeekends);
+    const weekendPast = isCalendarDatePast(
+      addCalendarDays(iso, 1),
+      markContext.todayIso,
+    );
+    const weekendAlpha = markColorAlpha(
+      dimming.dimFreeWeekends,
+      weekendPast,
+    );
+    const weekendBg = resolveWeekendBackground(weekendAlpha);
+    const textColor = resolveShiftTextColor(weekendAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -191,12 +207,9 @@ function CalendarDayInner({
 
   if (markKind === 'shift' && !inactive) {
     const shiftColor = markContext.shiftColorByDate.get(iso)!;
-    const backgroundColor = resolveShiftColor(
-      iso,
-      shiftColor,
-      dimming.dimShifts,
-    );
-    const textColor = resolveShiftTextColor(dimming.dimShifts);
+    const shiftAlpha = markColorAlpha(dimming.dimShifts, isPast);
+    const backgroundColor = resolveShiftColor(shiftColor, shiftAlpha);
+    const textColor = resolveShiftTextColor(shiftAlpha);
 
     return (
       <DayShell
@@ -250,8 +263,9 @@ function CalendarDayInner({
   }
 
   if (markKind === 'vacation' && !inactive) {
-    const backgroundColor = resolveVacationBackground(dimming.dimVacations);
-    const textColor = resolveVacationTextColor(dimming.dimVacations);
+    const vacationAlpha = markColorAlpha(dimming.dimVacations, isPast);
+    const backgroundColor = resolveVacationBackground(vacationAlpha);
+    const textColor = resolveVacationTextColor(vacationAlpha);
 
     return (
       <DayShell
@@ -282,8 +296,9 @@ function CalendarDayInner({
   }
 
   if (markKind === 'freeWeekend' && !inactive) {
-    const backgroundColor = resolveWeekendBackground(dimming.dimFreeWeekends);
-    const textColor = resolveShiftTextColor(dimming.dimFreeWeekends);
+    const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, isPast);
+    const backgroundColor = resolveWeekendBackground(weekendAlpha);
+    const textColor = resolveShiftTextColor(weekendAlpha);
 
     return (
       <DayShell

@@ -3,7 +3,7 @@
     "back": "Atrás"
   },
   "tabs": {
-    "home": "Inicio",
+    "home": "Hoy",
     "calendar": "Calendario",
     "shifts": "Guardias"
   },
@@ -41,7 +41,7 @@
     "duration": "{{hours}} horas",
     "viewMode": {
       "month": "Mes",
-      "scroll": "Lista"
+      "scroll": "Año"
     },
     "shareA11y": "Compartir archivo de guardias",
     "previousMonthA11y": "Mes anterior",

@@ -23,6 +23,7 @@ export const dayMarkerStyle = {
 };
 
 export const DIM_OPACITY = 0.3;
+export const PAST_EVENT_OPACITY = 0.5;
 
 export type DayMarkKind = 'shift' | 'vacation' | 'freeWeekend' | 'none';
 
@@ -60,6 +61,25 @@ export function getMarkDimming(
     dimFreeWeekends: filter != null && filter !== 'freeWeekends',
     dimVacations: filter != null && filter !== 'vacation',
   };
+}
+
+/** `YYYY-MM-DD` comparison; today is not past. */
+export function isCalendarDatePast(iso: string, todayIso: string): boolean {
+  return iso < todayIso;
+}
+
+/** Filter dimming wins over past-event fade. */
+export function markColorAlpha(
+  dimmedByFilter: boolean,
+  isPast: boolean,
+): number {
+  if (dimmedByFilter) {
+    return DIM_OPACITY;
+  }
+  if (isPast) {
+    return PAST_EVENT_OPACITY;
+  }
+  return 1;
 }
 
 export function buildCalendarDayMarkContext(
@@ -131,36 +151,28 @@ export function isFreeWeekendSpanEnd(
   return freeWeekendSet.has(addCalendarDays(iso, -1));
 }
 
-export function resolveShiftColor(
-  iso: string,
-  color: string,
-  dimmed: boolean,
-): string {
-  return dimmed ? withAlpha(color, DIM_OPACITY) : color;
+function applyMarkColor(hex: string, alpha: number): string {
+  return alpha < 1 ? withAlpha(hex, alpha) : hex;
 }
 
-export function resolveWeekendBackground(dimmed: boolean): string {
-  return dimmed
-    ? withAlpha(CALENDAR_MARK_COLORS.freeWeekendBackground, DIM_OPACITY)
-    : CALENDAR_MARK_COLORS.freeWeekendBackground;
+export function resolveShiftColor(color: string, alpha: number): string {
+  return applyMarkColor(color, alpha);
 }
 
-export function resolveVacationBackground(dimmed: boolean): string {
-  return dimmed
-    ? withAlpha(CALENDAR_MARK_COLORS.vacationBackground, DIM_OPACITY)
-    : CALENDAR_MARK_COLORS.vacationBackground;
+export function resolveWeekendBackground(alpha: number): string {
+  return applyMarkColor(CALENDAR_MARK_COLORS.freeWeekendBackground, alpha);
 }
 
-export function resolveVacationTextColor(dimmed: boolean): string {
-  return dimmed
-    ? withAlpha(CALENDAR_MARK_COLORS.vacationText, DIM_OPACITY)
-    : CALENDAR_MARK_COLORS.vacationText;
+export function resolveVacationBackground(alpha: number): string {
+  return applyMarkColor(CALENDAR_MARK_COLORS.vacationBackground, alpha);
 }
 
-export function resolveShiftTextColor(dimmed: boolean): string {
-  return dimmed
-    ? withAlpha(CALENDAR_MARK_COLORS.shiftText, DIM_OPACITY)
-    : CALENDAR_MARK_COLORS.shiftText;
+export function resolveVacationTextColor(alpha: number): string {
+  return applyMarkColor(CALENDAR_MARK_COLORS.vacationText, alpha);
+}
+
+export function resolveShiftTextColor(alpha: number): string {
+  return applyMarkColor(CALENDAR_MARK_COLORS.shiftText, alpha);
 }
 
 export function resolveInkTextColor(inactive: boolean): string {

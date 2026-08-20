@@ -3,7 +3,7 @@
     "back": "Back"
   },
   "tabs": {
-    "home": "Home",
+    "home": "Today",
     "calendar": "Calendar",
     "shifts": "Shifts"
   },
@@ -41,7 +41,7 @@
     "duration": "{{hours}} hours",
     "viewMode": {
       "month": "Month",
-      "scroll": "Scroll"
+      "scroll": "Year"
     },
     "shareA11y": "Share shifts calendar file",
     "previousMonthA11y": "Previous month",

@@ -8,8 +8,13 @@ import {
   TODAY_INNER_GAP,
   dayMarkerStyle,
   dayNumber,
+  isCalendarDatePast,
+  markColorAlpha,
+  resolveShiftColor,
+  resolveShiftTextColor,
+  resolveWeekendBackground,
 } from '../../calendar/calendar-day-marker';
-import { INK_COLOR, WEEKEND_COLOR } from '../../../theme/brand';
+import { INK_COLOR } from '../../../theme/brand';
 import { Text, View } from '../../../tw';
 
 type TwoWeekCalendarProps = {
@@ -92,12 +97,16 @@ function WeekRow({
       freeWeekendDates.has(next);
 
     if (isWeekendStart) {
+      const weekendAlpha = markColorAlpha(
+        false,
+        isCalendarDatePast(next, todayIso),
+      );
       cells.push(
         <View
           key={iso}
           className="flex-[2] flex-row items-center"
           style={{
-            backgroundColor: WEEKEND_COLOR,
+            backgroundColor: resolveWeekendBackground(weekendAlpha),
             ...dayMarkerStyle,
           }}
         >
@@ -106,6 +115,7 @@ function WeekRow({
             todayIso={todayIso}
             isShift={false}
             onWeekend
+            markAlpha={weekendAlpha}
             shiftColor={shiftColor}
           />
           <DayCell
@@ -113,6 +123,7 @@ function WeekRow({
             todayIso={todayIso}
             isShift={false}
             onWeekend
+            markAlpha={weekendAlpha}
             shiftColor={shiftColor}
           />
         </View>,
@@ -150,6 +161,7 @@ type DayCellProps = {
   isShift: boolean;
   onWeekend: boolean;
   shiftColor: string;
+  markAlpha?: number;
 };
 
 function DayCell({
@@ -158,14 +170,15 @@ function DayCell({
   isShift,
   onWeekend,
   shiftColor,
+  markAlpha,
 }: DayCellProps) {
   const isToday = iso === todayIso;
   const label = dayNumber(iso);
-  const textClass = onWeekend
-    ? 'font-mono text-sm text-white'
-    : isShift
-      ? 'font-mono text-sm text-white'
-      : 'font-mono text-sm text-ink';
+  const alpha =
+    markAlpha ??
+    markColorAlpha(false, isCalendarDatePast(iso, todayIso));
+  const markedTextStyle =
+    onWeekend || isShift ? { color: resolveShiftTextColor(alpha) } : undefined;
 
   return (
     <View
@@ -187,12 +200,14 @@ function DayCell({
           <View
             className="flex-1 self-stretch items-center justify-center"
             style={{
-              backgroundColor: shiftColor,
+              backgroundColor: resolveShiftColor(shiftColor, alpha),
               borderCurve: 'continuous',
               borderRadius: DAY_MARKER_INNER_RADIUS,
             }}
           >
-            <Text className={textClass}>{label}</Text>
+            <Text className="font-mono text-sm" style={markedTextStyle}>
+              {label}
+            </Text>
           </View>
         </View>
       ) : isToday ? (
@@ -206,7 +221,14 @@ function DayCell({
             ...dayMarkerStyle,
           }}
         >
-          <Text className={textClass}>{label}</Text>
+          <Text
+            className={
+              onWeekend ? 'font-mono text-sm' : 'font-mono text-sm text-ink'
+            }
+            style={onWeekend ? markedTextStyle : undefined}
+          >
+            {label}
+          </Text>
         </View>
       ) : isShift ? (
         <View
@@ -214,18 +236,27 @@ function DayCell({
           style={{
             width: CELL_SIZE,
             height: CELL_SIZE,
-            backgroundColor: shiftColor,
+            backgroundColor: resolveShiftColor(shiftColor, alpha),
             ...dayMarkerStyle,
           }}
         >
-          <Text className={textClass}>{label}</Text>
+          <Text className="font-mono text-sm" style={markedTextStyle}>
+            {label}
+          </Text>
         </View>
       ) : (
         <View
           className="items-center justify-center"
           style={{ width: CELL_SIZE, height: CELL_SIZE }}
         >
-          <Text className={textClass}>{label}</Text>
+          <Text
+            className={
+              onWeekend ? 'font-mono text-sm' : 'font-mono text-sm text-ink'
+            }
+            style={onWeekend ? markedTextStyle : undefined}
+          >
+            {label}
+          </Text>
         </View>
       )}
     </View>
