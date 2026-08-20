@@ -5,7 +5,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
 import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
-import { SCREEN_GUTTER } from '../../../theme/layout';
+import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
 import type { AppLanguage } from '../../../i18n';
 import { Pressable, Text, View } from '../../../tw';
 import { RotationPeriodRow } from '../components/rotation-period-row';
@@ -33,6 +33,18 @@ export function ShiftsListScreen({ navigation }: Props) {
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const sections = groupPeriodsByRecency(periods, todayIso);
 
+  if (periods.length === 0) {
+    return (
+      <View className="flex-1 bg-canvas">
+        <ShiftsEmptyState
+          onAddPress={() => {
+            navigation.navigate('AddRotation');
+          }}
+        />
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-canvas">
       <ScreenPageTitle
@@ -59,16 +71,9 @@ export function ShiftsListScreen({ navigation }: Props) {
           gap: 12,
           paddingHorizontal: SCREEN_GUTTER,
           paddingTop: 12,
-          paddingBottom: 12,
+          paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
         }}
         stickySectionHeadersEnabled={false}
-        ListEmptyComponent={
-          <ShiftsEmptyState
-            onAddPress={() => {
-              navigation.navigate('AddRotation');
-            }}
-          />
-        }
         renderSectionHeader={({
           section,
         }: {

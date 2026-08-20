@@ -1,4 +1,7 @@
 {
+  "common": {
+    "back": "Back"
+  },
   "tabs": {
     "home": "Home",
     "calendar": "Calendar",
@@ -76,8 +79,8 @@
     "openA11y": "Open settings"
   },
   "shifts": {
-    "emptyTitle": "No rotations yet",
-    "emptyBody": "Add a rotation from the shifts tab to get started.",
+    "emptyTitle": "Add your first rotation",
+    "emptyBody": "See how many shifts you have left, your next free weekend, and more.",
     "emptyCta": "Add a rotation",
     "addA11y": "Add rotation",
     "addTitle": "Add rotation",
@@ -126,7 +129,7 @@
       "previewShowCalendar": "Show calendar",
       "previewHideCalendar": "Hide calendar",
       "shiftStartTime": "Shift start time",
-      "color": "Calendar color",
+      "color": "Color",
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacation days",
       "vacationStart": "Vacation start",

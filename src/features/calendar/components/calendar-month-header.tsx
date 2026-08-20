@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type XDate from 'xdate';
 import { useTranslation } from 'react-i18next';
 
@@ -37,11 +37,7 @@ export function CalendarMonthHeader({
           className="px-1 active:opacity-60"
           hitSlop={8}
         >
-          <MaterialCommunityIcons
-            name="chevron-left"
-            size={28}
-            color={INK_COLOR}
-          />
+          <Ionicons name="chevron-back" size={28} color={INK_COLOR} />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -50,11 +46,7 @@ export function CalendarMonthHeader({
           className="px-1 active:opacity-60"
           hitSlop={8}
         >
-          <MaterialCommunityIcons
-            name="chevron-right"
-            size={28}
-            color={INK_COLOR}
-          />
+          <Ionicons name="chevron-forward" size={28} color={INK_COLOR} />
         </Pressable>
       </View>
     </View>

@@ -1,11 +1,11 @@
-/** Primary brand accent (strong blue). Default rotation swatch + tab tint. */
-export const BRAND_COLOR = '#2F69F3';
+/** Primary UI chrome — buttons, links, selection borders (ink black). */
+export const BRAND_COLOR = '#1C1B1F';
 
 /** App canvas from the visual mocks. */
 export const CANVAS_COLOR = '#F6F1EC';
 
-/** Primary text / icon ink. */
-export const INK_COLOR = '#1C1B1F';
+/** Primary text / icon ink (same as brand). */
+export const INK_COLOR = BRAND_COLOR;
 
 /** Free-weekend surfaces (sampled from Today mock). */
 export const WEEKEND_COLOR = '#085D3A';
@@ -15,7 +15,7 @@ export const PILL_TRACK_COLOR = '#E8E4DF';
 
 /**
  * Shared selected-state chrome for chips, tiles, choice rows, and filters.
- * Soft fill + brand border/foreground — same look as the calendar legend tile.
+ * Soft fill + ink border/foreground — same look as the calendar legend tile.
  */
 export const BRAND_SELECTION = {
   /** Soft fill (~8% opacity) for bordered surfaces and choice rows. */
@@ -24,16 +24,4 @@ export const BRAND_SELECTION = {
   backgroundSubtle: `${BRAND_COLOR}0A`,
   border: BRAND_COLOR,
   foreground: BRAND_COLOR,
-} as const;
-
-/**
- * Nearby accents around {@link BRAND_COLOR} for dashboard shift stats icons.
- * Same neighborhood — a step toward violet or teal — so cards read apart.
- */
-export const BRAND_ACCENT_TINTS = {
-  violet: '#6B4FE0',
-  indigo: '#3F51D4',
-  brand: BRAND_COLOR,
-  azure: '#2B85D9',
-  teal: '#1F9BA8',
 } as const;

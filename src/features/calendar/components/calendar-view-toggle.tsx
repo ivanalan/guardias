@@ -1,7 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
 import { INK_COLOR } from '../../../theme/brand';
-import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarViewMode } from '../calendar-view-mode';
 
@@ -28,7 +27,7 @@ export function CalendarViewToggle({ value, onChange }: Props) {
             accessibilityState={{ selected }}
             accessibilityLabel={label}
             onPress={() => onChange(mode)}
-            className="active:opacity-80"
+            className="items-center justify-center active:opacity-80"
             style={[
               {
                 borderCurve: 'continuous',
@@ -42,8 +41,7 @@ export function CalendarViewToggle({ value, onChange }: Props) {
             ]}
           >
             <Text
-              className={`text-sm font-mono ${selected ? 'text-white' : 'text-ink'}`}
-              style={ANDROID_TEXT_WIDTH_BUMP}
+              className={`text-center text-sm font-mono ${selected ? 'text-white' : 'text-ink'}`}
             >
               {label}
             </Text>

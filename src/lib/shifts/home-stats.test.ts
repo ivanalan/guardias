@@ -64,9 +64,9 @@ describe('getTimeUntilNextShift', () => {
 
 describe('getNextFreeWeekend', () => {
   // A-D offset B (Jul 1 2026 = B): shifts Jul 1, 5, 9, 13, 17, 21, 25, 29.
-  // Free weekends: Sat+Sun both free.
+  // Free weekends: Fri+Sat+Sun all free (Fri shift ends Sat morning).
   // Jul 4–5: Jul 5 is shift → not free.
-  // Jul 11–12: both free.
+  // Jul 11–12: Fri Jul 10 free → free.
   const julyPeriod = period({
     id: 'p1',
     startDate: '2026-07-01',

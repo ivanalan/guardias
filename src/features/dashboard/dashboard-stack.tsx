@@ -1,6 +1,7 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
+import { secondaryScreenOptions } from '../../navigation/secondary-screen-options';
 import { SettingsScreen } from '../settings/screens/settings-screen';
 import { HomeScreen } from './screens/home-screen';
 
@@ -16,11 +17,7 @@ export function DashboardStack() {
   const { t } = useTranslation();
 
   return (
-    <Stack.Navigator
-      screenOptions={{
-        headerBackButtonDisplayMode: 'minimal',
-      }}
-    >
+    <Stack.Navigator screenOptions={secondaryScreenOptions}>
       <Stack.Screen
         name="HomeHome"
         component={HomeScreen}

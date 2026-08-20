@@ -1,5 +1,5 @@
-import { BRAND_ACCENT_TINTS, BRAND_COLOR } from './brand';
-import { getAccentTints } from './accent-tints';
+import { DEFAULT_ROTATION_COLOR } from '../features/rotations/rotation-colors';
+import { DEFAULT_ACCENT_TINTS, getAccentTints } from './accent-tints';
 
 function hexDistance(a: string, b: string): number {
   const ar = parseInt(a.slice(1, 3), 16);
@@ -12,29 +12,31 @@ function hexDistance(a: string, b: string): number {
 }
 
 describe('getAccentTints', () => {
-  it('matches BRAND_ACCENT_TINTS when base is BRAND_COLOR', () => {
-    const accents = getAccentTints(BRAND_COLOR);
-    expect(accents.brand.toUpperCase()).toBe(BRAND_COLOR.toUpperCase());
+  it('matches DEFAULT_ACCENT_TINTS when base is DEFAULT_ROTATION_COLOR', () => {
+    const accents = getAccentTints(DEFAULT_ROTATION_COLOR);
+    expect(accents.brand.toUpperCase()).toBe(
+      DEFAULT_ROTATION_COLOR.toUpperCase(),
+    );
     for (const key of ['violet', 'indigo', 'azure', 'teal'] as const) {
-      expect(hexDistance(accents[key], BRAND_ACCENT_TINTS[key])).toBeLessThanOrEqual(
+      expect(hexDistance(accents[key], DEFAULT_ACCENT_TINTS[key])).toBeLessThanOrEqual(
         3,
       );
     }
   });
 
-  it('keeps brand equal to the input for a non-blue swatch', () => {
+  it('keeps brand equal to the input for a non-default swatch', () => {
     const rose = '#D81B60';
     const accents = getAccentTints(rose);
     expect(accents.brand.toUpperCase()).toBe(rose);
     expect(accents.violet.toUpperCase()).not.toBe(
-      BRAND_ACCENT_TINTS.violet.toUpperCase(),
+      DEFAULT_ACCENT_TINTS.violet.toUpperCase(),
     );
     expect(accents.teal.toUpperCase()).not.toBe(
-      BRAND_ACCENT_TINTS.teal.toUpperCase(),
+      DEFAULT_ACCENT_TINTS.teal.toUpperCase(),
     );
   });
 
-  it('falls back to brand accents for invalid hex', () => {
-    expect(getAccentTints('not-a-color')).toEqual({ ...BRAND_ACCENT_TINTS });
+  it('falls back to default guardia accents for invalid hex', () => {
+    expect(getAccentTints('not-a-color')).toEqual({ ...DEFAULT_ACCENT_TINTS });
   });
 });

@@ -120,25 +120,25 @@ export function RotationDetailScreen({ navigation, route }: Props) {
         <StatsCardGrid>
           <StatsCard
             tint="brand"
-            icon="calendar-sync"
+            icon="sync-outline"
             value={`${patternTitle} · ${period.pattern.offset}`}
             subtitle={patternSubtitle}
           />
           <StatsCard
             tint="indigo"
-            icon="clock-outline"
+            icon="time-outline"
             value={period.shiftStartTime}
             subtitle={t('shifts.form.shiftStartTime')}
           />
           <StatsCard
             tint="azure"
-            icon="calendar-start"
+            icon="today-outline"
             value={formatFormDate(period.startDate, language)}
             subtitle={t('shifts.form.startDate')}
           />
           <StatsCard
             tint="violet"
-            icon="calendar-end"
+            icon="flag-outline"
             value={formatFormDate(period.endDate, language)}
             subtitle={t('shifts.form.endDate')}
           />
@@ -146,7 +146,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
             <StatsCard
               fullWidth
               tint="indigo"
-              icon="calendar-check"
+              icon="checkmark-circle-outline"
               value={formatFormDate(firstShiftIso, language)}
               subtitle={t('shifts.form.firstShiftDate')}
             />
@@ -154,7 +154,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           <StatsCard
             fullWidth
             tint="teal"
-            icon="umbrella-beach"
+            icon="umbrella-outline"
             value={vacationLabel}
             subtitle={t('shifts.form.vacation')}
           />

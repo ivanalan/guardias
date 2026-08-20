@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
-import { BRAND_COLOR, WEEKEND_COLOR } from '../../../theme/brand';
+import { DEFAULT_ROTATION_COLOR } from '../../rotations/rotation-colors';
+import { WEEKEND_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarLegendFilter } from '../build-marked-dates';
 import { CALENDAR_MARK_COLORS } from '../calendar-mark-colors';
@@ -34,7 +35,7 @@ export function CalendarMonthLegend({
       <LegendPill
         label={t('calendar.legend.shiftsSummary', { count: shiftDayCount })}
         accessibilityHint={t('calendar.legend.filterShiftsHint')}
-        borderColor={BRAND_COLOR}
+        borderColor={DEFAULT_ROTATION_COLOR}
         selected={filter === 'shifts'}
         muted={filter != null && filter !== 'shifts'}
         onPress={() => toggle('shifts')}
@@ -55,7 +56,7 @@ export function CalendarMonthLegend({
             count: vacationDayCount,
           })}
           accessibilityHint={t('calendar.legend.filterVacationHint')}
-          borderColor={CALENDAR_MARK_COLORS.vacationText}
+          borderColor={CALENDAR_MARK_COLORS.vacationBackground}
           selected={filter === 'vacation'}
           muted={filter != null && filter !== 'vacation'}
           onPress={() => toggle('vacation')}
@@ -92,17 +93,20 @@ function LegendPill({
       className="active:opacity-70"
       style={{
         borderCurve: 'continuous',
-        borderRadius: 999,
+        borderRadius: 16,
         borderWidth: 1.5,
         borderColor,
-        backgroundColor: '#FFFFFF',
+        backgroundColor: selected ? borderColor : '#FFFFFF',
         paddingHorizontal: 16,
         paddingVertical: 10,
         opacity: muted ? 0.45 : 1,
-        boxShadow: selected ? `0 0 0 1px ${borderColor}` : undefined,
       }}
     >
-      <Text className="font-mono text-sm text-ink">{label}</Text>
+      <Text
+        className={`font-mono text-sm ${selected ? 'text-white' : 'text-ink'}`}
+      >
+        {label}
+      </Text>
     </Pressable>
   );
 }

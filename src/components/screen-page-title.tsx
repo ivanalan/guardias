@@ -5,7 +5,7 @@ import { Text, View } from '../tw';
 import { SCREEN_GUTTER } from '../theme/layout';
 
 /** Icon size for header actions aligned to the page title. */
-export const SCREEN_PAGE_TITLE_ICON_SIZE = 28;
+export const SCREEN_PAGE_TITLE_ICON_SIZE = 24;
 
 type ScreenPageTitleProps = {
   title: string;
@@ -30,7 +30,7 @@ export function ScreenPageTitle({
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="min-w-0 flex-1 font-serif text-[54px] leading-none text-ink">
+        <Text className="min-w-0 flex-1 font-serif text-[50px] leading-none text-ink">
           {title}
         </Text>
         {right ? <View className="shrink-0">{right}</View> : null}
