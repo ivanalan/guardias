@@ -1,8 +1,12 @@
 import {
   addCalendarDays,
+  DIM_OPACITY,
   getDayMarkKind,
+  isCalendarDatePast,
   isFreeWeekendSpanEnd,
   isFreeWeekendSpanStart,
+  markColorAlpha,
+  PAST_EVENT_OPACITY,
 } from './calendar-day-marker';
 
 describe('calendar day marker span helpers', () => {
@@ -52,5 +56,23 @@ describe('calendar day marker span helpers', () => {
     expect(
       isFreeWeekendSpanEnd('2026-08-03', freeWeekendSet, 'freeWeekend'),
     ).toBe(false);
+  });
+});
+
+describe('past event mark alpha', () => {
+  it('treats dates before today as past', () => {
+    expect(isCalendarDatePast('2026-08-18', '2026-08-19')).toBe(true);
+    expect(isCalendarDatePast('2026-08-19', '2026-08-19')).toBe(false);
+    expect(isCalendarDatePast('2026-08-20', '2026-08-19')).toBe(false);
+  });
+
+  it('uses 0.7 for past marks and 1 for today and future', () => {
+    expect(markColorAlpha(false, true)).toBe(PAST_EVENT_OPACITY);
+    expect(markColorAlpha(false, false)).toBe(1);
+  });
+
+  it('keeps filter dimming stronger than the past fade', () => {
+    expect(markColorAlpha(true, true)).toBe(DIM_OPACITY);
+    expect(markColorAlpha(true, false)).toBe(DIM_OPACITY);
   });
 });

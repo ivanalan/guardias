@@ -7,6 +7,7 @@ import {
 } from 'date-fns';
 
 import { isShiftDay, listShiftDatesInRange, parseCalendarDate } from '../../lib/shifts';
+import { DEFAULT_ROTATION_COLOR } from '../rotations/rotation-colors';
 import type { RotationPeriod } from '../rotations/types';
 import type { ShiftDateMark } from './build-marked-dates';
 import { countFreeWeekends, listFreeWeekendDates } from './free-weekends';
@@ -20,6 +21,8 @@ export type MonthMarkInputs = {
   shiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
+  /** Dominant period color for shift days in this month (legend chip). */
+  shiftColor: string;
 };
 
 /**
@@ -62,6 +65,7 @@ export function getMonthMarkInputs(
     shiftDayCount: shiftMarks.length,
     freeWeekendCount: countFreeWeekends(shiftSet, from, to),
     vacationDayCount: vacationDates.length,
+    shiftColor: shiftMarks[0]?.color ?? DEFAULT_ROTATION_COLOR,
   };
 }
 
@@ -106,6 +110,7 @@ export function getMarkInputsForMonthWindow(
     shiftDayCount: center.shiftDayCount,
     freeWeekendCount: center.freeWeekendCount,
     vacationDayCount: center.vacationDayCount,
+    shiftColor: center.shiftColor,
   };
 }
 

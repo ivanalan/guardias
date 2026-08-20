@@ -131,3 +131,42 @@ export const CALENDAR_CARD_STYLE = {
   borderRadius: 32,
   overflow: 'visible' as const,
 };
+
+/** Inner padding of month cards in month + year views. */
+export const CALENDAR_CARD_PADDING_VERTICAL = 20;
+/** Canvas gap between year-view month cards. */
+export const CALENDAR_LIST_ITEM_GAP = 12;
+
+const MONTH_TITLE_LINE_HEIGHT = 38;
+const HEADER_MARGIN_BOTTOM = 8;
+const WEEKDAY_ROW_MARGIN_TOP = 4;
+const WEEKDAY_ROW_MARGIN_BOTTOM = 8;
+const DAY_HEADER_MARGIN_TOP = 2;
+const DAY_HEADER_FONT_SIZE = 14;
+const DAY_HEADER_MARGIN_BOTTOM = 7;
+const WEEK_COUNT = 6;
+const WEEK_ROW_HEIGHT = CELL_SIZE + CALENDAR_WEEK_ROW_GAP;
+
+const listHeaderHeight = MONTH_TITLE_LINE_HEIGHT + HEADER_MARGIN_BOTTOM;
+const listWeekdayRowHeight =
+  WEEKDAY_ROW_MARGIN_TOP +
+  DAY_HEADER_MARGIN_TOP +
+  DAY_HEADER_FONT_SIZE +
+  DAY_HEADER_MARGIN_BOTTOM +
+  WEEKDAY_ROW_MARGIN_BOTTOM;
+const listMonthGridHeight =
+  WEEK_COUNT * WEEK_ROW_HEIGHT + (WEEK_COUNT - 1) * CALENDAR_WEEK_ROW_GAP;
+
+/** White card minHeight (6-week grid + padding). List pitch adds the canvas gap. */
+export const CALENDAR_LIST_CARD_HEIGHT =
+  listHeaderHeight +
+  listWeekdayRowHeight +
+  listMonthGridHeight +
+  CALENDAR_CARD_PADDING_VERTICAL * 2;
+
+/**
+ * CalendarList getItemLayout pitch. Must match card height + gap or the list
+ * opens scrolled past the current month.
+ */
+export const CALENDAR_LIST_ITEM_HEIGHT =
+  CALENDAR_LIST_CARD_HEIGHT + CALENDAR_LIST_ITEM_GAP;

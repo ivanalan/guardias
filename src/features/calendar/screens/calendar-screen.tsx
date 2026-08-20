@@ -22,7 +22,11 @@ import {
 import { buildCalendarDayMarkContext } from '../calendar-day-marker';
 import { CALENDAR_WEEK_ROW_GAP } from '../calendar-day-marker';
 import {
+  CALENDAR_CARD_PADDING_VERTICAL,
   CALENDAR_CARD_STYLE,
+  CALENDAR_LIST_CARD_HEIGHT,
+  CALENDAR_LIST_ITEM_GAP,
+  CALENDAR_LIST_ITEM_HEIGHT,
   CALENDAR_LIST_THEME,
   CALENDAR_THEME,
 } from '../calendar-theme';
@@ -276,12 +280,14 @@ export function CalendarScreen({ navigation }: Props) {
                 paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
               }}
               calendarWidth={listSize.width}
+              calendarHeight={CALENDAR_LIST_ITEM_HEIGHT}
               calendarStyle={{
                 backgroundColor: '#FFFFFF',
                 paddingHorizontal: SCREEN_GUTTER,
-                paddingVertical: 20,
+                paddingVertical: CALENDAR_CARD_PADDING_VERTICAL,
                 ...CALENDAR_CARD_STYLE,
-                marginBottom: 12,
+                minHeight: CALENDAR_LIST_CARD_HEIGHT,
+                marginBottom: CALENDAR_LIST_ITEM_GAP,
               }}
               onVisibleMonthsChange={(months: DateData[]) => {
                 const primary = months[0];
@@ -317,6 +323,7 @@ export function CalendarScreen({ navigation }: Props) {
             shiftDayCount={monthInputs.shiftDayCount}
             freeWeekendCount={monthInputs.freeWeekendCount}
             vacationDayCount={monthInputs.vacationDayCount}
+            shiftColor={monthInputs.shiftColor}
             filter={filter}
             onFilterChange={setFilter}
           />

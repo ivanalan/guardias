@@ -1,3 +1,4 @@
+import { DEFAULT_ROTATION_COLOR } from '../rotations/rotation-colors';
 import type { RotationPeriod } from '../rotations/types';
 
 import {
@@ -28,6 +29,25 @@ describe('getMonthLegendStats', () => {
     expect(stats.shiftDayCount).toBe(0);
     expect(stats.freeWeekendCount).toBe(4);
     expect(stats.vacationDayCount).toBe(0);
+  });
+
+  it('uses the period color for the shifts legend chip', () => {
+    const empty = getMonthMarkInputs([], '2026-07-15');
+    expect(empty.shiftColor).toBe(DEFAULT_ROTATION_COLOR);
+
+    const july = getMonthMarkInputs(
+      [
+        period({
+          id: 'p1',
+          startDate: '2026-07-01',
+          endDate: '2026-07-31',
+          pattern: { cycleDays: 4, offset: 'A' },
+          color: '#2F69F3',
+        }),
+      ],
+      '2026-07-15',
+    );
+    expect(july.shiftColor).toBe('#2F69F3');
   });
 
   it('returns 0 free weekends when every weekend has a shift', () => {
