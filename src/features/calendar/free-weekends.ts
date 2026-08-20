@@ -3,9 +3,26 @@ import { addDays, format, getDay } from 'date-fns';
 import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 
 /**
+ * A free weekend is Fri+Sat+Sun with no shifts. Friday counts because a Friday
+ * guardia ends Saturday morning — the resident is still recovering.
+ */
+function isFreeWeekendPair(
+  shiftDates: ReadonlySet<string>,
+  saturday: Date,
+): boolean {
+  const fri = format(addDays(saturday, -1), 'yyyy-MM-dd');
+  const sat = format(saturday, 'yyyy-MM-dd');
+  const sun = format(addDays(saturday, 1), 'yyyy-MM-dd');
+  return (
+    !shiftDates.has(fri) && !shiftDates.has(sat) && !shiftDates.has(sun)
+  );
+}
+
+/**
  * Saturdays and Sundays in `[from, to]` that belong to a free weekend:
- * both Sat and Sun have no shift. Days outside the range are omitted even
- * when their pair is inside (caller can expand `from`/`to` for grid padding).
+ * Fri, Sat, and Sun all have no shift. Days outside the range are omitted
+ * even when their pair is inside (caller can expand `from`/`to` for grid
+ * padding). Friday itself is never listed — only Sat/Sun are marked.
  */
 export function listFreeWeekendDates(
   shiftDates: ReadonlySet<string>,
@@ -31,7 +48,7 @@ export function listFreeWeekendDates(
     const intersectsRange =
       (sat >= from && sat <= to) || (sun >= from && sun <= to);
 
-    if (intersectsRange && !shiftDates.has(sat) && !shiftDates.has(sun)) {
+    if (intersectsRange && isFreeWeekendPair(shiftDates, saturday)) {
       if (sat >= from && sat <= to) {
         dates.push(sat);
       }
@@ -47,7 +64,7 @@ export function listFreeWeekendDates(
 }
 
 /**
- * Counts free weekend pairs (Sat+Sun both free) that intersect `[from, to]`.
+ * Counts free weekend pairs (Fri+Sat+Sun all free) that intersect `[from, to]`.
  * A month-edge half-weekend still counts as one pair.
  */
 export function countFreeWeekends(
@@ -73,7 +90,7 @@ export function countFreeWeekends(
     const intersectsRange =
       (sat >= from && sat <= to) || (sun >= from && sun <= to);
 
-    if (intersectsRange && !shiftDates.has(sat) && !shiftDates.has(sun)) {
+    if (intersectsRange && isFreeWeekendPair(shiftDates, saturday)) {
       count += 1;
     }
 

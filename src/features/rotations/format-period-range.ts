@@ -1,7 +1,10 @@
-import { addMonths, addWeeks, format, parseISO, subDays } from 'date-fns';
+import { addBusinessDays, addMonths, format, parseISO, subDays } from 'date-fns';
 import { enUS, es } from 'date-fns/locale';
 
 const locales = { en: enUS, es } as const;
+
+/** Inclusive weekday count for a default vacation block (Mon–Fri). */
+const DEFAULT_VACATION_WEEKDAYS = 10;
 
 /** Formats a rotation date range for the list row, e.g. "Jul 1 – Sep 30". */
 export function formatPeriodRange(
@@ -25,9 +28,12 @@ export function defaultRotationEndISO(start: Date): string {
   return toISODate(subDays(addMonths(start, 2), 1));
 }
 
-/** Inclusive end of a default vacation block: start + 2 weeks − 1 day. */
+/**
+ * Inclusive end of a default vacation block: `DEFAULT_VACATION_WEEKDAYS`
+ * weekdays including the start day (weekends skipped).
+ */
 export function defaultVacationEndISO(start: Date): string {
-  return toISODate(subDays(addWeeks(start, 2), 1));
+  return toISODate(addBusinessDays(start, DEFAULT_VACATION_WEEKDAYS - 1));
 }
 
 /**
@@ -42,17 +48,14 @@ export function defaultVacationEndWithinPeriod(
   return proposed > periodEndISO ? periodEndISO : proposed;
 }
 
-/** Formats an ISO date for the add/edit form, e.g. "Jul 1, 2026". */
+/** Formats an ISO date for the add/edit form, e.g. "June 1". */
 export function formatFormDate(isoDate: string, language: 'en' | 'es'): string {
-  return format(parseISO(isoDate), 'MMM d, yyyy', { locale: locales[language] });
+  return format(parseISO(isoDate), 'MMMM d', { locale: locales[language] });
 }
 
-/** Short date for preview teasers, e.g. "Jul 1". */
-export function formatShortFormDate(
-  isoDate: string,
-  language: 'en' | 'es',
-): string {
-  return format(parseISO(isoDate), 'MMM d', { locale: locales[language] });
+/** Formats stored `HH:mm` for the form, e.g. "7:00 AM". */
+export function formatFormTime(hhmm: string, language: 'en' | 'es'): string {
+  return format(parseHHMM(hhmm), 'h:mm a', { locale: locales[language] });
 }
 
 /** `HH:mm` from a Date (local). */

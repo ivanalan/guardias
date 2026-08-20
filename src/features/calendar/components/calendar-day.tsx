@@ -54,44 +54,19 @@ const weekendSpanPressableStyle = {
   justifyContent: 'center' as const,
 };
 
-function weekendSpanPillStyle(
-  side: 'start' | 'end',
-  backgroundColor: string,
-): {
-  position: 'absolute';
-  top: '50%';
-  marginTop: number;
-  height: number;
-  backgroundColor: string;
-  borderCurve: 'continuous';
-  borderTopLeftRadius?: number;
-  borderBottomLeftRadius?: number;
-  borderTopRightRadius?: number;
-  borderBottomRightRadius?: number;
-  left?: number;
-  right?: number;
-} {
-  const radius = dayMarkerStyle.borderRadius;
+/** Full Sat–Sun capsule, painted only from Saturday so the join never double-blends. */
+function weekendSpanPillStyle(backgroundColor: string) {
   return {
-    position: 'absolute',
-    top: '50%',
+    position: 'absolute' as const,
+    top: '50%' as const,
     marginTop: -CELL_SIZE / 2,
+    left: 0,
+    // Equal flex day cells → 200% covers Saturday + Sunday with one fill.
+    width: '200%' as const,
     height: CELL_SIZE,
     backgroundColor,
-    borderCurve: 'continuous',
-    ...(side === 'start'
-      ? {
-          left: 0,
-          right: -1,
-          borderTopLeftRadius: radius,
-          borderBottomLeftRadius: radius,
-        }
-      : {
-          left: -1,
-          right: 0,
-          borderTopRightRadius: radius,
-          borderBottomRightRadius: radius,
-        }),
+    zIndex: 0,
+    ...dayMarkerStyle,
   };
 }
 
@@ -148,7 +123,7 @@ function CalendarDayInner({
     isFreeWeekendSpanEnd(iso, markContext.freeWeekendSet, markKind) &&
     !inactive
   ) {
-    const weekendBg = resolveWeekendBackground(dimming.dimFreeWeekends);
+    // Background comes from Saturday’s 200%-wide pill; keep this cell above it.
     const textColor = resolveShiftTextColor(dimming.dimFreeWeekends);
 
     return (
@@ -160,12 +135,8 @@ function CalendarDayInner({
           onLongPress={handleLongPress}
           testID={testID}
           className="active:opacity-80"
-          style={weekendSpanPressableStyle}
+          style={[weekendSpanPressableStyle, { zIndex: 1 }]}
         >
-          <View
-            pointerEvents="none"
-            style={weekendSpanPillStyle('end', weekendBg)}
-          />
           {isToday ? (
             <TodayOutline label={label} textColor={textColor} />
           ) : (
@@ -200,12 +171,14 @@ function CalendarDayInner({
         >
           <View
             pointerEvents="none"
-            style={weekendSpanPillStyle('start', weekendBg)}
+            style={weekendSpanPillStyle(weekendBg)}
           />
           {isToday ? (
-            <TodayOutline label={label} textColor={textColor} />
+            <View style={{ zIndex: 1 }}>
+              <TodayOutline label={label} textColor={textColor} />
+            </View>
           ) : (
-            <View style={dayMarkerBoxStyle}>
+            <View style={[dayMarkerBoxStyle, { zIndex: 1 }]}>
               <Text className="font-mono text-sm" style={{ color: textColor }}>
                 {label}
               </Text>

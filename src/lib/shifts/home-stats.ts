@@ -36,9 +36,9 @@ export type NextFreeWeekend = {
 };
 
 /**
- * Next Sat–Sun pair with no shifts in `period` where the weekend is not
- * fully past. Countdown targets local midnight Saturday; `isNow` when
- * already inside.
+ * Next free weekend (Fri+Sat+Sun all clear of shifts) in `period` that is
+ * not fully past. Countdown targets local midnight Saturday; `isNow` when
+ * already on that Sat or Sun.
  */
 export function getNextFreeWeekend(
   period: RotationPeriod,

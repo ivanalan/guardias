@@ -1,8 +1,20 @@
-import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
+import {
+  TODAY_BORDER_WIDTH,
+  TODAY_INNER_GAP,
+} from '../../calendar/calendar-day-marker';
+import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, View } from '../../../tw';
 import { ROTATION_COLORS } from '../rotation-colors';
+
+const SWATCH_SIZE = 32;
+const SELECTED_SIZE = 36;
+const SELECTED_RADIUS = SELECTED_SIZE / 2;
+const SELECTED_INNER_RADIUS = Math.max(
+  SELECTED_RADIUS - TODAY_INNER_GAP - TODAY_BORDER_WIDTH,
+  4,
+);
 
 type Props = {
   value: string;
@@ -14,7 +26,7 @@ export function RotationColorSwatches({ value, onChange }: Props) {
   const { t } = useTranslation();
 
   return (
-    <View className="flex-row items-center justify-between px-4 py-3">
+    <View className="flex-row items-center justify-between">
       {ROTATION_COLORS.map((color) => {
         const selected = color.toLowerCase() === value.toLowerCase();
         return (
@@ -25,18 +37,34 @@ export function RotationColorSwatches({ value, onChange }: Props) {
             accessibilityLabel={t('shifts.form.colorSwatchA11y', { color })}
             onPress={() => onChange(color)}
             className="items-center justify-center active:opacity-80"
-            style={{
-              width: 36,
-              height: 36,
-              borderRadius: 18,
-              backgroundColor: color,
-              borderWidth: selected ? 3 : 0,
-              borderColor: '#191C1A',
-            }}
+            style={
+              selected
+                ? {
+                    width: SELECTED_SIZE,
+                    height: SELECTED_SIZE,
+                    borderRadius: SELECTED_RADIUS,
+                    borderWidth: TODAY_BORDER_WIDTH,
+                    borderColor: INK_COLOR,
+                    padding: TODAY_INNER_GAP,
+                    backgroundColor: '#ffffff',
+                  }
+                : {
+                    width: SWATCH_SIZE,
+                    height: SWATCH_SIZE,
+                    borderRadius: SWATCH_SIZE / 2,
+                    backgroundColor: color,
+                  }
+            }
             hitSlop={4}
           >
             {selected ? (
-              <Ionicons name="checkmark" size={18} color="#ffffff" />
+              <View
+                className="flex-1 self-stretch"
+                style={{
+                  backgroundColor: color,
+                  borderRadius: SELECTED_INNER_RADIUS,
+                }}
+              />
             ) : null}
           </Pressable>
         );

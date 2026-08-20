@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { listShiftDatesInRange } from '../../../lib/shifts';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
-import { BRAND_COLOR } from '../../../theme/brand';
+import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { CALENDAR_THEME } from '../../calendar/calendar-theme';
@@ -16,15 +16,13 @@ import { CalendarMonthTitle } from '../../calendar/components/calendar-month-tit
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
 import { buildMonthMarkedDates } from '../../calendar/month-marks';
 import { getMonthMarkInputs } from '../../calendar/month-legend-stats';
-import { formatShortFormDate } from '../format-period-range';
+import { formatFormDate } from '../format-period-range';
 import type { RotationPeriod } from '../types';
 
 type Props = {
   period: RotationPeriod;
   language: AppLanguage;
 };
-
-const NEXT_SHIFT_TEASER_COUNT = 3;
 
 function monthKey(isoDate: string): string {
   return isoDate.slice(0, 7);
@@ -87,17 +85,22 @@ export function RotationPreviewCalendar({ period, language }: Props) {
   );
   const shiftCount = shiftDates.length;
   const countLabel = t('shifts.form.previewShiftCount', { count: shiftCount });
-  const nextDates = shiftDates.slice(0, NEXT_SHIFT_TEASER_COUNT);
   const datesLabel =
-    nextDates.length > 0
-      ? nextDates.map((iso) => formatShortFormDate(iso, language)).join(', ')
+    shiftDates.length > 0
+      ? shiftDates.map((iso) => formatFormDate(iso, language)).join(', ')
       : null;
   const toggleLabel = expanded
     ? t('shifts.form.previewHideCalendar')
     : t('shifts.form.previewShowCalendar');
 
   return (
-    <View className="overflow-hidden rounded-2xl border border-neutral-200/80 bg-white">
+    <View className="gap-1.5">
+      <Text
+        className="font-mono text-sm text-ink"
+        style={ANDROID_TEXT_WIDTH_BUMP}
+      >
+        {countLabel}
+      </Text>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded }}
@@ -105,33 +108,30 @@ export function RotationPreviewCalendar({ period, language }: Props) {
           datesLabel != null ? `. ${datesLabel}` : ''
         }. ${toggleLabel}`}
         onPress={() => setExpanded((prev) => !prev)}
-        className="flex-row items-center px-4 py-3.5 active:opacity-70"
+        className="h-14 flex-row items-center rounded-xl border border-neutral-200 bg-white px-4 active:opacity-70"
+        style={{ borderCurve: 'continuous' }}
       >
-        <View className="min-w-0 flex-1 gap-0.5 pr-3">
-          <Text className="text-base font-semibold text-neutral-900">
-            {countLabel}
-          </Text>
-          {datesLabel != null ? (
-            <Text className="text-sm text-neutral-500">{datesLabel}</Text>
-          ) : null}
-        </View>
-        <View className="shrink-0 flex-row items-center gap-1">
+        {datesLabel != null ? (
           <Text
-            className="shrink-0 text-sm"
-            style={[{ color: BRAND_COLOR }, ANDROID_TEXT_WIDTH_BUMP]}
+            className="min-w-0 flex-1 pr-2 font-mono text-base text-ink"
+            numberOfLines={1}
+            ellipsizeMode="tail"
+            style={ANDROID_TEXT_WIDTH_BUMP}
           >
-            {toggleLabel}
+            {datesLabel}
           </Text>
-          <Ionicons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={18}
-            color={BRAND_COLOR}
-          />
-        </View>
+        ) : (
+          <View className="flex-1" />
+        )}
+        <Ionicons
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={18}
+          color={INK_COLOR}
+        />
       </Pressable>
 
       {expanded ? (
-        <View className="border-t border-neutral-100 px-1 pb-2">
+        <View className="overflow-hidden rounded-xl border border-neutral-200 bg-white px-3 py-5">
           <Calendar
             key={`${language}-${monthKey(period.startDate)}`}
             current={currentMonth}

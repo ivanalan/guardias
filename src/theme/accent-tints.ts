@@ -1,12 +1,23 @@
-import { BRAND_ACCENT_TINTS, BRAND_COLOR } from './brand';
+import { DEFAULT_ROTATION_COLOR } from '../features/rotations/rotation-colors';
 
-export type AccentTintKey = keyof typeof BRAND_ACCENT_TINTS;
+export type AccentTintKey = 'violet' | 'indigo' | 'brand' | 'azure' | 'teal';
 
 export type AccentTints = Record<AccentTintKey, string>;
 
 type Hsl = { h: number; s: number; l: number };
 
 const HEX_COLOR = /^#[0-9A-Fa-f]{6}$/;
+
+/** Template base — only used to derive hue/S/L offsets for guardia accent families. */
+const REFERENCE_BASE = '#2F69F3';
+
+const REFERENCE_ACCENT_TINTS: AccentTints = {
+  violet: '#6B4FE0',
+  indigo: '#3F51D4',
+  brand: REFERENCE_BASE,
+  azure: '#2B85D9',
+  teal: '#1F9BA8',
+};
 
 function clamp01(value: number): number {
   return Math.min(1, Math.max(0, value));
@@ -95,33 +106,41 @@ function hueDelta(from: number, to: number): number {
   return delta;
 }
 
-const BRAND_HSL = parseHsl(BRAND_COLOR)!;
+const REFERENCE_HSL = parseHsl(REFERENCE_BASE)!;
 
-/** Hue offsets of brand accent neighbors relative to {@link BRAND_COLOR}. */
 const HUE_OFFSETS: Record<Exclude<AccentTintKey, 'brand'>, number> = {
-  violet: hueDelta(BRAND_HSL.h, parseHsl(BRAND_ACCENT_TINTS.violet)!.h),
-  indigo: hueDelta(BRAND_HSL.h, parseHsl(BRAND_ACCENT_TINTS.indigo)!.h),
-  azure: hueDelta(BRAND_HSL.h, parseHsl(BRAND_ACCENT_TINTS.azure)!.h),
-  teal: hueDelta(BRAND_HSL.h, parseHsl(BRAND_ACCENT_TINTS.teal)!.h),
+  violet: hueDelta(
+    REFERENCE_HSL.h,
+    parseHsl(REFERENCE_ACCENT_TINTS.violet)!.h,
+  ),
+  indigo: hueDelta(
+    REFERENCE_HSL.h,
+    parseHsl(REFERENCE_ACCENT_TINTS.indigo)!.h,
+  ),
+  azure: hueDelta(
+    REFERENCE_HSL.h,
+    parseHsl(REFERENCE_ACCENT_TINTS.azure)!.h,
+  ),
+  teal: hueDelta(REFERENCE_HSL.h, parseHsl(REFERENCE_ACCENT_TINTS.teal)!.h),
 };
 
 const ROLE_SL: Record<Exclude<AccentTintKey, 'brand'>, { s: number; l: number }> =
   {
     violet: {
-      s: parseHsl(BRAND_ACCENT_TINTS.violet)!.s,
-      l: parseHsl(BRAND_ACCENT_TINTS.violet)!.l,
+      s: parseHsl(REFERENCE_ACCENT_TINTS.violet)!.s,
+      l: parseHsl(REFERENCE_ACCENT_TINTS.violet)!.l,
     },
     indigo: {
-      s: parseHsl(BRAND_ACCENT_TINTS.indigo)!.s,
-      l: parseHsl(BRAND_ACCENT_TINTS.indigo)!.l,
+      s: parseHsl(REFERENCE_ACCENT_TINTS.indigo)!.s,
+      l: parseHsl(REFERENCE_ACCENT_TINTS.indigo)!.l,
     },
     azure: {
-      s: parseHsl(BRAND_ACCENT_TINTS.azure)!.s,
-      l: parseHsl(BRAND_ACCENT_TINTS.azure)!.l,
+      s: parseHsl(REFERENCE_ACCENT_TINTS.azure)!.s,
+      l: parseHsl(REFERENCE_ACCENT_TINTS.azure)!.l,
     },
     teal: {
-      s: parseHsl(BRAND_ACCENT_TINTS.teal)!.s,
-      l: parseHsl(BRAND_ACCENT_TINTS.teal)!.l,
+      s: parseHsl(REFERENCE_ACCENT_TINTS.teal)!.s,
+      l: parseHsl(REFERENCE_ACCENT_TINTS.teal)!.l,
     },
   };
 
@@ -131,13 +150,13 @@ function normalizeHex(hex: string): string {
 
 /**
  * Related accent family for a rotation swatch.
- * `brand` is the base; neighbors reuse brand tint S/L with the same hue
- * offsets as {@link BRAND_ACCENT_TINTS} around {@link BRAND_COLOR}.
+ * `brand` is the guardia color; neighbors share the same hue offsets as the
+ * reference palette, rebased onto the input swatch.
  */
 export function getAccentTints(baseHex: string): AccentTints {
   const base = parseHsl(baseHex);
   if (base == null) {
-    return { ...BRAND_ACCENT_TINTS };
+    return getAccentTints(DEFAULT_ROTATION_COLOR);
   }
 
   const brand = normalizeHex(baseHex);
@@ -165,3 +184,6 @@ export function getAccentTints(baseHex: string): AccentTints {
     }),
   };
 }
+
+/** Accent family for the default guardia swatch when no period is in context. */
+export const DEFAULT_ACCENT_TINTS = getAccentTints(DEFAULT_ROTATION_COLOR);

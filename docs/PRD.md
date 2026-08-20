@@ -119,7 +119,7 @@ All shifts are **24 hours**. By default the app calculates shift dates from the 
 A monthly calendar shows:
 
 - Shift days highlighted
-- Free weekends visually distinguished (both Saturday and Sunday free)
+- Free weekends visually distinguished (Friday, Saturday, and Sunday all free — a Friday shift ends Saturday morning, so that weekend is not free)
 - Navigate forward/backward by month
 
 **Day detail sheet**

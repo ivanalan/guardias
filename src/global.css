@@ -8,6 +8,9 @@
   @theme {
     --font-serif: InstrumentSerif_400Regular;
     --spacing-gutter: 24px;
+    --spacing-tab-clearance: 96px;
+    /* Match calendar day markers / form controls (`BORDER_RADIUS` in layout.ts). */
+    --radius-xl: 14px;
     --color-canvas: #f6f1ec;
     --color-weekend: #085d3a;
     --color-ink: #1c1b1f;

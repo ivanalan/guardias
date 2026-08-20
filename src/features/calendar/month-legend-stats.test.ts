@@ -65,8 +65,9 @@ describe('getMonthLegendStats', () => {
 
     const stats = getMonthLegendStats([july], '2026-07-15');
     expect(stats.shiftDayCount).toBe(7);
-    // Jul 4–5 (Sat A) no; 11–12 (Sun A) no; 18–19 yes; 25–26 yes
-    expect(stats.freeWeekendCount).toBe(2);
+    // Free = Fri+Sat+Sun clear. Jul 4–5 (Sat A) no; 11–12 (Sun A) no;
+    // 18–19 yes; 25–26 no (Fri Jul 24 is A).
+    expect(stats.freeWeekendCount).toBe(1);
     expect(stats.vacationDayCount).toBe(0);
   });
 

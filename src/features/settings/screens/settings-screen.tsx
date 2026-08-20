@@ -1,6 +1,8 @@
+import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 
-import { BRAND_SELECTION } from '../../../theme/brand';
+import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
+import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { usePreferences } from '../preferences-context';
 import type { AppPreferences } from '../types';
@@ -30,11 +32,14 @@ export function SettingsScreen() {
       contentInsetAdjustmentBehavior="automatic"
       contentContainerClassName="gap-6 p-gutter"
     >
-      <View className="gap-2">
-        <Text className="font-mono text-sm font-medium text-neutral-600">
+      <View>
+        <Text
+          className="mb-1.5 font-mono text-sm text-ink"
+          style={ANDROID_TEXT_WIDTH_BUMP}
+        >
           {t('settings.language')}
         </Text>
-        <View className="gap-2">
+        <View className="flex-row flex-wrap gap-2">
           {LOCALE_OPTIONS.map((option) => {
             const selected = locale === option.value;
             const label = t(option.labelKey);
@@ -45,24 +50,24 @@ export function SettingsScreen() {
                 accessibilityState={{ selected }}
                 accessibilityLabel={label}
                 onPress={() => setLocale(option.value)}
-                className="rounded-xl border px-4 py-3 active:opacity-70"
+                className="flex-row items-center gap-1.5 rounded-xl px-3.5 py-2.5 active:opacity-80"
                 style={[
                   { borderCurve: 'continuous' },
                   selected
-                    ? {
-                        backgroundColor: BRAND_SELECTION.background,
-                        borderColor: BRAND_SELECTION.border,
-                      }
-                    : { borderColor: '#e5e5e5', backgroundColor: '#ffffff' },
+                    ? { backgroundColor: INK_COLOR }
+                    : {
+                        backgroundColor: '#ffffff',
+                        borderWidth: 1,
+                        borderColor: '#e5e5e5',
+                      },
                 ]}
               >
+                {selected ? (
+                  <Ionicons name="checkmark" size={16} color="#ffffff" />
+                ) : null}
                 <Text
-                  className={`font-mono text-base ${selected ? 'font-semibold' : ''}`}
-                  style={{
-                    color: selected
-                      ? BRAND_SELECTION.foreground
-                      : '#262626',
-                  }}
+                  className={`font-mono text-sm ${selected ? 'text-white' : 'text-neutral-500'}`}
+                  style={ANDROID_TEXT_WIDTH_BUMP}
                 >
                   {label}
                 </Text>

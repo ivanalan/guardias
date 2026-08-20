@@ -2,13 +2,14 @@ import { addDays, format, getDay } from 'date-fns';
 
 import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 import { INK_COLOR } from '../../theme/brand';
+import { BORDER_RADIUS } from '../../theme/layout';
 import type { CalendarLegendFilter } from './build-marked-dates';
 import { CALENDAR_MARK_COLORS } from './calendar-mark-colors';
 
 export const CELL_SIZE = 36;
 /** Vertical space between date rows in month / two-week calendars. */
 export const CALENDAR_WEEK_ROW_GAP = 8;
-export const DAY_MARKER_RADIUS = 14;
+export const DAY_MARKER_RADIUS = BORDER_RADIUS;
 export const TODAY_BORDER_WIDTH = 1.5;
 export const TODAY_INNER_GAP = 2;
 export const DAY_MARKER_INNER_RADIUS = Math.max(

@@ -1,4 +1,4 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import { useCallback, useState } from 'react';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
@@ -157,8 +157,20 @@ export function HomeScreen({ navigation }: Props) {
   );
 
   const status = getHomepageShiftStatus(periods, now);
-  const subtitle =
-    status.kind === 'idle' ? undefined : status.period.label;
+
+  if (status.kind === 'idle') {
+    return (
+      <View className="flex-1 bg-canvas">
+        <ShiftsEmptyState
+          onAddPress={() => {
+            navigation.navigate('Shifts', { screen: 'AddRotation' });
+          }}
+        />
+      </View>
+    );
+  }
+
+  const subtitle = status.period.label;
 
   return (
     <View className="flex-1 bg-canvas">
@@ -175,8 +187,8 @@ export function HomeScreen({ navigation }: Props) {
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <MaterialCommunityIcons
-              name="cog-outline"
+            <Ionicons
+              name="settings-outline"
               size={SCREEN_PAGE_TITLE_ICON_SIZE}
               color={INK_COLOR}
             />
@@ -185,22 +197,14 @@ export function HomeScreen({ navigation }: Props) {
       />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-4 p-gutter"
+        contentContainerClassName="flex-grow gap-4 p-gutter pb-tab-clearance"
       >
-        {status.kind === 'idle' ? (
-          <ShiftsEmptyState
-            onAddPress={() => {
-              navigation.navigate('Shifts', { screen: 'AddRotation' });
-            }}
-          />
-        ) : (
-          <ActiveHomeContent
-            status={status}
-            now={now}
-            periodProgress={getPeriodShiftProgress(status.period, now)}
-            language={language}
-          />
-        )}
+        <ActiveHomeContent
+          status={status}
+          now={now}
+          periodProgress={getPeriodShiftProgress(status.period, now)}
+          language={language}
+        />
       </ScrollView>
     </View>
   );

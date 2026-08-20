@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Platform, type LayoutChangeEvent } from 'react-native';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { format } from 'date-fns';
 import { Calendar, CalendarList, type DateData } from 'react-native-calendars';
@@ -10,7 +10,7 @@ import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../component
 import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { Pressable, View } from '../../../tw';
-import { SCREEN_GUTTER } from '../../../theme/layout';
+import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
 import type { RotationPeriod } from '../../rotations/types';
@@ -214,8 +214,8 @@ export function CalendarScreen({ navigation }: Props) {
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <MaterialCommunityIcons
-              name="share-variant"
+            <Ionicons
+              name="share-outline"
               size={SCREEN_PAGE_TITLE_ICON_SIZE}
               color="#191C1A"
             />
@@ -225,7 +225,14 @@ export function CalendarScreen({ navigation }: Props) {
       <View className="mb-3 mt-3 px-gutter">
         <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
       </View>
-      <View className="flex-1 px-gutter pb-4">
+      <View
+        className="flex-1 px-gutter"
+        style={
+          viewMode === 'month'
+            ? { paddingBottom: FLOATING_TAB_BAR_CLEARANCE }
+            : undefined
+        }
+      >
         <View
           className={viewMode === 'scroll' ? 'min-h-0 flex-1' : undefined}
           onLayout={onListContainerLayout}
@@ -265,6 +272,9 @@ export function CalendarScreen({ navigation }: Props) {
               key={`scroll-${language}-${scrollAnchor.slice(0, 7)}-${CALENDAR_WEEK_ROW_GAP}`}
               current={scrollAnchor}
               style={{ height: listSize.height }}
+              contentContainerStyle={{
+                paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
+              }}
               calendarWidth={listSize.width}
               calendarStyle={{
                 backgroundColor: '#FFFFFF',

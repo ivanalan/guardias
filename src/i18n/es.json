@@ -1,4 +1,7 @@
 {
+  "common": {
+    "back": "Atrás"
+  },
   "tabs": {
     "home": "Inicio",
     "calendar": "Calendario",
@@ -54,16 +57,16 @@
       "shiftDays_other": "Días de guardia",
       "shiftsSummary_one": "{{count}} guardia",
       "shiftsSummary_other": "{{count}} guardias",
-      "freeWeekends_one": "Fin de semana libre",
-      "freeWeekends_other": "Fines de semana libres",
-      "freeWeekendsSummary_one": "{{count}} fin de semana libre",
-      "freeWeekendsSummary_other": "{{count}} fines de semana libres",
-      "vacationDays_one": "Día de vacaciones",
-      "vacationDays_other": "Días de vacaciones",
-      "vacationSummary_one": "{{count}} día de vacaciones",
-      "vacationSummary_other": "{{count}} días de vacaciones",
+      "freeWeekends_one": "Fin libre",
+      "freeWeekends_other": "Fines libres",
+      "freeWeekendsSummary_one": "{{count}} fin libre",
+      "freeWeekendsSummary_other": "{{count}} fines libres",
+      "vacationDays_one": "Vacaciones",
+      "vacationDays_other": "Vacaciones",
+      "vacationSummary_one": "{{count}} vacaciones",
+      "vacationSummary_other": "{{count}} vacaciones",
       "filterShiftsHint": "Resaltar días de guardia en el calendario",
-      "filterFreeWeekendsHint": "Resaltar fines de semana libres en el calendario",
+      "filterFreeWeekendsHint": "Resaltar fines libres en el calendario",
       "filterVacationHint": "Resaltar días de vacaciones en el calendario"
     }
   },
@@ -76,8 +79,8 @@
     "openA11y": "Abrir ajustes"
   },
   "shifts": {
-    "emptyTitle": "Aún no hay rotaciones",
-    "emptyBody": "Agrega una rotación desde la tab de Guardias para empezar.",
+    "emptyTitle": "Agrega tu primera rotación",
+    "emptyBody": "Ve cuántas guardias te quedan, tu próximo fin de semana libre y más.",
     "emptyCta": "Agregar rotación",
     "addA11y": "Agregar rotación",
     "addTitle": "Agregar rotación",
@@ -126,7 +129,7 @@
       "previewShowCalendar": "Mostrar calendario",
       "previewHideCalendar": "Ocultar calendario",
       "shiftStartTime": "Inicio de guardia",
-      "color": "Color en el calendario",
+      "color": "Color",
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacaciones",
       "vacationStart": "Inicio de vacaciones",

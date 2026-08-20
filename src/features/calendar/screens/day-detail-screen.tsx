@@ -59,7 +59,7 @@ export function DayDetailScreen({ route }: Props) {
       <StatsCardGrid>
         <StatsCard
           tint="brand"
-          icon="login"
+          icon="log-in-outline"
           value={formatShiftTime(shift.startDateTime)}
           subtitle={t('calendar.startsOn', {
             date: formatShiftShortDate(shift.startDateTime, language),
@@ -67,7 +67,7 @@ export function DayDetailScreen({ route }: Props) {
         />
         <StatsCard
           tint="indigo"
-          icon="logout"
+          icon="log-out-outline"
           value={formatShiftTime(shift.endDateTime)}
           subtitle={t('calendar.endsOn', {
             date: formatShiftShortDate(shift.endDateTime, language),

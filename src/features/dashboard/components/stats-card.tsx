@@ -1,14 +1,14 @@
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { Ionicons } from '@expo/vector-icons';
 import type { ComponentProps } from 'react';
 
 import {
   type AccentTintKey,
   type AccentTints,
 } from '../../../theme/accent-tints';
-import { BRAND_ACCENT_TINTS } from '../../../theme/brand';
+import { DEFAULT_ACCENT_TINTS } from '../../../theme/accent-tints';
 import { Text, View } from '../../../tw';
 
-type IconName = ComponentProps<typeof MaterialCommunityIcons>['name'];
+type IconName = ComponentProps<typeof Ionicons>['name'];
 
 export type StatsCardTint = AccentTintKey;
 
@@ -25,7 +25,7 @@ export type StatsCardProps = {
 /** Soft metric card: brand-adjacent tinted icon, large value, subtitle. */
 export function StatsCard({
   tint = 'brand',
-  accents = BRAND_ACCENT_TINTS,
+  accents = DEFAULT_ACCENT_TINTS,
   icon,
   value,
   subtitle,
@@ -42,11 +42,7 @@ export function StatsCard({
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
       }}
     >
-      <MaterialCommunityIcons
-        name={icon}
-        size={20}
-        color={accents[tint]}
-      />
+      <Ionicons name={icon} size={20} color={accents[tint]} />
       <View className="gap-1">
         <Text className="font-serif text-2xl tracking-tight">{value}</Text>
         <Text className="font-mono text-sm opacity-50">{subtitle}</Text>
