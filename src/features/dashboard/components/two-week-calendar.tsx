@@ -101,31 +101,38 @@ function WeekRow({
         false,
         isCalendarDatePast(next, todayIso),
       );
+      // Same vertical padding as DayCell so weekend numbers share the row baseline.
       cells.push(
         <View
           key={iso}
-          className="flex-[2] flex-row items-center"
-          style={{
-            backgroundColor: resolveWeekendBackground(weekendAlpha),
-            ...dayMarkerStyle,
-          }}
+          className="flex-[2]"
+          style={{ paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }}
         >
-          <DayCell
-            iso={iso}
-            todayIso={todayIso}
-            isShift={false}
-            onWeekend
-            markAlpha={weekendAlpha}
-            shiftColor={shiftColor}
-          />
-          <DayCell
-            iso={next}
-            todayIso={todayIso}
-            isShift={false}
-            onWeekend
-            markAlpha={weekendAlpha}
-            shiftColor={shiftColor}
-          />
+          <View
+            className="flex-row self-stretch"
+            style={{
+              height: CELL_SIZE,
+              backgroundColor: resolveWeekendBackground(weekendAlpha),
+              ...dayMarkerStyle,
+            }}
+          >
+            <DayCell
+              iso={iso}
+              todayIso={todayIso}
+              isShift={false}
+              onWeekend
+              markAlpha={weekendAlpha}
+              shiftColor={shiftColor}
+            />
+            <DayCell
+              iso={next}
+              todayIso={todayIso}
+              isShift={false}
+              onWeekend
+              markAlpha={weekendAlpha}
+              shiftColor={shiftColor}
+            />
+          </View>
         </View>,
       );
       index += 1;
@@ -147,7 +154,7 @@ function WeekRow({
 
   return (
     <View
-      className="flex-row items-center"
+      className="flex-row items-start"
       style={{ minHeight: CELL_SIZE + CALENDAR_WEEK_ROW_GAP }}
     >
       {cells}
@@ -183,7 +190,11 @@ function DayCell({
   return (
     <View
       className="flex-1 items-center justify-center"
-      style={onWeekend ? undefined : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }}
+      style={
+        onWeekend
+          ? { height: CELL_SIZE }
+          : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }
+      }
     >
       {isToday && isShift ? (
         <View
