@@ -16,6 +16,8 @@ export type StatsCardProps = {
   tint?: StatsCardTint;
   /** Accent family for icon colors; defaults to brand tints. */
   accents?: AccentTints;
+  /** Overrides tint when set (e.g. a rotation’s calendar color). */
+  iconColor?: string;
   icon: IconName;
   value: string;
   subtitle: string;
@@ -26,6 +28,7 @@ export type StatsCardProps = {
 export function StatsCard({
   tint = 'brand',
   accents = DEFAULT_ACCENT_TINTS,
+  iconColor,
   icon,
   value,
   subtitle,
@@ -42,7 +45,7 @@ export function StatsCard({
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.04)',
       }}
     >
-      <Ionicons name={icon} size={20} color={accents[tint]} />
+      <Ionicons name={icon} size={20} color={iconColor ?? accents[tint]} />
       <View className="gap-1">
         <Text className="font-serif text-2xl tracking-tight">{value}</Text>
         <Text className="font-mono text-sm opacity-50">{subtitle}</Text>

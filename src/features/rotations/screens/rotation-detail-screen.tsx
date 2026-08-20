@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { getDefaultFirstShiftDate } from '../../../lib/shifts';
+import { BRAND_COLOR } from '../../../theme/brand';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
@@ -85,6 +86,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   // Locals so the Alert callback keeps narrowed values (TS nest-function quirk).
   const deletePeriodId = period.id;
   const periodLabel = period.label;
+  const iconColor = period.color;
 
   function confirmDelete() {
     Alert.alert(
@@ -119,25 +121,25 @@ export function RotationDetailScreen({ navigation, route }: Props) {
 
         <StatsCardGrid>
           <StatsCard
-            tint="brand"
+            iconColor={iconColor}
             icon="sync-outline"
             value={`${patternTitle} · ${period.pattern.offset}`}
             subtitle={patternSubtitle}
           />
           <StatsCard
-            tint="indigo"
+            iconColor={iconColor}
             icon="time-outline"
             value={period.shiftStartTime}
             subtitle={t('shifts.form.shiftStartTime')}
           />
           <StatsCard
-            tint="azure"
+            iconColor={iconColor}
             icon="today-outline"
             value={formatFormDate(period.startDate, language)}
             subtitle={t('shifts.form.startDate')}
           />
           <StatsCard
-            tint="violet"
+            iconColor={iconColor}
             icon="flag-outline"
             value={formatFormDate(period.endDate, language)}
             subtitle={t('shifts.form.endDate')}
@@ -145,7 +147,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           {firstShiftIso != null ? (
             <StatsCard
               fullWidth
-              tint="indigo"
+              iconColor={iconColor}
               icon="checkmark-circle-outline"
               value={formatFormDate(firstShiftIso, language)}
               subtitle={t('shifts.form.firstShiftDate')}
@@ -153,7 +155,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           ) : null}
           <StatsCard
             fullWidth
-            tint="teal"
+            iconColor={iconColor}
             icon="umbrella-outline"
             value={vacationLabel}
             subtitle={t('shifts.form.vacation')}
@@ -165,10 +167,14 @@ export function RotationDetailScreen({ navigation, route }: Props) {
             accessibilityRole="button"
             accessibilityLabel={t('shifts.detail.delete')}
             onPress={confirmDelete}
-            className="items-center rounded-xl border border-red-600/80 bg-white px-4 py-3 active:opacity-70"
-            style={{ borderCurve: 'continuous' }}
+            className="w-full items-center px-6 py-4 active:opacity-80"
+            style={{
+              backgroundColor: BRAND_COLOR,
+              borderCurve: 'continuous',
+              borderRadius: 32,
+            }}
           >
-            <Text className="text-base font-medium text-red-600">
+            <Text className="font-mono text-base font-semibold text-white">
               {t('shifts.detail.delete')}
             </Text>
           </Pressable>
