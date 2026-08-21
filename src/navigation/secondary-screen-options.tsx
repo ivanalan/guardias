@@ -19,6 +19,7 @@ export function SecondaryHeaderTitle({ children }: { children: string }) {
   );
 }
 
+/** Android / non-iOS back control. iOS uses the native stack back button instead. */
 function SecondaryHeaderBackButton({ onPress }: { onPress: () => void }) {
   const { t } = useTranslation();
 
@@ -43,19 +44,31 @@ type SecondaryScreenOptionsArgs = {
   navigation: NativeStackNavigationProp<ParamListBase>;
 };
 
-/** Native stack chrome: canvas bar, no hairline, back chevron + centered title. */
+/**
+ * Native stack chrome: canvas bar, no hairline, back chevron + centered title.
+ *
+ * On iOS 26+, custom `headerLeft` React views are wrapped in a liquid-glass
+ * UIBarButtonItem that stretches to ≥36pt and mis-centers the child. Use the
+ * native minimal back button (SF Symbol) there; keep the Ionicons control elsewhere.
+ */
 export function secondaryScreenOptions({
   navigation,
 }: SecondaryScreenOptionsArgs): NativeStackNavigationOptions {
+  const useNativeBack = process.env.EXPO_OS === 'ios';
+
   return {
     headerShadowVisible: false,
     headerTitleAlign: 'center',
     headerTintColor: INK_COLOR,
     headerStyle: { backgroundColor: CANVAS_COLOR },
-    headerBackVisible: false,
-    headerLeft: () => (
-      <SecondaryHeaderBackButton onPress={() => navigation.goBack()} />
-    ),
+    headerBackVisible: useNativeBack,
+    ...(useNativeBack
+      ? { headerBackButtonDisplayMode: 'minimal' as const }
+      : {
+          headerLeft: () => (
+            <SecondaryHeaderBackButton onPress={() => navigation.goBack()} />
+          ),
+        }),
     headerTitle: ({ children }) => (
       <SecondaryHeaderTitle>{children}</SecondaryHeaderTitle>
     ),

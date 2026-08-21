@@ -32,7 +32,10 @@
       "expo-sharing"
     ],
     "ios": {
-      "bundleIdentifier": "com.alanmatias.guardias"
+      "bundleIdentifier": "com.alanmatias.guardias",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "package": "com.alanmatias.guardias",
@@ -44,6 +47,9 @@
     "extra": {
       "eas": {
         "projectId": "b35ff97f-7787-4876-9632-46e03a263082"
+      },
+      "expo-status-bar": {
+        "style": "dark"
       }
     },
     "owner": "10alanm"
