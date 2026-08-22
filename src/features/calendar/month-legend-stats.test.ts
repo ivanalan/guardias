@@ -5,6 +5,7 @@ import {
   getMarkInputsForMonthWindow,
   getMonthLegendStats,
   getMonthMarkInputs,
+  getRangeMarkInputs,
 } from './month-legend-stats';
 
 function period(
@@ -128,6 +129,60 @@ describe('getMonthLegendStats', () => {
     expect(
       getMonthLegendStats([], '2026-08-01').freeWeekendCount,
     ).toBeGreaterThan(0);
+  });
+});
+
+describe('getRangeMarkInputs', () => {
+  it('includes vacation days that intersect the range', () => {
+    const july = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      vacationStartDate: '2026-07-10',
+      vacationEndDate: '2026-07-12',
+    });
+
+    const inputs = getRangeMarkInputs([july], '2026-07-09', '2026-07-14');
+    expect(inputs.vacationDates).toEqual([
+      '2026-07-10',
+      '2026-07-11',
+      '2026-07-12',
+    ]);
+    // Jul 12 is an A day; vacation removes it from shift marks
+    expect(inputs.shiftMarks.map((m) => m.date)).not.toContain('2026-07-12');
+  });
+
+  it('returns empty vacation when leave is outside the range', () => {
+    const july = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      vacationStartDate: '2026-07-01',
+      vacationEndDate: '2026-07-03',
+    });
+
+    const inputs = getRangeMarkInputs([july], '2026-07-10', '2026-07-20');
+    expect(inputs.vacationDates).toEqual([]);
+  });
+
+  it('matches getMonthMarkInputs mark lists for a full month', () => {
+    const july = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      vacationStartDate: '2026-07-10',
+      vacationEndDate: '2026-07-12',
+    });
+
+    const month = getMonthMarkInputs([july], '2026-07-15');
+    const range = getRangeMarkInputs([july], '2026-07-01', '2026-07-31');
+
+    expect(range.shiftMarks).toEqual(month.shiftMarks);
+    expect(range.freeWeekendDates).toEqual(month.freeWeekendDates);
+    expect(range.vacationDates).toEqual(month.vacationDates);
   });
 });
 

@@ -1,4 +1,4 @@
-/** Cycle length: `3` = A-C, `4` = A-D (PRD MVP). */
+/** Cycle length: `3` = A-C, `4` = A-D. */
 export type CycleDays = 3 | 4;
 
 /** Letter on the year-anchored calendar (Jan 1 = A). `D` only valid for A-D. */
@@ -14,7 +14,7 @@ export const OFFSETS_FOR_CYCLE: Record<CycleDays, readonly OffsetLetter[]> = {
   4: ['A', 'B', 'C', 'D'],
 };
 
-/** PRD default: A-D with offset A. */
+/** Default pattern: A-D with offset A. */
 export const DEFAULT_PATTERN: RotationPattern = {
   cycleDays: 4,
   offset: 'A',

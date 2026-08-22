@@ -3,6 +3,7 @@ import {
   EMPTY_STATE_PREVIEW,
   EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES,
   EMPTY_STATE_PREVIEW_SHIFT_DATES,
+  EMPTY_STATE_PREVIEW_VACATION_DATES,
 } from './empty-state-preview-data';
 
 type GhostCalendarPreviewProps = {
@@ -20,6 +21,7 @@ export function GhostCalendarPreview({
       todayIso={EMPTY_STATE_PREVIEW.todayIso}
       shiftDates={EMPTY_STATE_PREVIEW_SHIFT_DATES}
       freeWeekendDates={EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES}
+      vacationDates={EMPTY_STATE_PREVIEW_VACATION_DATES}
       shiftColor={EMPTY_STATE_PREVIEW.shiftColor}
     />
   );

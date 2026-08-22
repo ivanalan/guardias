@@ -8,11 +8,15 @@ import {
   TODAY_INNER_GAP,
   dayMarkerStyle,
   dayNumber,
+  getDayMarkKind,
   isCalendarDatePast,
   markColorAlpha,
   resolveShiftColor,
   resolveShiftTextColor,
+  resolveVacationBackground,
+  resolveVacationTextColor,
   resolveWeekendBackground,
+  type DayMarkKind,
 } from '../../calendar/calendar-day-marker';
 import { INK_COLOR } from '../../../theme/brand';
 import { Text, View } from '../../../tw';
@@ -23,19 +27,30 @@ type TwoWeekCalendarProps = {
   todayIso: string;
   shiftDates: ReadonlySet<string>;
   freeWeekendDates: ReadonlySet<string>;
+  vacationDates: ReadonlySet<string>;
   shiftColor: string;
 };
 
-/** Two-week Monday-start strip with shift dots and spanning weekend pills. */
+/** Two-week Monday-start strip with shift / vacation marks and weekend pills. */
 export function TwoWeekCalendar({
   dates,
   weekdayLabels,
   todayIso,
   shiftDates,
   freeWeekendDates,
+  vacationDates,
   shiftColor,
 }: TwoWeekCalendarProps) {
   const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
+  const shiftColorByDate = new Map<string, string>();
+  for (const iso of shiftDates) {
+    shiftColorByDate.set(iso, shiftColor);
+  }
+  const markCtx = {
+    shiftColorByDate,
+    freeWeekendSet: freeWeekendDates,
+    vacationSet: vacationDates,
+  };
 
   return (
     <View
@@ -61,8 +76,7 @@ export function TwoWeekCalendar({
           key={week[0]}
           week={week}
           todayIso={todayIso}
-          shiftDates={shiftDates}
-          freeWeekendDates={freeWeekendDates}
+          markCtx={markCtx}
           shiftColor={shiftColor}
         />
       ))}
@@ -70,31 +84,33 @@ export function TwoWeekCalendar({
   );
 }
 
+type MarkCtx = {
+  shiftColorByDate: ReadonlyMap<string, string>;
+  freeWeekendSet: ReadonlySet<string>;
+  vacationSet: ReadonlySet<string>;
+};
+
 type WeekRowProps = {
   week: readonly string[];
   todayIso: string;
-  shiftDates: ReadonlySet<string>;
-  freeWeekendDates: ReadonlySet<string>;
+  markCtx: MarkCtx;
   shiftColor: string;
 };
 
-function WeekRow({
-  week,
-  todayIso,
-  shiftDates,
-  freeWeekendDates,
-  shiftColor,
-}: WeekRowProps) {
+function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
   const cells: ReactNode[] = [];
 
   for (let index = 0; index < week.length; index += 1) {
     const iso = week[index]!;
     const next = week[index + 1];
+    const markKind = getDayMarkKind(iso, markCtx);
+    const nextKind =
+      next != null ? getDayMarkKind(next, markCtx) : ('none' as DayMarkKind);
     const isWeekendStart =
       index === 5 &&
       next != null &&
-      freeWeekendDates.has(iso) &&
-      freeWeekendDates.has(next);
+      markKind === 'freeWeekend' &&
+      nextKind === 'freeWeekend';
 
     if (isWeekendStart) {
       const weekendAlpha = markColorAlpha(
@@ -119,16 +135,14 @@ function WeekRow({
             <DayCell
               iso={iso}
               todayIso={todayIso}
-              isShift={false}
-              onWeekend
+              markKind="freeWeekend"
               markAlpha={weekendAlpha}
               shiftColor={shiftColor}
             />
             <DayCell
               iso={next}
               todayIso={todayIso}
-              isShift={false}
-              onWeekend
+              markKind="freeWeekend"
               markAlpha={weekendAlpha}
               shiftColor={shiftColor}
             />
@@ -144,8 +158,7 @@ function WeekRow({
         <DayCell
           iso={iso}
           todayIso={todayIso}
-          isShift={shiftDates.has(iso)}
-          onWeekend={false}
+          markKind={markKind}
           shiftColor={shiftColor}
         />
       </View>,
@@ -165,8 +178,7 @@ function WeekRow({
 type DayCellProps = {
   iso: string;
   todayIso: string;
-  isShift: boolean;
-  onWeekend: boolean;
+  markKind: DayMarkKind;
   shiftColor: string;
   markAlpha?: number;
 };
@@ -174,18 +186,31 @@ type DayCellProps = {
 function DayCell({
   iso,
   todayIso,
-  isShift,
-  onWeekend,
+  markKind,
   shiftColor,
   markAlpha,
 }: DayCellProps) {
   const isToday = iso === todayIso;
   const label = dayNumber(iso);
   const alpha =
-    markAlpha ??
-    markColorAlpha(false, isCalendarDatePast(iso, todayIso));
-  const markedTextStyle =
-    onWeekend || isShift ? { color: resolveShiftTextColor(alpha) } : undefined;
+    markAlpha ?? markColorAlpha(false, isCalendarDatePast(iso, todayIso));
+  const onWeekend = markKind === 'freeWeekend';
+  const isShift = markKind === 'shift';
+  const isVacation = markKind === 'vacation';
+
+  const textColor = isVacation
+    ? resolveVacationTextColor(alpha)
+    : onWeekend || isShift
+      ? resolveShiftTextColor(alpha)
+      : undefined;
+  const markedTextStyle = textColor != null ? { color: textColor } : undefined;
+
+  const fillColor = isVacation
+    ? resolveVacationBackground(alpha)
+    : isShift
+      ? resolveShiftColor(shiftColor, alpha)
+      : undefined;
+  const todayFilled = isToday && fillColor != null;
 
   return (
     <View
@@ -196,7 +221,7 @@ function DayCell({
           : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }
       }
     >
-      {isToday && isShift ? (
+      {todayFilled ? (
         <View
           className="items-center justify-center"
           style={{
@@ -211,7 +236,7 @@ function DayCell({
           <View
             className="flex-1 self-stretch items-center justify-center"
             style={{
-              backgroundColor: resolveShiftColor(shiftColor, alpha),
+              backgroundColor: fillColor,
               borderCurve: 'continuous',
               borderRadius: DAY_MARKER_INNER_RADIUS,
             }}
@@ -234,20 +259,22 @@ function DayCell({
         >
           <Text
             className={
-              onWeekend ? 'font-mono text-sm' : 'font-mono text-sm text-ink'
+              markedTextStyle != null
+                ? 'font-mono text-sm'
+                : 'font-mono text-sm text-ink'
             }
-            style={onWeekend ? markedTextStyle : undefined}
+            style={markedTextStyle}
           >
             {label}
           </Text>
         </View>
-      ) : isShift ? (
+      ) : fillColor != null && !onWeekend ? (
         <View
           className="items-center justify-center"
           style={{
             width: CELL_SIZE,
             height: CELL_SIZE,
-            backgroundColor: resolveShiftColor(shiftColor, alpha),
+            backgroundColor: fillColor,
             ...dayMarkerStyle,
           }}
         >
@@ -262,9 +289,11 @@ function DayCell({
         >
           <Text
             className={
-              onWeekend ? 'font-mono text-sm' : 'font-mono text-sm text-ink'
+              markedTextStyle != null
+                ? 'font-mono text-sm'
+                : 'font-mono text-sm text-ink'
             }
-            style={onWeekend ? markedTextStyle : undefined}
+            style={markedTextStyle}
           >
             {label}
           </Text>

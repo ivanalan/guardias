@@ -13,11 +13,15 @@ import type { ShiftDateMark } from './build-marked-dates';
 import { countFreeWeekends, listFreeWeekendDates } from './free-weekends';
 import { listVacationDatesInRange } from './vacation-dates';
 
-/** Shared shift / free-weekend / vacation inputs for the visible calendar month. */
-export type MonthMarkInputs = {
+/** Shared shift / free-weekend / vacation marks for an inclusive date range. */
+export type RangeMarkInputs = {
   shiftMarks: ShiftDateMark[];
   freeWeekendDates: string[];
   vacationDates: string[];
+};
+
+/** Shared shift / free-weekend / vacation inputs for the visible calendar month. */
+export type MonthMarkInputs = RangeMarkInputs & {
   shiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
@@ -26,25 +30,38 @@ export type MonthMarkInputs = {
 };
 
 /**
- * Shift dates, free weekends, and vacation days for the month containing
- * `monthDate` (`YYYY-MM-DD`). Pads ±6 days so weekends on the month edge
- * are correct.
+ * Shift dates, free weekends, and vacation days for `[from, to]`
+ * (`YYYY-MM-DD`). Pads ±6 days when resolving shifts so free weekends on the
+ * range edge (Fri before / Sun after) stay correct.
  */
-export function getMonthMarkInputs(
+export function getRangeMarkInputs(
   periods: readonly RotationPeriod[],
-  monthDate: string,
-): MonthMarkInputs {
-  const monthStart = startOfMonth(parseCalendarDate(monthDate));
-  const monthEnd = endOfMonth(monthStart);
-  const from = format(monthStart, 'yyyy-MM-dd');
-  const to = format(monthEnd, 'yyyy-MM-dd');
+  from: string,
+  to: string,
+): RangeMarkInputs {
+  return buildRangeMarkInputs(periods, from, to).marks;
+}
 
-  const paddedFrom = format(addDays(monthStart, -6), 'yyyy-MM-dd');
-  const paddedTo = format(addDays(monthEnd, 6), 'yyyy-MM-dd');
+function buildRangeMarkInputs(
+  periods: readonly RotationPeriod[],
+  from: string,
+  to: string,
+): { marks: RangeMarkInputs; paddedShiftSet: ReadonlySet<string> } {
+  if (from > to) {
+    return {
+      marks: { shiftMarks: [], freeWeekendDates: [], vacationDates: [] },
+      paddedShiftSet: new Set(),
+    };
+  }
+
+  const fromDate = parseCalendarDate(from);
+  const toDate = parseCalendarDate(to);
+  const paddedFrom = format(addDays(fromDate, -6), 'yyyy-MM-dd');
+  const paddedTo = format(addDays(toDate, 6), 'yyyy-MM-dd');
 
   const shiftDates = listShiftDatesInRange(periods, paddedFrom, paddedTo);
-  const shiftSet = new Set(shiftDates);
-  const freeWeekendDates = listFreeWeekendDates(shiftSet, from, to);
+  const paddedShiftSet = new Set(shiftDates);
+  const freeWeekendDates = listFreeWeekendDates(paddedShiftSet, from, to);
   const vacationDates = listVacationDatesInRange(periods, from, to);
 
   const shiftMarks: ShiftDateMark[] = [];
@@ -59,13 +76,32 @@ export function getMonthMarkInputs(
   }
 
   return {
-    shiftMarks,
-    freeWeekendDates,
-    vacationDates,
-    shiftDayCount: shiftMarks.length,
-    freeWeekendCount: countFreeWeekends(shiftSet, from, to),
-    vacationDayCount: vacationDates.length,
-    shiftColor: shiftMarks[0]?.color ?? DEFAULT_ROTATION_COLOR,
+    marks: { shiftMarks, freeWeekendDates, vacationDates },
+    paddedShiftSet,
+  };
+}
+
+/**
+ * Shift dates, free weekends, and vacation days for the month containing
+ * `monthDate` (`YYYY-MM-DD`).
+ */
+export function getMonthMarkInputs(
+  periods: readonly RotationPeriod[],
+  monthDate: string,
+): MonthMarkInputs {
+  const monthStart = startOfMonth(parseCalendarDate(monthDate));
+  const monthEnd = endOfMonth(monthStart);
+  const from = format(monthStart, 'yyyy-MM-dd');
+  const to = format(monthEnd, 'yyyy-MM-dd');
+
+  const { marks, paddedShiftSet } = buildRangeMarkInputs(periods, from, to);
+
+  return {
+    ...marks,
+    shiftDayCount: marks.shiftMarks.length,
+    freeWeekendCount: countFreeWeekends(paddedShiftSet, from, to),
+    vacationDayCount: marks.vacationDates.length,
+    shiftColor: marks.shiftMarks[0]?.color ?? DEFAULT_ROTATION_COLOR,
   };
 }
 

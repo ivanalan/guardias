@@ -8,7 +8,7 @@ import {
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ComponentProps } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   MagicTabBarNavigation,
@@ -17,7 +17,6 @@ import {
 
 import { INK_COLOR } from '../theme/brand';
 import { useRotations } from '../features/rotations/rotations-context';
-import { SCREEN_GUTTER } from '../theme/layout';
 import type { TabParamList } from './types';
 
 type TabKey = keyof TabParamList;
@@ -58,7 +57,11 @@ function shouldShowTabBar(state: BottomTabBarProps['state']): boolean {
 /** Frosted white wash over the blur — keeps the chip light on the canvas. */
 const TAB_BAR_WHITE_OVERLAY = 'rgba(255, 255, 255, 0.45)';
 
-/** Visual tokens for the floating chip tab bar — tuned to the Shifts mock. */
+/**
+ * Visual tokens for the floating chip tab bar — tuned to the Shifts mock.
+ * Magic Tab Bar already adds the safe-area inset for floating bars, so iOS
+ * only needs a small extra gap above the home indicator (Android has none).
+ */
 export const FLOATING_TAB_BAR_THEME = {
   barColor: 'transparent',
   activePillColor: 'transparent',
@@ -69,7 +72,7 @@ export const FLOATING_TAB_BAR_THEME = {
   height: 64,
   radius: 999,
   horizontalMargin: 72,
-  bottomInset: 16,
+  bottomInset: Platform.OS === 'ios' ? 0 : 16,
 } as const;
 
 function TabBarBlurBackground() {

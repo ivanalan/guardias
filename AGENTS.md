@@ -2,10 +2,8 @@
 
 ## Product
 
-- Full requirements: [docs/PRD.md](docs/PRD.md)
-- MVP scope: PRD §3 (features F1–F6) and §4 (respect out-of-scope items)
 - Primary users: Mexican medical residents on A/B/C/D guardia rotations
-- MVP languages: English and Spanish — all user-facing strings must use i18n catalogs
+- Languages: English and Spanish — all user-facing strings must use i18n catalogs
 
 ## Stack
 
@@ -19,14 +17,14 @@
 
 ## Conventions
 
-- Offline-first: no backend or auth in v1.0
-- Feature folders under `src/features/` should map to PRD features (calendar, dashboard, rotations, settings)
-- Shift calculation logic lives in `src/lib/shifts/` — treat edge cases in PRD §7 as test priorities
+- Offline-first: no backend or auth unless explicitly requested
+- Feature folders under `src/features/` (calendar, dashboard, rotations, settings)
+- Shift calculation logic lives in `src/lib/shifts/`
+- Calendar day marks (shift / vacation / free weekend) must go through `getRangeMarkInputs` / `getMonthMarkInputs` and `getDayMarkKind` — do not invent per-screen mark lists
 - Do not hardcode user-visible strings; add keys to both `en.json` and `es.json`
 - Default locale fallback is Spanish (`es`)
 
 ## Before implementing a feature
 
-1. Read the relevant PRD section (e.g. F1 rotation setup, F2 calendar)
-2. Check §4 out-of-scope — do not build deferred features
-3. Match existing code style and keep changes surgical
+1. Match existing code style and keep changes surgical
+2. Prefer extending current patterns over introducing new abstractions

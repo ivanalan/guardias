@@ -219,30 +219,11 @@ function CalendarDayInner({
         testID={testID}
       >
         {isToday ? (
-          <View
-            className="items-center justify-center"
-            style={{
-              width: CELL_SIZE,
-              height: CELL_SIZE,
-              borderWidth: TODAY_BORDER_WIDTH,
-              borderColor: INK_COLOR,
-              padding: TODAY_INNER_GAP,
-              ...dayMarkerStyle,
-            }}
-          >
-            <View
-              className="flex-1 self-stretch items-center justify-center"
-              style={{
-                backgroundColor,
-                borderCurve: 'continuous',
-                borderRadius: DAY_MARKER_INNER_RADIUS,
-              }}
-            >
-              <Text className="font-mono text-sm" style={{ color: textColor }}>
-                {label}
-              </Text>
-            </View>
-          </View>
+          <TodayFilledMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
         ) : (
           <View
             className="items-center justify-center"
@@ -275,7 +256,11 @@ function CalendarDayInner({
         testID={testID}
       >
         {isToday ? (
-          <TodayOutline label={label} textColor={textColor} />
+          <TodayFilledMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
         ) : (
           <View
             className="items-center justify-center"
@@ -308,7 +293,11 @@ function CalendarDayInner({
         testID={testID}
       >
         {isToday ? (
-          <TodayOutline label={label} textColor={textColor} />
+          <TodayFilledMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+          />
         ) : (
           <View
             className="items-center justify-center"
@@ -405,6 +394,43 @@ function TodayOutline({
       <Text className="font-mono text-sm" style={{ color: textColor }}>
         {label}
       </Text>
+    </View>
+  );
+}
+
+function TodayFilledMarker({
+  label,
+  backgroundColor,
+  textColor,
+}: {
+  label: string;
+  backgroundColor: string;
+  textColor: string;
+}) {
+  return (
+    <View
+      className="items-center justify-center"
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        borderWidth: TODAY_BORDER_WIDTH,
+        borderColor: INK_COLOR,
+        padding: TODAY_INNER_GAP,
+        ...dayMarkerStyle,
+      }}
+    >
+      <View
+        className="flex-1 self-stretch items-center justify-center"
+        style={{
+          backgroundColor,
+          borderCurve: 'continuous',
+          borderRadius: DAY_MARKER_INNER_RADIUS,
+        }}
+      >
+        <Text className="font-mono text-sm" style={{ color: textColor }}>
+          {label}
+        </Text>
+      </View>
     </View>
   );
 }

@@ -14,7 +14,6 @@ import {
   getNextFreeWeekend,
   getPeriodShiftProgress,
   getTimeUntilNextShift,
-  listShiftDatesInRange,
   type DurationParts,
   type HomepageShiftStatus,
   type PeriodShiftProgress,
@@ -22,7 +21,7 @@ import {
 import type { TabParamList } from '../../../navigation/types';
 import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, ScrollView, View } from '../../../tw';
-import { listFreeWeekendDates } from '../../calendar/free-weekends';
+import { getRangeMarkInputs } from '../../calendar/month-legend-stats';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
 import { useRotations } from '../../rotations/rotations-context';
 import { NextShiftCard } from '../components/next-shift-card';
@@ -65,15 +64,14 @@ function ActiveHomeContent({
   const windowDates = getTwoWeekDates(now);
   const windowStart = windowDates[0]!;
   const windowEnd = windowDates[13]!;
-  const shiftList = listShiftDatesInRange(
+  const markInputs = getRangeMarkInputs(
     [status.period],
     windowStart,
     windowEnd,
   );
-  const shiftDates = new Set(shiftList);
-  const freeWeekendDates = new Set(
-    listFreeWeekendDates(shiftDates, windowStart, windowEnd),
-  );
+  const shiftDates = new Set(markInputs.shiftMarks.map((mark) => mark.date));
+  const freeWeekendDates = new Set(markInputs.freeWeekendDates);
+  const vacationDates = new Set(markInputs.vacationDates);
   const remaining = Math.max(
     0,
     periodProgress.total - periodProgress.completed,
@@ -122,6 +120,7 @@ function ActiveHomeContent({
         todayIso={todayIso}
         shiftDates={shiftDates}
         freeWeekendDates={freeWeekendDates}
+        vacationDates={vacationDates}
         shiftColor={color}
       />
 

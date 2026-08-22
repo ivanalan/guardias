@@ -104,7 +104,7 @@ Hecha para el sistema de guardias de México, para que organices tu vida alreded
 
 ---
 
-## Data safety form (suggested answers for v1.0)
+## Data safety form (suggested answers)
 
 Answer based on current app behavior (AsyncStorage on device; no backend; no analytics SDK).
 

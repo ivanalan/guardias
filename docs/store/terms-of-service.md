@@ -20,7 +20,7 @@ The App does **not** provide medical advice, employment advice, or legal advice.
 
 ## Offline use and data
 
-In version 1.0, schedule data is stored on your device. See the [Privacy Policy](https://alanmatias.com/guardias/privacy.html) for details.
+Schedule data is stored on your device. See the [Privacy Policy](https://alanmatias.com/guardias/privacy.html) for details.
 
 ## Availability
 
@@ -48,4 +48,4 @@ Questions about these Terms: use the contact email on the Guardias Google Play l
 
 ## Spanish summary
 
-Guardias es una herramienta personal para organizar guardias. No es consejo médico ni laboral. Tú eres responsable de los datos que capturas. En v1.0 todo se guarda en el dispositivo. La app se ofrece “tal cual”; la solución principal ante un problema es dejar de usarla y desinstalarla.
+Guardias es una herramienta personal para organizar guardias. No es consejo médico ni laboral. Tú eres responsable de los datos que capturas. Todo se guarda en el dispositivo. La app se ofrece “tal cual”; la solución principal ante un problema es dejar de usarla y desinstalarla.

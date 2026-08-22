@@ -4,9 +4,9 @@ Mobile app for tracking on-call medical rotation shifts (guardias) in the Mexica
 
 ## Documentation
 
-- [Product Requirements (PRD)](docs/PRD.md) — scope, features, data model, roadmap
 - [AGENTS.md](AGENTS.md) — stack and conventions (Expo, NativeWind, i18n, feature folders)
 - [Android release](docs/store/ANDROID_RELEASE.md) — Play Store checklist, legal URLs, EAS build
+- [iOS release](docs/store/IOS_RELEASE.md) — App Store checklist and EAS build
 - [Play listing copy](docs/store/play-listing.md) — EN/ES store text and data safety notes
 
 ## Requirements
@@ -38,7 +38,7 @@ Then press `a` for Android, `i` for iOS, or scan the QR code with Expo Go.
 ```
 guardias/
 ├── docs/
-│   └── PRD.md          # Product requirements
+│   └── store/          # Store listing and release docs
 ├── src/                # Application code
 ├── App.tsx             # Root component
 ├── AGENTS.md           # AI agent conventions
@@ -47,7 +47,7 @@ guardias/
 
 ## Localization
 
-MVP targets **English** and **Spanish**. See [PRD §3 F6](docs/PRD.md#f6--bilingual-ui-english--spanish) for requirements.
+The app supports **English** and **Spanish** via `src/i18n/en.json` and `src/i18n/es.json`.
 
 ## License
 
