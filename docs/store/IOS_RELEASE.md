@@ -150,7 +150,7 @@ Public HTTPS pages Apple (and users) can open. App Store Connect requires a **Pr
 
 ### Why
 
-Guardias is offline-first and does not collect accounts in MVP, but Apple still wants a policy describing what you do/don’t collect. Same documents as Play.
+Guardias is offline-first and does not collect accounts, but Apple still wants a policy describing what you do/don’t collect. Same documents as Play.
 
 ### Source files in this repo
 
@@ -172,7 +172,7 @@ Guardias is offline-first and does not collect accounts in MVP, but Apple still 
 Use:
 
 - **Privacy Policy URL** → privacy page  
-- **Support URL** → terms page or a contact page (terms is fine for MVP)
+- **Support URL** → terms page or a contact page (terms is fine)
 
 Contact email on those pages should be an address you monitor.
 
@@ -281,7 +281,7 @@ CLI will ask you to authenticate. Options:
 1. Open your **Guardias** app.
 2. Open **TestFlight**.
 3. Under iOS builds, wait until processing finishes (email: “The following build has completed processing”).
-4. If Apple asks for **Export Compliance** on the build, answer consistently with the app: Guardias sets `ITSAppUsesNonExemptEncryption` to `false` — typically you only use standard HTTPS / OS encryption, so “no non-exempt encryption” applies. Confirm with your lawyer if unsure; for this offline calendar MVP the project intent is “standard / exempt.”
+4. If Apple asks for **Export Compliance** on the build, answer consistently with the app: Guardias sets `ITSAppUsesNonExemptEncryption` to `false` — typically you only use standard HTTPS / OS encryption, so “no non-exempt encryption” applies. Confirm with your lawyer if unsure; for this offline calendar app the project intent is “standard / exempt.”
 
 ---
 
@@ -357,7 +357,7 @@ Screenshots live in Connect only; they do not need to be in this git repo.
 
 1. Open **App Privacy**.
 2. Click **Get Started** / **Edit**.
-3. Declare data collection consistent with the offline MVP and Play Data safety answers in `play-listing.md`: **no data collected** / data not linked to identity / not used for tracking — only if that remains true.
+3. Declare data collection consistent with the offline app and Play Data safety answers in `play-listing.md`: **no data collected** / data not linked to identity / not used for tracking — only if that remains true.
 4. If you truly collect nothing (no analytics SDK, no account, local-only storage), say you do not collect data.
 5. Publish the privacy answers.
 

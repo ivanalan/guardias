@@ -1,7 +1,7 @@
 import type { AppLanguage } from '../../i18n';
 
 /**
- * Persisted app preferences (PRD §5 AppPreferences).
+ * Persisted app preferences.
  * `locale: null` means follow the device language.
  */
 export type AppPreferences = {

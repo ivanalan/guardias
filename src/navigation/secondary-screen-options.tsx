@@ -5,15 +5,35 @@ import type {
   NativeStackNavigationProp,
 } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
+import { useWindowDimensions } from 'react-native';
 
 import { SCREEN_PAGE_TITLE_ICON_SIZE } from '../components/screen-page-title';
 import { CANVAS_COLOR, INK_COLOR } from '../theme/brand';
 import { Pressable, Text } from '../tw';
 
-/** Centered serif title for pushed stack screens (Form mock header). */
+/** Space reserved per side for back / save (icons + padding). */
+const ANDROID_HEADER_ACTION_RESERVE = 56;
+
+/**
+ * Centered serif title for pushed stack screens (Form mock header).
+ *
+ * On Android, native-stack + custom headerLeft/Right + headerTitleAlign
+ * center often gives the title a too-narrow Yoga box, so text truncates
+ * while empty space remains. Force a width based on the window size.
+ */
 export function SecondaryHeaderTitle({ children }: { children: string }) {
+  const { width } = useWindowDimensions();
+  const isAndroid = process.env.EXPO_OS === 'android';
+  const titleWidth = Math.max(0, width - ANDROID_HEADER_ACTION_RESERVE * 2);
+
   return (
-    <Text className="font-serif text-3xl text-ink" numberOfLines={1}>
+    <Text
+      className="font-serif text-3xl text-ink"
+      numberOfLines={1}
+      style={
+        isAndroid ? { width: titleWidth, textAlign: 'center' } : undefined
+      }
+    >
       {children}
     </Text>
   );

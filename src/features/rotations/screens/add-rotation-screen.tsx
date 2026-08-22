@@ -77,14 +77,6 @@ type ActivePicker =
   | 'vacationEnd'
   | null;
 
-/** Pickers low on the form — scroll them into view when opened. */
-const BOTTOM_PICKERS: ReadonlySet<Exclude<ActivePicker, null>> = new Set([
-  'firstShift',
-  'shiftStart',
-  'vacationStart',
-  'vacationEnd',
-]);
-
 const FIELD_BOX_CLASS =
   'h-14 flex-row items-center rounded-xl border border-neutral-200 px-4';
 
@@ -218,7 +210,6 @@ export function AddRotationScreen({ navigation, route }: Props) {
       existing?.vacationStartDate != null && existing.vacationEndDate != null,
   );
   const [error, setError] = useState<RotationValidationError | null>(null);
-  const scrollRef = useRef<ScrollView>(null);
   const prevActivePickerRef = useRef<ActivePicker>(null);
   const startAtPickerOpenRef = useRef<string | null>(null);
   const vacationStartAtPickerOpenRef = useRef<string | null>(null);
@@ -241,8 +232,6 @@ export function AddRotationScreen({ navigation, route }: Props) {
   isDirtyRef.current = isDirty;
 
   const offsets = OFFSETS_FOR_CYCLE[cycleDays];
-  const shouldScrollPickerIntoView =
-    activePicker != null && BOTTOM_PICKERS.has(activePicker);
 
   const defaultFirstShift = getDefaultFirstShiftDate(startDate, endDate, {
     cycleDays,
@@ -268,16 +257,6 @@ export function AddRotationScreen({ navigation, route }: Props) {
     color,
     createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
   };
-
-  useEffect(() => {
-    if (!shouldScrollPickerIntoView) {
-      return;
-    }
-    const timeoutId = setTimeout(() => {
-      scrollRef.current?.scrollToEnd({ animated: true });
-    }, 50);
-    return () => clearTimeout(timeoutId);
-  }, [shouldScrollPickerIntoView, activePicker]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -552,13 +531,10 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   return (
     <ScrollView
-      ref={scrollRef}
       className="flex-1 bg-canvas"
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={{
-        paddingBottom: shouldScrollPickerIntoView ? 60 : 32,
-      }}
+      contentContainerStyle={{ paddingBottom: 32 }}
     >
       <View className="w-full flex-col gap-5 px-gutter pt-4 pb-8">
         <View>
@@ -608,7 +584,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <DateTimePicker
                 value={parseISO(startDate)}
                 mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                 onValueChange={onStartDateValueChange}
                 onDismiss={dismissPicker}
               />
@@ -619,7 +595,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <DateTimePicker
                 value={parseISO(endDate)}
                 mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                 minimumDate={parseISO(startDate)}
                 onValueChange={onEndDateValueChange}
                 onDismiss={dismissPicker}
@@ -673,7 +649,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <DateTimePicker
                 value={parseISO(displayedFirstShift)}
                 mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                 minimumDate={parseISO(startDate)}
                 maximumDate={parseISO(endDate)}
                 onValueChange={onFirstShiftValueChange}
@@ -706,7 +682,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <DateTimePicker
                 value={parseHHMM(shiftStartTime)}
                 mode="time"
-                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
+                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                 onValueChange={onShiftStartValueChange}
                 onDismiss={dismissPicker}
               />
@@ -751,9 +727,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
                 <DateTimePicker
                   value={parseISO(vacationStartDate)}
                   mode="date"
-                  display={
-                    process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'
-                  }
+                  display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                   minimumDate={parseISO(startDate)}
                   maximumDate={parseISO(endDate)}
                   onValueChange={onVacationStartValueChange}
@@ -766,9 +740,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
                 <DateTimePicker
                   value={parseISO(vacationEndDate)}
                   mode="date"
-                  display={
-                    process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'
-                  }
+                  display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
                   minimumDate={parseISO(vacationStartDate)}
                   maximumDate={parseISO(endDate)}
                   onValueChange={onVacationEndValueChange}

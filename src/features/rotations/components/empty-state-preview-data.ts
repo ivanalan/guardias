@@ -26,3 +26,5 @@ export const EMPTY_STATE_PREVIEW_SHIFT_DATES = new Set<string>(
 export const EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES = new Set<string>(
   EMPTY_STATE_PREVIEW.freeWeekendDates,
 );
+
+export const EMPTY_STATE_PREVIEW_VACATION_DATES = new Set<string>();

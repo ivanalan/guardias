@@ -4,7 +4,7 @@ import type { RotationPeriod } from '@/features/rotations/types';
 
 import { isShiftDay } from './is-shift-day';
 
-/** Fixed MVP shift length (PRD). */
+/** Fixed shift length in hours. */
 export const SHIFT_DURATION_HOURS = 24 as const;
 
 /** Computed shift for a calendar day (not stored). */

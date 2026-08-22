@@ -10,7 +10,7 @@ export type AppLanguage = 'en' | 'es';
 /**
  * Resolve language from the device locale when Settings has no override.
  *
- * Priority (MVP):
+ * Priority:
  * 1. Device language `en` or `es`
  * 2. Otherwise Spanish (primary market fallback)
  */

@@ -6,17 +6,18 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { listShiftDatesInRange } from '../../../lib/shifts';
+import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { INK_COLOR } from '../../../theme/brand';
 import { Pressable, Text, View } from '../../../tw';
 import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { CALENDAR_THEME } from '../../calendar/calendar-theme';
 import { createCalendarDayComponent } from '../../calendar/components/calendar-day';
-import { CalendarMonthTitle } from '../../calendar/components/calendar-month-title';
+import { CalendarMonthHeader } from '../../calendar/components/calendar-month-header';
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
 import { buildMonthMarkedDates } from '../../calendar/month-marks';
 import { getMonthMarkInputs } from '../../calendar/month-legend-stats';
-import { formatFormDate } from '../format-period-range';
+import { formatFormDate, toISODate } from '../format-period-range';
 import type { RotationPeriod } from '../types';
 
 type Props = {
@@ -93,6 +94,20 @@ export function RotationPreviewCalendar({ period, language }: Props) {
     ? t('shifts.form.previewHideCalendar')
     : t('shifts.form.previewShowCalendar');
 
+  const onPreviousMonth = () => {
+    setCurrentMonth((prev) => {
+      const date = parseCalendarDate(prev);
+      return toISODate(new Date(date.getFullYear(), date.getMonth() - 1, 1));
+    });
+  };
+
+  const onNextMonth = () => {
+    setCurrentMonth((prev) => {
+      const date = parseCalendarDate(prev);
+      return toISODate(new Date(date.getFullYear(), date.getMonth() + 1, 1));
+    });
+  };
+
   return (
     <View className="gap-1.5">
       <Text
@@ -133,19 +148,25 @@ export function RotationPreviewCalendar({ period, language }: Props) {
       {expanded ? (
         <View className="overflow-hidden rounded-xl border border-neutral-200 bg-white px-3 py-5">
           <Calendar
-            key={`${language}-${monthKey(period.startDate)}`}
+            key={`${language}-${monthKey(currentMonth)}`}
             current={currentMonth}
             onMonthChange={(month: DateData) => {
               setCurrentMonth(month.dateString);
             }}
             enableSwipeMonths
+            hideArrows
             firstDay={1}
             monthFormat="MMMM"
             markingType="custom"
             markedDates={buildMonthMarkedDates([period], currentMonth)}
             dayComponent={DayComponent}
             renderHeader={(date) => (
-              <CalendarMonthTitle date={date} monthFormat="MMMM" />
+              <CalendarMonthHeader
+                date={date}
+                monthFormat="MMMM"
+                onPreviousMonth={onPreviousMonth}
+                onNextMonth={onNextMonth}
+              />
             )}
             theme={CALENDAR_THEME}
           />

@@ -6,7 +6,7 @@ Guardias (“the App”) is a mobile application that helps you track on-call me
 
 ## Summary
 
-Guardias is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs in version 1.0.
+Guardias is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs.
 
 ## Information stored on your device
 
@@ -21,9 +21,9 @@ This data never leaves your device unless **you** choose to back up or share you
 
 - **Locale / language:** The App may read your device locale to choose a default language (English or Spanish). You can override the language in Settings.
 
-The App does not request access to your contacts, camera, microphone, location, health data, or photos in version 1.0.
+The App does not request access to your contacts, camera, microphone, location, health data, or photos.
 
-## No account or cloud sync (v1.0)
+## No account or cloud sync
 
 There is no sign-in and no Guardias backend. We do not collect, transmit, or store your rotation data on our servers.
 
@@ -49,4 +49,4 @@ Questions about this policy: use the contact email listed on the Guardias Google
 
 ## Spanish summary
 
-Guardias funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta, no hay servidor propio de Guardias en la v1.0, y no se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.
+Guardias funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta, no hay servidor propio de Guardias, y no se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.
