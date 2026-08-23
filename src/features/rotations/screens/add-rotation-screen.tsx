@@ -8,6 +8,7 @@ import {
 import { Alert, ScrollView, Switch } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import { usePreventRemove } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { parseISO } from 'date-fns';
 import * as Crypto from 'expo-crypto';
@@ -215,7 +216,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
   const prevActivePickerRef = useRef<ActivePicker>(null);
   const startAtPickerOpenRef = useRef<string | null>(null);
   const vacationStartAtPickerOpenRef = useRef<string | null>(null);
-  const allowLeaveRef = useRef(false);
+  const [leaveConfirmed, setLeaveConfirmed] = useState(false);
 
   const isDirty = isFormDirty(initial, {
     label,
@@ -260,41 +261,39 @@ export function AddRotationScreen({ navigation, route }: Props) {
     createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
   };
 
-  useEffect(() => {
-    const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      if (allowLeaveRef.current) {
-        return;
-      }
+  const isRootOfStack = navigation.getState().routes.length === 1;
+  const shouldPreventRemove = !leaveConfirmed && (isDirty || isRootOfStack);
 
-      const isRootOfStack = navigation.getState().routes.length === 1;
-
-      if (isDirtyRef.current) {
-        e.preventDefault();
-        Alert.alert(t('shifts.discardTitle'), t('shifts.discardBody'), [
-          { text: t('shifts.keepEditing'), style: 'cancel' },
-          {
-            text: t('shifts.discardConfirm'),
-            style: 'destructive',
-            onPress: () => {
-              allowLeaveRef.current = true;
-              dismissRotationForm(navigation);
-            },
+  usePreventRemove(shouldPreventRemove, ({ data }) => {
+    if (isDirtyRef.current) {
+      Alert.alert(t('shifts.discardTitle'), t('shifts.discardBody'), [
+        { text: t('shifts.keepEditing'), style: 'cancel' },
+        {
+          text: t('shifts.discardConfirm'),
+          style: 'destructive',
+          onPress: () => {
+            if (navigation.getState().routes.length === 1) {
+              setLeaveConfirmed(true);
+              return;
+            }
+            navigation.dispatch(data.action);
           },
-        ]);
-        return;
-      }
+        },
+      ]);
+      return;
+    }
 
-      // Clean leave from a one-screen stack: rewrite goBack so it resets the
-      // Shifts stack instead of bubbling to the Home tab with the form intact.
-      if (isRootOfStack) {
-        e.preventDefault();
-        allowLeaveRef.current = true;
-        dismissRotationForm(navigation);
-      }
-    });
+    // Clean leave from a one-screen stack: rewrite goBack so it resets the
+    // Shifts stack instead of bubbling to the Home tab with the form intact.
+    setLeaveConfirmed(true);
+  });
 
-    return unsubscribe;
-  }, [navigation, t]);
+  useEffect(() => {
+    if (!leaveConfirmed) {
+      return;
+    }
+    dismissRotationForm(navigation);
+  }, [leaveConfirmed, navigation]);
 
   // When start / vacation-start pickers close after a real change, fill end if untouched.
   useEffect(() => {
@@ -484,8 +483,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         createdAt: new Date().toISOString(),
       });
     }
-    allowLeaveRef.current = true;
-    dismissRotationForm(navigation);
+    setLeaveConfirmed(true);
   }
 
   useLayoutEffect(() => {

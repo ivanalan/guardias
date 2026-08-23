@@ -39,6 +39,7 @@ export function ShiftsStack() {
         component={AddRotationScreen}
         options={{
           title: t('shifts.addTitle'),
+          headerBackButtonMenuEnabled: false,
         }}
       />
       <Stack.Screen
@@ -46,6 +47,7 @@ export function ShiftsStack() {
         component={AddRotationScreen}
         options={{
           title: t('shifts.editTitle'),
+          headerBackButtonMenuEnabled: false,
         }}
       />
       <Stack.Screen
