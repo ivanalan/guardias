@@ -10,7 +10,7 @@ import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../component
 import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { Pressable, View } from '../../../tw';
-import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
+import { FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
 import { useTheme } from '../../../theme/theme-context';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
@@ -24,11 +24,10 @@ import {
 import { buildCalendarDayMarkContext } from '../calendar-day-marker';
 import { CALENDAR_WEEK_ROW_GAP } from '../calendar-day-marker';
 import {
-  CALENDAR_CARD_PADDING_VERTICAL,
-  CALENDAR_CARD_STYLE,
   CALENDAR_LIST_CARD_HEIGHT,
   CALENDAR_LIST_ITEM_GAP,
   CALENDAR_LIST_ITEM_HEIGHT,
+  calendarCardStyle,
   calendarListThemeFor,
   calendarThemeFor,
 } from '../calendar-theme';
@@ -250,35 +249,31 @@ export function CalendarScreen({ navigation }: Props) {
           onLayout={onListContainerLayout}
         >
           {viewMode === 'month' ? (
-            <View
-              className="px-gutter py-5"
-              style={{ ...CALENDAR_CARD_STYLE, backgroundColor: colors.bg1 }}
-            >
-              <Calendar
-                key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
-                initialDate={visibleMonth}
-                onMonthChange={(month: DateData) => {
-                  setVisibleMonth(month.dateString);
-                }}
-                onDayPress={onDayPress}
-                enableSwipeMonths
-                hideArrows
-                firstDay={1}
-                monthFormat="MMMM"
-                markingType="custom"
-                markedDates={markedDates}
-                dayComponent={DayComponent}
-                renderHeader={(date) => (
-                  <CalendarMonthHeader
-                    date={date}
-                    monthFormat="MMMM"
-                    onPreviousMonth={onPreviousMonth}
-                    onNextMonth={onNextMonth}
-                  />
-                )}
-                theme={calendarThemeFor(colors)}
-              />
-            </View>
+            <Calendar
+              key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
+              style={calendarCardStyle(colors)}
+              initialDate={visibleMonth}
+              onMonthChange={(month: DateData) => {
+                setVisibleMonth(month.dateString);
+              }}
+              onDayPress={onDayPress}
+              enableSwipeMonths
+              hideArrows
+              firstDay={1}
+              monthFormat="MMMM"
+              markingType="custom"
+              markedDates={markedDates}
+              dayComponent={DayComponent}
+              renderHeader={(date) => (
+                <CalendarMonthHeader
+                  date={date}
+                  monthFormat="MMMM"
+                  onPreviousMonth={onPreviousMonth}
+                  onNextMonth={onNextMonth}
+                />
+              )}
+              theme={calendarThemeFor(colors)}
+            />
           ) : listSize != null ? (
             <CalendarList
               key={`scroll-${language}-${scrollAnchor.slice(0, 7)}-${CALENDAR_WEEK_ROW_GAP}`}
@@ -290,10 +285,7 @@ export function CalendarScreen({ navigation }: Props) {
               calendarWidth={listSize.width}
               calendarHeight={CALENDAR_LIST_ITEM_HEIGHT}
               calendarStyle={{
-                backgroundColor: colors.bg1,
-                paddingHorizontal: SCREEN_GUTTER,
-                paddingVertical: CALENDAR_CARD_PADDING_VERTICAL,
-                ...CALENDAR_CARD_STYLE,
+                ...calendarCardStyle(colors),
                 minHeight: CALENDAR_LIST_CARD_HEIGHT,
                 marginBottom: CALENDAR_LIST_ITEM_GAP,
               }}
