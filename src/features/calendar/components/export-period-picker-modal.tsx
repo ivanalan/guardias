@@ -5,6 +5,7 @@ import type { AppLanguage } from '../../../i18n';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { formatPeriodRange } from '../../rotations/format-period-range';
+import { resolveRotationColor } from '../../rotations/rotation-colors';
 import type { RotationPeriod } from '../../rotations/types';
 
 type Props = {
@@ -79,7 +80,7 @@ export function ExportPeriodPickerModal({
                       width: 12,
                       height: 12,
                       borderRadius: 6,
-                      backgroundColor: period.color,
+                      backgroundColor: resolveRotationColor(period.color, colors),
                     }}
                   />
                   <View className="min-w-0 flex-1 gap-0.5">

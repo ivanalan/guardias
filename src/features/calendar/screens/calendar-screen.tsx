@@ -14,6 +14,7 @@ import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout
 import { useTheme } from '../../../theme/theme-context';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
+import { resolveRotationColor, resolveShiftMarks } from '../../rotations/rotation-colors';
 import type { RotationPeriod } from '../../rotations/types';
 import type { CalendarStackParamList } from '../calendar-stack';
 import {
@@ -72,8 +73,13 @@ export function CalendarScreen({ navigation }: Props) {
 
   // ±2 months so next/prev (and fast swipe) paints with marks before onMonthChange.
   const monthInputs = getMarkInputsForMonthWindow(periods, visibleMonth, 2);
+  const resolvedShiftMarks = useMemo(
+    () => resolveShiftMarks(monthInputs.shiftMarks, colors),
+    [monthInputs.shiftMarks, colors],
+  );
+  const resolvedShiftColor = resolveRotationColor(monthInputs.shiftColor, colors);
   const markedDates = buildMarkedDates(
-    monthInputs.shiftMarks,
+    resolvedShiftMarks,
     monthInputs.freeWeekendDates,
     monthInputs.vacationDates,
     filter,
@@ -82,14 +88,14 @@ export function CalendarScreen({ navigation }: Props) {
   const markContext = useMemo(
     () =>
       buildCalendarDayMarkContext(
-        monthInputs.shiftMarks,
+        resolvedShiftMarks,
         monthInputs.freeWeekendDates,
         monthInputs.vacationDates,
         filter,
         todayIso,
       ),
     [
-      monthInputs.shiftMarks,
+      resolvedShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
       filter,
@@ -325,7 +331,7 @@ export function CalendarScreen({ navigation }: Props) {
             shiftDayCount={monthInputs.shiftDayCount}
             freeWeekendCount={monthInputs.freeWeekendCount}
             vacationDayCount={monthInputs.vacationDayCount}
-            shiftColor={monthInputs.shiftColor}
+            shiftColor={resolvedShiftColor}
             filter={filter}
             onFilterChange={setFilter}
           />

@@ -11,6 +11,7 @@ import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
 import { formatFormDate, formatPeriodRange } from '../format-period-range';
+import { resolveRotationColor } from '../rotation-colors';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
 
@@ -92,7 +93,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   // Locals so the Alert callback keeps narrowed values (TS nest-function quirk).
   const deletePeriodId = period.id;
   const periodLabel = period.label;
-  const iconColor = period.color;
+  const iconColor = resolveRotationColor(period.color, colors);
 
   function confirmDelete() {
     Alert.alert(

@@ -1,4 +1,6 @@
+import { useTheme } from '../../../theme/theme-context';
 import { TwoWeekCalendar } from '../../dashboard/components/two-week-calendar';
+import { resolveRotationColor } from '../rotation-colors';
 import {
   EMPTY_STATE_PREVIEW,
   EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES,
@@ -14,6 +16,8 @@ type GhostCalendarPreviewProps = {
 export function GhostCalendarPreview({
   weekdayLabels,
 }: GhostCalendarPreviewProps) {
+  const { colors } = useTheme();
+
   return (
     <TwoWeekCalendar
       dates={EMPTY_STATE_PREVIEW.dates}
@@ -22,7 +26,7 @@ export function GhostCalendarPreview({
       shiftDates={EMPTY_STATE_PREVIEW_SHIFT_DATES}
       freeWeekendDates={EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES}
       vacationDates={EMPTY_STATE_PREVIEW_VACATION_DATES}
-      shiftColor={EMPTY_STATE_PREVIEW.shiftColor}
+      shiftColor={resolveRotationColor(EMPTY_STATE_PREVIEW.shiftColor, colors)}
     />
   );
 }

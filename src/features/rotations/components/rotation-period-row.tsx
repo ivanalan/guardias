@@ -1,5 +1,6 @@
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
+import { resolveRotationColor } from '../rotation-colors';
 
 export type RotationPeriodRowProps = {
   label: string;
@@ -16,6 +17,7 @@ export function RotationPeriodRow({
   onPress,
 }: RotationPeriodRowProps) {
   const { colors } = useTheme();
+  const backgroundColor = resolveRotationColor(color, colors);
 
   return (
     <Pressable
@@ -23,7 +25,7 @@ export function RotationPeriodRow({
       onPress={onPress}
       className="w-full gap-1 px-gutter py-6 active:opacity-70"
       style={{
-        backgroundColor: color,
+        backgroundColor,
         borderCurve: 'continuous',
         borderRadius: 32,
       }}
