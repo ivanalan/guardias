@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
+import { RotationPeriodRow } from '../../rotations/components/rotation-period-row';
 import { formatPeriodRange } from '../../rotations/format-period-range';
-import { resolveRotationColor } from '../../rotations/rotation-colors';
 import type { RotationPeriod } from '../../rotations/types';
 
 type Props = {
@@ -38,7 +38,10 @@ export function ExportPeriodPickerModal({
       onRequestClose={onCancel}
       onDismiss={onDismiss}
     >
-      <View className="flex-1 justify-end" style={{ backgroundColor: colors.scrim }}>
+      <View
+        className="flex-1 justify-end"
+        style={{ backgroundColor: colors.scrim }}
+      >
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('calendar.sharePickCancel')}
@@ -50,58 +53,27 @@ export function ExportPeriodPickerModal({
           style={{ backgroundColor: colors.bg }}
         >
           <Text
-            className="mb-3 px-2 font-serif text-xl"
+            className="mb-3 px-2 font-serif text-3xl"
             style={{ color: colors.text }}
           >
             {t('calendar.sharePickTitle')}
           </Text>
           <ScrollView>
-            <View className="gap-2 pb-2">
+            <View className="gap-3 pb-2">
               {periods.map((period) => (
-                <Pressable
+                <RotationPeriodRow
                   key={period.id}
-                  accessibilityRole="button"
+                  label={period.label}
+                  meta={formatPeriodRange(
+                    period.startDate,
+                    period.endDate,
+                    language,
+                  )}
+                  color={period.color}
                   onPress={() => {
                     onSelect(period);
                   }}
-                  className="w-full flex-row items-center gap-4 px-5 py-4 active:opacity-70"
-                  style={{
-                    borderRadius: 16,
-                    borderCurve: 'continuous',
-                    borderWidth: 1,
-                    borderColor: colors.border,
-                    backgroundColor: colors.bg1,
-                  }}
-                >
-                  <View
-                    accessibilityElementsHidden
-                    importantForAccessibility="no"
-                    style={{
-                      width: 12,
-                      height: 12,
-                      borderRadius: 6,
-                      backgroundColor: resolveRotationColor(period.color, colors),
-                    }}
-                  />
-                  <View className="min-w-0 flex-1 gap-0.5">
-                    <Text
-                      className="font-serif text-lg"
-                      style={{ color: colors.text }}
-                    >
-                      {period.label}
-                    </Text>
-                    <Text
-                      className="font-mono text-sm opacity-50"
-                      style={{ color: colors.text }}
-                    >
-                      {formatPeriodRange(
-                        period.startDate,
-                        period.endDate,
-                        language,
-                      )}
-                    </Text>
-                  </View>
-                </Pressable>
+                />
               ))}
             </View>
           </ScrollView>

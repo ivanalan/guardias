@@ -2,6 +2,7 @@ import type { CalendarProps } from 'react-native-calendars';
 import { Platform } from 'react-native';
 
 import type { ThemeColors } from '../../theme/colors';
+import { SCREEN_GUTTER } from '../../theme/layout';
 import { CALENDAR_WEEK_ROW_GAP, CELL_SIZE } from './calendar-day-marker';
 
 const MONO_FONT = Platform.select({
@@ -129,6 +130,11 @@ export function calendarListThemeFor(
       flatListContainer: {
         flex: 1,
       },
+      // Default list item padding is 15px; card inset uses CALENDAR_CARD_PADDING_HORIZONTAL.
+      calendar: {
+        paddingLeft: 0,
+        paddingRight: 0,
+      },
     },
   } as NonNullable<CalendarProps['theme']>;
 }
@@ -140,8 +146,22 @@ export const CALENDAR_CARD_STYLE = {
   overflow: 'visible' as const,
 };
 
-/** Inner padding of month cards in month + year views. */
+/** Inner horizontal padding of month cards in month + year views. */
+export const CALENDAR_CARD_PADDING_HORIZONTAL = SCREEN_GUTTER;
+/** Inner vertical padding of month cards in month + year views. */
 export const CALENDAR_CARD_PADDING_VERTICAL = 20;
+
+/** Shared card chrome for single-month and list month blocks. */
+export function calendarCardStyle(colors: ThemeColors) {
+  return {
+    backgroundColor: colors.bg1,
+    paddingLeft: CALENDAR_CARD_PADDING_HORIZONTAL,
+    paddingRight: CALENDAR_CARD_PADDING_HORIZONTAL,
+    paddingTop: CALENDAR_CARD_PADDING_VERTICAL,
+    paddingBottom: CALENDAR_CARD_PADDING_VERTICAL,
+    ...CALENDAR_CARD_STYLE,
+  };
+}
 /** Canvas gap between year-view month cards. */
 export const CALENDAR_LIST_ITEM_GAP = 12;
 

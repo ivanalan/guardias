@@ -33,7 +33,7 @@ export function DayDetailScreen({ route }: Props) {
       <View className="gap-8 p-gutter" style={{ backgroundColor: colors.bg }}>
         <View className="gap-1">
           <Text
-            className="font-serif text-3xl tracking-tight"
+            className="font-serif text-4xl tracking-tight"
             style={{ color: colors.text }}
           >
             {dateLabel}
@@ -51,7 +51,7 @@ export function DayDetailScreen({ route }: Props) {
       <View className="gap-8 p-gutter" style={{ backgroundColor: colors.bg }}>
         <View className="gap-1">
           <Text
-            className="font-serif text-3xl tracking-tight"
+            className="font-serif text-4xl tracking-tight"
             style={{ color: colors.text }}
           >
             {dateLabel}
@@ -80,7 +80,7 @@ export function DayDetailScreen({ route }: Props) {
     <View className="gap-4 p-gutter" style={{ backgroundColor: colors.bg }}>
       <View className="gap-1">
         <Text
-          className="font-serif text-3xl tracking-tight"
+          className="font-serif text-4xl tracking-tight"
           style={{ color: colors.text }}
         >
           {dateLabel}

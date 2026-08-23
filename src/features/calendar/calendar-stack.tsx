@@ -1,5 +1,6 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
+import { useTheme } from '../../theme/theme-context';
 import { CalendarScreen } from './screens/calendar-screen';
 import { DayDetailScreen } from './screens/day-detail-screen';
 
@@ -12,6 +13,8 @@ const Stack = createNativeStackNavigator<CalendarStackParamList>();
 
 /** Native stack for the Calendar tab. */
 export function CalendarStack() {
+  const { colors } = useTheme();
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -29,6 +32,7 @@ export function CalendarStack() {
           presentation: 'formSheet',
           sheetAllowedDetents: 'fitToContents',
           sheetGrabberVisible: true,
+          contentStyle: { backgroundColor: colors.bg },
         }}
       />
     </Stack.Navigator>
