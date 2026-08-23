@@ -16,7 +16,8 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { getDefaultFirstShiftDate } from '../../../lib/shifts';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
-import { BRAND_COLOR, BRAND_SELECTION, INK_COLOR } from '../../../theme/brand';
+import { brandSelection } from '../../../theme/colors';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, TextInput, View } from '../../../tw';
 import { RotationColorSwatches } from '../components/rotation-color-swatches';
 import { RotationPreviewCalendar } from '../components/rotation-preview-calendar';
@@ -166,6 +167,7 @@ function isFormDirty(snapshot: FormSnapshot, current: FormSnapshot): boolean {
 /** Add or edit rotation form (F1 / F4). */
 export function AddRotationScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods, addPeriod, updatePeriod } = useRotations();
 
@@ -496,7 +498,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
           className="px-2 active:opacity-60"
           hitSlop={8}
         >
-          <Ionicons name="save-outline" size={24} color={INK_COLOR} />
+          <Ionicons name="save-outline" size={24} color={colors.brand} />
         </Pressable>
       ),
     });
@@ -514,6 +516,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     vacationStartDate,
     vacationEndDate,
     t,
+    colors.brand,
     addPeriod,
     updatePeriod,
     editingId,
@@ -523,15 +526,21 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   if (editingId != null && existing == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-canvas p-gutter">
-        <Text className="text-base">{t('shifts.detail.notFound')}</Text>
+      <View
+        className="flex-1 items-center justify-center gap-2 p-gutter"
+        style={{ backgroundColor: colors.bg }}
+      >
+        <Text className="text-base" style={{ color: colors.text }}>
+          {t('shifts.detail.notFound')}
+        </Text>
       </View>
     );
   }
 
   return (
     <ScrollView
-      className="flex-1 bg-canvas"
+      className="flex-1"
+      style={{ backgroundColor: colors.bg }}
       contentInsetAdjustmentBehavior="automatic"
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ paddingBottom: 32 }}
@@ -540,8 +549,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
         <View>
           <FieldLabel>{t('shifts.form.name')}</FieldLabel>
           <View
-            className={`${FIELD_BOX_CLASS} bg-white`}
-            style={{ borderCurve: 'continuous' }}
+            className={FIELD_BOX_CLASS}
+            style={{ borderCurve: 'continuous', backgroundColor: colors.bg1 }}
           >
             <TextInput
               value={label}
@@ -550,11 +559,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
                 setError(null);
               }}
               placeholder={t('shifts.form.namePlaceholder')}
-              placeholderTextColor="#a3a3a3"
+              placeholderTextColor={colors.textMuted}
               returnKeyType="done"
               accessibilityLabel={t('shifts.form.name')}
-              className="flex-1 font-mono text-base text-ink"
-              style={{ height: 24, padding: 0 }}
+              className="flex-1 font-mono text-base"
+              style={{ height: 24, padding: 0, color: colors.text }}
             />
           </View>
           {isLabelError(error) ? (
@@ -692,16 +701,16 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
         <View className="w-full flex-row items-center justify-between py-1">
           <Text
-            className="font-mono text-sm text-ink"
-            style={ANDROID_TEXT_WIDTH_BUMP}
+            className="font-mono text-sm"
+            style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
           >
             {t('shifts.form.vacation')}
           </Text>
           <Switch
             value={vacationEnabled}
             onValueChange={onVacationToggle}
-            trackColor={{ false: '#d4d4d4', true: BRAND_COLOR }}
-            thumbColor="#ffffff"
+            trackColor={{ false: colors.switchTrackOff, true: colors.brand }}
+            thumbColor={colors.bg1}
           />
         </View>
         {vacationEnabled ? (
@@ -763,10 +772,12 @@ export function AddRotationScreen({ navigation, route }: Props) {
 }
 
 function FieldLabel({ children }: { children: string }) {
+  const { colors } = useTheme();
+
   return (
     <Text
-      className="mb-1.5 font-mono text-sm text-ink"
-      style={ANDROID_TEXT_WIDTH_BUMP}
+      className="mb-1.5 font-mono text-sm"
+      style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
     >
       {children}
     </Text>
@@ -788,6 +799,9 @@ function DateField({
   icon?: 'calendar-outline' | 'time-outline';
   fill?: boolean;
 }) {
+  const { colors } = useTheme();
+  const selection = brandSelection(colors);
+
   return (
     <View className={fill ? 'min-w-0 flex-1' : 'w-full'}>
       <FieldLabel>{label}</FieldLabel>
@@ -801,19 +815,19 @@ function DateField({
           { borderCurve: 'continuous' },
           {
             backgroundColor: selected
-              ? BRAND_SELECTION.backgroundSubtle
-              : '#ffffff',
+              ? selection.backgroundSubtle
+              : colors.bg1,
           },
         ]}
       >
         <Text
-          className="min-w-0 flex-1 font-mono text-base text-ink"
+          className="min-w-0 flex-1 font-mono text-base"
           numberOfLines={1}
-          style={ANDROID_TEXT_WIDTH_BUMP}
+          style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
         >
           {valueLabel}
         </Text>
-        <Ionicons name={icon} size={18} color={INK_COLOR} />
+        <Ionicons name={icon} size={18} color={colors.brand} />
       </Pressable>
     </View>
   );
@@ -828,6 +842,8 @@ function PatternPill({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -838,20 +854,23 @@ function PatternPill({
       style={[
         { borderCurve: 'continuous' },
         selected
-          ? { backgroundColor: INK_COLOR }
+          ? { backgroundColor: colors.brand }
           : {
-              backgroundColor: '#ffffff',
+              backgroundColor: colors.bg1,
               borderWidth: 1,
-              borderColor: '#e5e5e5',
+              borderColor: colors.border,
             },
       ]}
     >
       {selected ? (
-        <Ionicons name="checkmark" size={16} color="#ffffff" />
+        <Ionicons name="checkmark" size={16} color={colors.textInverse} />
       ) : null}
       <Text
-        className={`font-mono text-sm ${selected ? 'text-white' : 'text-neutral-500'}`}
-        style={ANDROID_TEXT_WIDTH_BUMP}
+        className="font-mono text-sm"
+        style={{
+          ...ANDROID_TEXT_WIDTH_BUMP,
+          color: selected ? colors.textInverse : colors.textMuted,
+        }}
       >
         {label}
       </Text>
@@ -868,6 +887,8 @@ function LetterTile({
   selected: boolean;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -878,19 +899,20 @@ function LetterTile({
       style={[
         { borderCurve: 'continuous' },
         selected
-          ? { backgroundColor: INK_COLOR }
+          ? { backgroundColor: colors.brand }
           : {
-              backgroundColor: '#ffffff',
+              backgroundColor: colors.bg1,
               borderWidth: 1,
-              borderColor: '#e5e5e5',
+              borderColor: colors.border,
             },
       ]}
     >
       {selected ? (
-        <Ionicons name="checkmark" size={16} color="#ffffff" />
+        <Ionicons name="checkmark" size={16} color={colors.textInverse} />
       ) : null}
       <Text
-        className={`font-mono text-base ${selected ? 'text-white' : 'text-neutral-500'}`}
+        className="font-mono text-base"
+        style={{ color: selected ? colors.textInverse : colors.textMuted }}
       >
         {letter}
       </Text>
@@ -899,11 +921,15 @@ function LetterTile({
 }
 
 function SectionRule({ label }: { label: string }) {
+  const { colors } = useTheme();
+
   return (
     <View className="flex-row items-center gap-3 py-1">
-      <View className="h-px flex-1 bg-neutral-300" />
-      <Text className="font-mono text-sm text-neutral-500">{label}</Text>
-      <View className="h-px flex-1 bg-neutral-300" />
+      <View className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+      <Text className="font-mono text-sm" style={{ color: colors.textMuted }}>
+        {label}
+      </Text>
+      <View className="h-px flex-1" style={{ backgroundColor: colors.border }} />
     </View>
   );
 }

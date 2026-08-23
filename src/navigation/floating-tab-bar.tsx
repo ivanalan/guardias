@@ -8,6 +8,7 @@ import {
 import { getFocusedRouteNameFromRoute } from '@react-navigation/native';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
 import type { ComponentProps } from 'react';
+import { useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
@@ -15,8 +16,9 @@ import {
   type MagicNavigationTab,
 } from 'react-native-magic-tab-bar/react-navigation';
 
-import { INK_COLOR } from '../theme/brand';
 import { useRotations } from '../features/rotations/rotations-context';
+import type { ThemeColors } from '../theme/colors';
+import { useTheme } from '../theme/theme-context';
 import type { TabParamList } from './types';
 
 type TabKey = keyof TabParamList;
@@ -37,8 +39,6 @@ const TAB_TITLE_KEYS: Record<
   Shifts: 'tabs.shifts',
 };
 
-const INACTIVE_TAB_COLOR = '#49454F';
-
 /** Initial route per tab — tab bar is shown only on these screens. */
 const TAB_ROOT_SCREENS: Record<TabKey, string> = {
   Home: 'HomeHome',
@@ -54,54 +54,59 @@ function shouldShowTabBar(state: BottomTabBarProps['state']): boolean {
   return focusedName === TAB_ROOT_SCREENS[tabName];
 }
 
-/** Frosted white wash over the blur — keeps the chip light on the canvas. */
-const TAB_BAR_WHITE_OVERLAY = 'rgba(255, 255, 255, 0.45)';
+function floatingTabBarTheme(colors: ThemeColors) {
+  return {
+    barColor: 'transparent',
+    activePillColor: 'transparent',
+    activeColor: colors.brand,
+    inactiveColor: colors.tabInactive,
+    iconSize: 22,
+    fontSize: 11,
+    height: 64,
+    radius: 999,
+    horizontalMargin: 72,
+    bottomInset: Platform.OS === 'ios' ? 0 : 16,
+  } as const;
+}
 
-/**
- * Visual tokens for the floating chip tab bar — tuned to the Shifts mock.
- * Magic Tab Bar already adds the safe-area inset for floating bars, so iOS
- * only needs a small extra gap above the home indicator (Android has none).
- */
-export const FLOATING_TAB_BAR_THEME = {
-  barColor: 'transparent',
-  activePillColor: 'transparent',
-  activeColor: INK_COLOR,
-  inactiveColor: INACTIVE_TAB_COLOR,
-  iconSize: 22,
-  fontSize: 11,
-  height: 64,
-  radius: 999,
-  horizontalMargin: 72,
-  bottomInset: Platform.OS === 'ios' ? 0 : 16,
-} as const;
-
-function TabBarBlurBackground() {
+function TabBarBlurBackground({
+  overlayColor,
+  blurTint,
+}: {
+  overlayColor: string;
+  blurTint: 'light' | 'dark';
+}) {
   return (
     <View style={StyleSheet.absoluteFill}>
-      <BlurView tint="light" intensity={100} style={StyleSheet.absoluteFill} />
+      <BlurView tint={blurTint} intensity={100} style={StyleSheet.absoluteFill} />
       <View
         pointerEvents="none"
-        style={[
-          StyleSheet.absoluteFill,
-          { backgroundColor: TAB_BAR_WHITE_OVERLAY },
-        ]}
+        style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor }]}
       />
     </View>
   );
 }
 
-function TabBarBackground() {
+function TabBarBackground({
+  overlayColor,
+  blurTint,
+}: {
+  overlayColor: string;
+  blurTint: 'light' | 'dark';
+}) {
   if (isLiquidGlassAvailable() && isGlassEffectAPIAvailable()) {
     return (
       <GlassView
         glassEffectStyle="regular"
-        tintColor={TAB_BAR_WHITE_OVERLAY}
+        tintColor={overlayColor}
         style={StyleSheet.absoluteFill}
       />
     );
   }
 
-  return <TabBarBlurBackground />;
+  return (
+    <TabBarBlurBackground overlayColor={overlayColor} blurTint={blurTint} />
+  );
 }
 
 function buildTabs(t: (key: string) => string): MagicNavigationTab[] {
@@ -125,6 +130,9 @@ function buildTabs(t: (key: string) => string): MagicNavigationTab[] {
 export function FloatingTabBar(props: BottomTabBarProps) {
   const { t } = useTranslation();
   const { periods } = useRotations();
+  const { colors, scheme } = useTheme();
+  const tabBarTheme = useMemo(() => floatingTabBarTheme(colors), [colors]);
+  const blurTint: 'light' | 'dark' = scheme === 'dark' ? 'dark' : 'light';
 
   if (periods.length === 0 || !shouldShowTabBar(props.state)) {
     return null;
@@ -139,8 +147,13 @@ export function FloatingTabBar(props: BottomTabBarProps) {
       showLabels="always"
       haptics
       isTransparent
-      renderBackground={() => <TabBarBackground />}
-      theme={FLOATING_TAB_BAR_THEME}
+      renderBackground={() => (
+        <TabBarBackground
+          overlayColor={colors.tabBarOverlay}
+          blurTint={blurTint}
+        />
+      )}
+      theme={tabBarTheme}
     />
   );
 }

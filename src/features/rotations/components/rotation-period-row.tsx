@@ -1,3 +1,4 @@
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 
 export type RotationPeriodRowProps = {
@@ -7,13 +8,15 @@ export type RotationPeriodRowProps = {
   onPress?: () => void;
 };
 
-/** Pressable rotation card — full swatch fill, white type. */
+/** Pressable rotation card — full swatch fill, on-color type. */
 export function RotationPeriodRow({
   label,
   meta,
   color,
   onPress,
 }: RotationPeriodRowProps) {
+  const { colors } = useTheme();
+
   return (
     <Pressable
       accessibilityRole="button"
@@ -25,8 +28,15 @@ export function RotationPeriodRow({
         borderRadius: 32,
       }}
     >
-      <Text className="font-serif text-5xl text-white">{label}</Text>
-      <Text className="font-mono text-base text-white">{meta}</Text>
+      <Text
+        className="font-serif text-5xl"
+        style={{ color: colors.onColor }}
+      >
+        {label}
+      </Text>
+      <Text className="font-mono text-base" style={{ color: colors.onColor }}>
+        {meta}
+      </Text>
     </Pressable>
   );
 }

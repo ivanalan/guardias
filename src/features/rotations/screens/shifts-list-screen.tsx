@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
 import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
 import type { AppLanguage } from '../../../i18n';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { RotationPeriodRow } from '../components/rotation-period-row';
 import { ShiftsEmptyState } from '../components/shifts-empty-state';
@@ -28,6 +29,7 @@ function keyExtractor(item: RotationPeriod) {
 /** Shifts tab list of rotation periods. */
 export function ShiftsListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
   const todayIso = format(new Date(), 'yyyy-MM-dd');
@@ -35,7 +37,7 @@ export function ShiftsListScreen({ navigation }: Props) {
 
   if (periods.length === 0) {
     return (
-      <View className="flex-1 bg-canvas">
+      <View className="flex-1" style={{ backgroundColor: colors.bg }}>
         <ShiftsEmptyState
           onAddPress={() => {
             navigation.navigate('AddRotation');
@@ -46,7 +48,7 @@ export function ShiftsListScreen({ navigation }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScreenPageTitle
         title={t('tabs.shifts')}
         right={
@@ -59,7 +61,11 @@ export function ShiftsListScreen({ navigation }: Props) {
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <Ionicons name="add" size={SCREEN_PAGE_TITLE_ICON_SIZE} color="#1C1B1F" />
+            <Ionicons
+              name="add"
+              size={SCREEN_PAGE_TITLE_ICON_SIZE}
+              color={colors.brand}
+            />
           </Pressable>
         }
       />
@@ -79,7 +85,10 @@ export function ShiftsListScreen({ navigation }: Props) {
         }: {
           section: PeriodRecencySection;
         }) => (
-          <Text className="px-1 pt-2 font-mono text-sm text-neutral-500">
+          <Text
+            className="px-1 pt-2 font-mono text-sm"
+            style={{ color: colors.textMuted }}
+          >
             {t(`shifts.${section.titleKey}`)}
           </Text>
         )}

@@ -5,8 +5,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import type { AppLanguage } from '../../../i18n';
 import { weekdayInitials } from '../../dashboard/format-home-copy';
-import { BRAND_COLOR } from '../../../theme/brand';
 import { SCREEN_GUTTER } from '../../../theme/layout';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { GhostCalendarPreview } from './ghost-calendar-preview';
 import { GhostShiftsPreview } from './ghost-shifts-preview';
@@ -23,6 +23,8 @@ function EmptyStateCta({
   label: string;
   onPress: () => void;
 }) {
+  const { colors } = useTheme();
+
   const handlePress = () => {
     void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     onPress();
@@ -35,12 +37,15 @@ function EmptyStateCta({
       onPress={handlePress}
       className="w-full items-center px-6 py-4 active:opacity-80"
       style={{
-        backgroundColor: BRAND_COLOR,
+        backgroundColor: colors.brand,
         borderCurve: 'continuous',
         borderRadius: 32,
       }}
     >
-      <Text className="font-mono text-base font-semibold text-white">
+      <Text
+        className="font-mono text-base font-semibold"
+        style={{ color: colors.textInverse }}
+      >
         {label}
       </Text>
     </Pressable>
@@ -86,12 +91,19 @@ export function ShiftsEmptyState({ onAddPress }: ShiftsEmptyStateProps) {
 }
 
 function CopyBlock({ title, body }: { title: string; body: string }) {
+  const { colors } = useTheme();
+
   return (
     <View className="gap-2">
-      <Text className="font-serif text-6xl tracking-tight text-ink">
+      <Text
+        className="font-serif text-6xl tracking-tight"
+        style={{ color: colors.text }}
+      >
         {title}
       </Text>
-      <Text className="font-mono text-base text-neutral-600">{body}</Text>
+      <Text className="font-mono text-base" style={{ color: colors.textMuted }}>
+        {body}
+      </Text>
     </View>
   );
 }

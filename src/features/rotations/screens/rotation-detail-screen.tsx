@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { getDefaultFirstShiftDate } from '../../../lib/shifts';
-import { BRAND_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
@@ -19,6 +19,7 @@ type Props = NativeStackScreenProps<ShiftsStackParamList, 'RotationDetail'>;
 /** Read-only rotation period summary with edit and delete. */
 export function RotationDetailScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods, deletePeriod } = useRotations();
   const period = periods.find((item) => item.id === route.params.periodId);
@@ -41,16 +42,21 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           className="px-2 active:opacity-60"
           hitSlop={8}
         >
-          <Ionicons name="create-outline" size={24} color="#191C1A" />
+          <Ionicons name="create-outline" size={24} color={colors.brand} />
         </Pressable>
       ),
     });
-  }, [navigation, periodId, t]);
+  }, [navigation, periodId, t, colors.brand]);
 
   if (period == null) {
     return (
-      <View className="flex-1 items-center justify-center gap-2 bg-canvas p-gutter">
-        <Text className="text-base">{t('shifts.detail.notFound')}</Text>
+      <View
+        className="flex-1 items-center justify-center gap-2 p-gutter"
+        style={{ backgroundColor: colors.bg }}
+      >
+        <Text className="text-base" style={{ color: colors.text }}>
+          {t('shifts.detail.notFound')}
+        </Text>
       </View>
     );
   }
@@ -107,16 +113,24 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   }
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScrollView
         className="flex-1"
         contentContainerClassName="flex-grow gap-8 p-gutter"
       >
         <View className="gap-1">
-          <Text className="font-serif text-5xl tracking-tight">
+          <Text
+            className="font-serif text-5xl tracking-tight"
+            style={{ color: colors.text }}
+          >
             {period.label}
           </Text>
-          <Text className="font-mono text-base opacity-50">{dateRange}</Text>
+          <Text
+            className="font-mono text-base opacity-50"
+            style={{ color: colors.text }}
+          >
+            {dateRange}
+          </Text>
         </View>
 
         <StatsCardGrid>
@@ -169,12 +183,15 @@ export function RotationDetailScreen({ navigation, route }: Props) {
             onPress={confirmDelete}
             className="w-full items-center px-6 py-4 active:opacity-80"
             style={{
-              backgroundColor: BRAND_COLOR,
+              backgroundColor: colors.brand,
               borderCurve: 'continuous',
               borderRadius: 32,
             }}
           >
-            <Text className="font-mono text-base font-semibold text-white">
+            <Text
+              className="font-mono text-base font-semibold"
+              style={{ color: colors.textInverse }}
+            >
               {t('shifts.detail.delete')}
             </Text>
           </Pressable>

@@ -11,6 +11,7 @@ import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { Pressable, View } from '../../../tw';
 import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
+import { useTheme } from '../../../theme/theme-context';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
 import type { RotationPeriod } from '../../rotations/types';
@@ -27,8 +28,8 @@ import {
   CALENDAR_LIST_CARD_HEIGHT,
   CALENDAR_LIST_ITEM_GAP,
   CALENDAR_LIST_ITEM_HEIGHT,
-  CALENDAR_LIST_THEME,
-  CALENDAR_THEME,
+  calendarListThemeFor,
+  calendarThemeFor,
 } from '../calendar-theme';
 import type { CalendarViewMode } from '../calendar-view-mode';
 import { createCalendarDayComponent } from '../components/calendar-day';
@@ -51,6 +52,7 @@ type ListSize = {
 /** Calendar home: single-month or scrollable list, with legend filter. */
 export function CalendarScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const { periods } = useRotations();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const [viewMode, setViewMode] = useState<CalendarViewMode>('month');
@@ -206,7 +208,7 @@ export function CalendarScreen({ navigation }: Props) {
   };
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScreenPageTitle
         title={t('tabs.calendar')}
         right={
@@ -221,7 +223,7 @@ export function CalendarScreen({ navigation }: Props) {
             <Ionicons
               name="share-outline"
               size={SCREEN_PAGE_TITLE_ICON_SIZE}
-              color="#191C1A"
+              color={colors.brand}
             />
           </Pressable>
         }
@@ -243,8 +245,8 @@ export function CalendarScreen({ navigation }: Props) {
         >
           {viewMode === 'month' ? (
             <View
-              className="bg-white px-gutter py-5"
-              style={CALENDAR_CARD_STYLE}
+              className="px-gutter py-5"
+              style={{ ...CALENDAR_CARD_STYLE, backgroundColor: colors.bg1 }}
             >
               <Calendar
                 key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
@@ -268,7 +270,7 @@ export function CalendarScreen({ navigation }: Props) {
                     onNextMonth={onNextMonth}
                   />
                 )}
-                theme={CALENDAR_THEME}
+                theme={calendarThemeFor(colors)}
               />
             </View>
           ) : listSize != null ? (
@@ -282,7 +284,7 @@ export function CalendarScreen({ navigation }: Props) {
               calendarWidth={listSize.width}
               calendarHeight={CALENDAR_LIST_ITEM_HEIGHT}
               calendarStyle={{
-                backgroundColor: '#FFFFFF',
+                backgroundColor: colors.bg1,
                 paddingHorizontal: SCREEN_GUTTER,
                 paddingVertical: CALENDAR_CARD_PADDING_VERTICAL,
                 ...CALENDAR_CARD_STYLE,
@@ -314,7 +316,7 @@ export function CalendarScreen({ navigation }: Props) {
               renderHeader={(date) => (
                 <CalendarMonthTitle date={date} monthFormat="MMMM" />
               )}
-              theme={CALENDAR_LIST_THEME}
+              theme={calendarListThemeFor(colors)}
             />
           ) : null}
         </View>

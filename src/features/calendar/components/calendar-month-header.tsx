@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import type XDate from 'xdate';
 import { useTranslation } from 'react-i18next';
 
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 
 type CalendarMonthHeaderProps = {
@@ -20,12 +20,13 @@ export function CalendarMonthHeader({
   onNextMonth,
 }: CalendarMonthHeaderProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <View className="w-full flex-row items-center justify-between">
       <Text
-        className="font-serif text-3xl text-ink"
-        style={{ lineHeight: 38, flexShrink: 0 }}
+        className="font-serif text-3xl"
+        style={{ lineHeight: 38, flexShrink: 0, color: colors.text }}
       >
         {date?.toString(monthFormat) ?? ''}
       </Text>
@@ -37,7 +38,7 @@ export function CalendarMonthHeader({
           className="px-1 active:opacity-60"
           hitSlop={8}
         >
-          <Ionicons name="chevron-back" size={28} color={INK_COLOR} />
+          <Ionicons name="chevron-back" size={28} color={colors.brand} />
         </Pressable>
         <Pressable
           accessibilityRole="button"
@@ -46,7 +47,7 @@ export function CalendarMonthHeader({
           className="px-1 active:opacity-60"
           hitSlop={8}
         >
-          <Ionicons name="chevron-forward" size={28} color={INK_COLOR} />
+          <Ionicons name="chevron-forward" size={28} color={colors.brand} />
         </Pressable>
       </View>
     </View>

@@ -4,7 +4,7 @@ import {
   TODAY_BORDER_WIDTH,
   TODAY_INNER_GAP,
 } from '../../calendar/calendar-day-marker';
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, View } from '../../../tw';
 import { ROTATION_COLORS } from '../rotation-colors';
 
@@ -24,6 +24,7 @@ type Props = {
 /** Preset color swatches for choosing a rotation calendar mark color. */
 export function RotationColorSwatches({ value, onChange }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <View className="flex-row items-center justify-between">
@@ -44,9 +45,9 @@ export function RotationColorSwatches({ value, onChange }: Props) {
                     height: SELECTED_SIZE,
                     borderRadius: SELECTED_RADIUS,
                     borderWidth: TODAY_BORDER_WIDTH,
-                    borderColor: INK_COLOR,
+                    borderColor: colors.brand,
                     padding: TODAY_INNER_GAP,
-                    backgroundColor: '#ffffff',
+                    backgroundColor: colors.bg1,
                   }
                 : {
                     width: SWATCH_SIZE,

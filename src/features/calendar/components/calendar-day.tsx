@@ -2,7 +2,7 @@ import type { ComponentType, ReactNode } from 'react';
 import type { DateData } from 'react-native-calendars';
 import type { DayProps } from 'react-native-calendars/src/calendar/day';
 
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import {
   addCalendarDays,
@@ -27,6 +27,7 @@ import {
   resolveVacationTextColor,
   resolveWeekendBackground,
 } from '../calendar-day-marker';
+import { calendarMarkColorsFor } from '../calendar-mark-colors';
 
 type CalendarDayProps = DayProps & {
   date?: DateData;
@@ -95,6 +96,8 @@ function CalendarDayInner({
   markContext,
   testID,
 }: InnerProps) {
+  const { colors } = useTheme();
+  const markColors = calendarMarkColorsFor(colors);
   const iso = date?.dateString;
   if (iso == null) {
     return <View style={daySlotStyle} />;
@@ -132,7 +135,7 @@ function CalendarDayInner({
       dimming.dimFreeWeekends,
       isPast,
     );
-    const textColor = resolveShiftTextColor(weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -146,7 +149,11 @@ function CalendarDayInner({
           style={[weekendSpanPressableStyle, { zIndex: 1 }]}
         >
           {isToday ? (
-            <TodayOutline label={label} textColor={textColor} />
+            <TodayOutline
+              label={label}
+              textColor={textColor}
+              inkColor={colors.brand}
+            />
           ) : (
             <View style={dayMarkerBoxStyle}>
               <Text className="font-mono text-sm" style={{ color: textColor }}>
@@ -171,8 +178,8 @@ function CalendarDayInner({
       dimming.dimFreeWeekends,
       weekendPast,
     );
-    const weekendBg = resolveWeekendBackground(weekendAlpha);
-    const textColor = resolveShiftTextColor(weekendAlpha);
+    const weekendBg = resolveWeekendBackground(markColors, weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -191,7 +198,11 @@ function CalendarDayInner({
           />
           {isToday ? (
             <View style={{ zIndex: 1 }}>
-              <TodayOutline label={label} textColor={textColor} />
+              <TodayOutline
+                label={label}
+                textColor={textColor}
+                inkColor={colors.brand}
+              />
             </View>
           ) : (
             <View style={[dayMarkerBoxStyle, { zIndex: 1 }]}>
@@ -209,7 +220,7 @@ function CalendarDayInner({
     const shiftColor = markContext.shiftColorByDate.get(iso)!;
     const shiftAlpha = markColorAlpha(dimming.dimShifts, isPast);
     const backgroundColor = resolveShiftColor(shiftColor, shiftAlpha);
-    const textColor = resolveShiftTextColor(shiftAlpha);
+    const textColor = resolveShiftTextColor(markColors, shiftAlpha);
 
     return (
       <DayShell
@@ -223,6 +234,7 @@ function CalendarDayInner({
             label={label}
             backgroundColor={backgroundColor}
             textColor={textColor}
+            inkColor={colors.brand}
           />
         ) : (
           <View
@@ -245,8 +257,8 @@ function CalendarDayInner({
 
   if (markKind === 'vacation' && !inactive) {
     const vacationAlpha = markColorAlpha(dimming.dimVacations, isPast);
-    const backgroundColor = resolveVacationBackground(vacationAlpha);
-    const textColor = resolveVacationTextColor(vacationAlpha);
+    const backgroundColor = resolveVacationBackground(markColors, vacationAlpha);
+    const textColor = resolveVacationTextColor(markColors, vacationAlpha);
 
     return (
       <DayShell
@@ -260,6 +272,7 @@ function CalendarDayInner({
             label={label}
             backgroundColor={backgroundColor}
             textColor={textColor}
+            inkColor={colors.brand}
           />
         ) : (
           <View
@@ -282,8 +295,8 @@ function CalendarDayInner({
 
   if (markKind === 'freeWeekend' && !inactive) {
     const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, isPast);
-    const backgroundColor = resolveWeekendBackground(weekendAlpha);
-    const textColor = resolveShiftTextColor(weekendAlpha);
+    const backgroundColor = resolveWeekendBackground(markColors, weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
 
     return (
       <DayShell
@@ -297,6 +310,7 @@ function CalendarDayInner({
             label={label}
             backgroundColor={backgroundColor}
             textColor={textColor}
+            inkColor={colors.brand}
           />
         ) : (
           <View
@@ -317,7 +331,7 @@ function CalendarDayInner({
     );
   }
 
-  const textColor = resolveInkTextColor(inactive);
+  const textColor = resolveInkTextColor(colors.text, inactive);
 
   return (
     <DayShell
@@ -327,7 +341,11 @@ function CalendarDayInner({
       testID={testID}
     >
       {isToday && !inactive ? (
-        <TodayOutline label={label} textColor={textColor} />
+        <TodayOutline
+          label={label}
+          textColor={textColor}
+          inkColor={colors.brand}
+        />
       ) : (
         <View
           className="items-center justify-center"
@@ -376,9 +394,11 @@ function DayShell({
 function TodayOutline({
   label,
   textColor,
+  inkColor,
 }: {
   label: string;
   textColor: string;
+  inkColor: string;
 }) {
   return (
     <View
@@ -387,7 +407,7 @@ function TodayOutline({
         width: CELL_SIZE,
         height: CELL_SIZE,
         borderWidth: TODAY_BORDER_WIDTH,
-        borderColor: INK_COLOR,
+        borderColor: inkColor,
         ...dayMarkerStyle,
       }}
     >
@@ -402,10 +422,12 @@ function TodayFilledMarker({
   label,
   backgroundColor,
   textColor,
+  inkColor,
 }: {
   label: string;
   backgroundColor: string;
   textColor: string;
+  inkColor: string;
 }) {
   return (
     <View
@@ -414,7 +436,7 @@ function TodayFilledMarker({
         width: CELL_SIZE,
         height: CELL_SIZE,
         borderWidth: TODAY_BORDER_WIDTH,
-        borderColor: INK_COLOR,
+        borderColor: inkColor,
         padding: TODAY_INNER_GAP,
         ...dayMarkerStyle,
       }}

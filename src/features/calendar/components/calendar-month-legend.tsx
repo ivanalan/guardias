@@ -1,9 +1,9 @@
 import { useTranslation } from 'react-i18next';
 
-import { WEEKEND_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
+import type { ThemeColors } from '../../../theme/colors';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarLegendFilter } from '../build-marked-dates';
-import { CALENDAR_MARK_COLORS } from '../calendar-mark-colors';
 
 type Props = {
   shiftDayCount: number;
@@ -27,6 +27,7 @@ export function CalendarMonthLegend({
   onFilterChange,
 }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   const toggle = (kind: PillKind) => {
     onFilterChange(filter === kind ? null : kind);
@@ -41,16 +42,18 @@ export function CalendarMonthLegend({
         selected={filter === 'shifts'}
         muted={filter != null && filter !== 'shifts'}
         onPress={() => toggle('shifts')}
+        colors={colors}
       />
       <LegendPill
         label={t('calendar.legend.freeWeekendsSummary', {
           count: freeWeekendCount,
         })}
         accessibilityHint={t('calendar.legend.filterFreeWeekendsHint')}
-        borderColor={WEEKEND_COLOR}
+        borderColor={colors.bgWeekend}
         selected={filter === 'freeWeekends'}
         muted={filter != null && filter !== 'freeWeekends'}
         onPress={() => toggle('freeWeekends')}
+        colors={colors}
       />
       {vacationDayCount > 0 ? (
         <LegendPill
@@ -58,10 +61,11 @@ export function CalendarMonthLegend({
             count: vacationDayCount,
           })}
           accessibilityHint={t('calendar.legend.filterVacationHint')}
-          borderColor={CALENDAR_MARK_COLORS.vacationBackground}
+          borderColor={colors.bgVacation}
           selected={filter === 'vacation'}
           muted={filter != null && filter !== 'vacation'}
           onPress={() => toggle('vacation')}
+          colors={colors}
         />
       ) : null}
     </View>
@@ -75,6 +79,7 @@ type LegendPillProps = {
   selected: boolean;
   muted: boolean;
   onPress: () => void;
+  colors: ThemeColors;
 };
 
 function LegendPill({
@@ -84,6 +89,7 @@ function LegendPill({
   selected,
   muted,
   onPress,
+  colors,
 }: LegendPillProps) {
   return (
     <Pressable
@@ -98,14 +104,15 @@ function LegendPill({
         borderRadius: 16,
         borderWidth: 1.5,
         borderColor,
-        backgroundColor: selected ? borderColor : '#FFFFFF',
+        backgroundColor: selected ? borderColor : colors.bg1,
         paddingHorizontal: 16,
         paddingVertical: 10,
         opacity: muted ? 0.45 : 1,
       }}
     >
       <Text
-        className={`font-mono text-sm ${selected ? 'text-white' : 'text-ink'}`}
+        className="font-mono text-sm"
+        style={{ color: selected ? colors.onColor : colors.text }}
       >
         {label}
       </Text>

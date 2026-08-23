@@ -18,12 +18,15 @@ import { PreferencesProvider } from './src/features/settings/preferences-context
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
 import { FloatingTabBar } from './src/navigation/floating-tab-bar';
 import type { TabParamList } from './src/navigation/types';
+import { useTheme } from './src/theme/theme-context';
 
 void SplashScreen.preventAutoHideAsync();
 
 const Tab = createBottomTabNavigator<TabParamList>();
 
 function RootNavigator() {
+  const { scheme } = useTheme();
+
   return (
     <NavigationContainer>
       <Tab.Navigator
@@ -42,7 +45,7 @@ function RootNavigator() {
         <Tab.Screen name="Calendar" component={CalendarStack} />
         <Tab.Screen name="Shifts" component={ShiftsStack} />
       </Tab.Navigator>
-      <StatusBar style="dark" />
+      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
     </NavigationContainer>
   );
 }

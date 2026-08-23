@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import type { CalendarViewMode } from '../calendar-view-mode';
 
@@ -14,6 +14,7 @@ const MODES: CalendarViewMode[] = ['month', 'scroll'];
 /** Compact segmented control: single-month vs scrollable month list. */
 export function CalendarViewToggle({ value, onChange }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <View accessibilityRole="tablist" className="flex-row items-center gap-3">
@@ -36,12 +37,15 @@ export function CalendarViewToggle({ value, onChange }: Props) {
                 paddingVertical: 8,
               },
               selected
-                ? { backgroundColor: INK_COLOR }
+                ? { backgroundColor: colors.brand }
                 : { backgroundColor: 'transparent' },
             ]}
           >
             <Text
-              className={`text-center text-sm font-mono ${selected ? 'text-white' : 'text-ink'}`}
+              className="text-center text-sm font-mono"
+              style={{
+                color: selected ? colors.textInverse : colors.text,
+              }}
             >
               {label}
             </Text>

@@ -1,7 +1,8 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
-import { secondaryScreenOptions } from '../../navigation/secondary-screen-options';
+import { getSecondaryScreenOptions } from '../../navigation/secondary-screen-options';
+import { useTheme } from '../../theme/theme-context';
 import { AddRotationScreen } from './screens/add-rotation-screen';
 import { RotationDetailScreen } from './screens/rotation-detail-screen';
 import { ShiftsListScreen } from './screens/shifts-list-screen';
@@ -18,9 +19,14 @@ const Stack = createNativeStackNavigator<ShiftsStackParamList>();
 /** Native stack for the Shifts tab. */
 export function ShiftsStack() {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={secondaryScreenOptions}>
+    <Stack.Navigator
+      screenOptions={({ navigation }) =>
+        getSecondaryScreenOptions({ navigation, colors })
+      }
+    >
       <Stack.Screen
         name="ShiftsList"
         component={ShiftsListScreen}

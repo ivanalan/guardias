@@ -7,7 +7,10 @@ import { useFocusEffect } from '@react-navigation/native';
 import { format } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
-import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
+import {
+  ScreenPageTitle,
+  SCREEN_PAGE_TITLE_ICON_SIZE,
+} from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
 import {
   getHomepageShiftStatus,
@@ -19,7 +22,7 @@ import {
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
 import type { TabParamList } from '../../../navigation/types';
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, View } from '../../../tw';
 import { getRangeMarkInputs } from '../../calendar/month-legend-stats';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
@@ -139,6 +142,7 @@ function ActiveHomeContent({
 /** F3 homepage: date header + weekend, two-week, remaining, next-shift widgets. */
 export function HomeScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
   const [now, setNow] = useState(() => new Date());
@@ -159,7 +163,7 @@ export function HomeScreen({ navigation }: Props) {
 
   if (status.kind === 'idle') {
     return (
-      <View className="flex-1 bg-canvas">
+      <View className="flex-1" style={{ backgroundColor: colors.bg }}>
         <ShiftsEmptyState
           onAddPress={() => {
             navigation.navigate('Shifts', { screen: 'AddRotation' });
@@ -172,7 +176,7 @@ export function HomeScreen({ navigation }: Props) {
   const subtitle = status.period.label;
 
   return (
-    <View className="flex-1 bg-canvas">
+    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScreenPageTitle
         title={formatHomeDateTitle(now, language)}
         subtitle={subtitle}
@@ -189,7 +193,7 @@ export function HomeScreen({ navigation }: Props) {
             <Ionicons
               name="settings-outline"
               size={SCREEN_PAGE_TITLE_ICON_SIZE}
-              color={INK_COLOR}
+              color={colors.brand}
             />
           </Pressable>
         }

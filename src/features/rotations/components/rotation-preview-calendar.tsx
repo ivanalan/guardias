@@ -8,10 +8,10 @@ import type { AppLanguage } from '../../../i18n';
 import { listShiftDatesInRange } from '../../../lib/shifts';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
-import { INK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
-import { CALENDAR_THEME } from '../../calendar/calendar-theme';
+import { calendarThemeFor } from '../../calendar/calendar-theme';
 import { createCalendarDayComponent } from '../../calendar/components/calendar-day';
 import { CalendarMonthHeader } from '../../calendar/components/calendar-month-header';
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
@@ -32,6 +32,7 @@ function monthKey(isoDate: string): string {
 /** Collapsible read-only month calendar preview for the add/edit rotation form. */
 export function RotationPreviewCalendar({ period, language }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const datesValid = period.startDate < period.endDate;
   const [expanded, setExpanded] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(period.startDate);
@@ -111,8 +112,8 @@ export function RotationPreviewCalendar({ period, language }: Props) {
   return (
     <View className="gap-1.5">
       <Text
-        className="font-mono text-sm text-ink"
-        style={ANDROID_TEXT_WIDTH_BUMP}
+        className="font-mono text-sm"
+        style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
       >
         {countLabel}
       </Text>
@@ -123,15 +124,20 @@ export function RotationPreviewCalendar({ period, language }: Props) {
           datesLabel != null ? `. ${datesLabel}` : ''
         }. ${toggleLabel}`}
         onPress={() => setExpanded((prev) => !prev)}
-        className="h-14 flex-row items-center rounded-xl border border-neutral-200 bg-white px-4 active:opacity-70"
-        style={{ borderCurve: 'continuous' }}
+        className="h-14 flex-row items-center rounded-xl px-4 active:opacity-70"
+        style={{
+          borderCurve: 'continuous',
+          borderWidth: 1,
+          borderColor: colors.border,
+          backgroundColor: colors.bg1,
+        }}
       >
         {datesLabel != null ? (
           <Text
-            className="min-w-0 flex-1 pr-2 font-mono text-base text-ink"
+            className="min-w-0 flex-1 pr-2 font-mono text-base"
             numberOfLines={1}
             ellipsizeMode="tail"
-            style={ANDROID_TEXT_WIDTH_BUMP}
+            style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
           >
             {datesLabel}
           </Text>
@@ -141,12 +147,19 @@ export function RotationPreviewCalendar({ period, language }: Props) {
         <Ionicons
           name={expanded ? 'chevron-up' : 'chevron-down'}
           size={18}
-          color={INK_COLOR}
+          color={colors.brand}
         />
       </Pressable>
 
       {expanded ? (
-        <View className="overflow-hidden rounded-xl border border-neutral-200 bg-white px-3 py-5">
+        <View
+          className="overflow-hidden rounded-xl px-3 py-5"
+          style={{
+            borderWidth: 1,
+            borderColor: colors.border,
+            backgroundColor: colors.bg1,
+          }}
+        >
           <Calendar
             key={`${language}-${monthKey(currentMonth)}`}
             current={currentMonth}
@@ -168,7 +181,7 @@ export function RotationPreviewCalendar({ period, language }: Props) {
                 onNextMonth={onNextMonth}
               />
             )}
-            theme={CALENDAR_THEME}
+            theme={calendarThemeFor(colors)}
           />
         </View>
       ) : null}
