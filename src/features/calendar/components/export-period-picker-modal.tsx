@@ -2,6 +2,7 @@ import { Modal, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
+import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { formatPeriodRange } from '../../rotations/format-period-range';
 import type { RotationPeriod } from '../../rotations/types';
@@ -26,6 +27,7 @@ export function ExportPeriodPickerModal({
   onDismiss,
 }: Props) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <Modal
@@ -35,15 +37,21 @@ export function ExportPeriodPickerModal({
       onRequestClose={onCancel}
       onDismiss={onDismiss}
     >
-      <View className="flex-1 justify-end bg-black/40">
+      <View className="flex-1 justify-end" style={{ backgroundColor: colors.scrim }}>
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={t('calendar.sharePickCancel')}
           onPress={onCancel}
           className="absolute inset-0"
         />
-        <View className="w-full max-h-[70%] rounded-t-3xl bg-canvas px-4 pb-8 pt-4">
-          <Text className="mb-3 px-2 font-serif text-xl">
+        <View
+          className="w-full max-h-[70%] rounded-t-3xl px-4 pb-8 pt-4"
+          style={{ backgroundColor: colors.bg }}
+        >
+          <Text
+            className="mb-3 px-2 font-serif text-xl"
+            style={{ color: colors.text }}
+          >
             {t('calendar.sharePickTitle')}
           </Text>
           <ScrollView>
@@ -55,10 +63,13 @@ export function ExportPeriodPickerModal({
                   onPress={() => {
                     onSelect(period);
                   }}
-                  className="w-full flex-row items-center gap-4 border border-neutral-200 bg-white px-5 py-4 active:opacity-70"
+                  className="w-full flex-row items-center gap-4 px-5 py-4 active:opacity-70"
                   style={{
                     borderRadius: 16,
                     borderCurve: 'continuous',
+                    borderWidth: 1,
+                    borderColor: colors.border,
+                    backgroundColor: colors.bg1,
                   }}
                 >
                   <View
@@ -72,10 +83,16 @@ export function ExportPeriodPickerModal({
                     }}
                   />
                   <View className="min-w-0 flex-1 gap-0.5">
-                    <Text className="font-serif text-lg">
+                    <Text
+                      className="font-serif text-lg"
+                      style={{ color: colors.text }}
+                    >
                       {period.label}
                     </Text>
-                    <Text className="font-mono text-sm opacity-50">
+                    <Text
+                      className="font-mono text-sm opacity-50"
+                      style={{ color: colors.text }}
+                    >
                       {formatPeriodRange(
                         period.startDate,
                         period.endDate,
@@ -92,7 +109,10 @@ export function ExportPeriodPickerModal({
             onPress={onCancel}
             className="mt-2 items-center py-3 active:opacity-60"
           >
-            <Text className="text-base font-medium opacity-60">
+            <Text
+              className="text-base font-medium opacity-60"
+              style={{ color: colors.text }}
+            >
               {t('calendar.sharePickCancel')}
             </Text>
           </Pressable>

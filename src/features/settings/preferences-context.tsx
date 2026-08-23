@@ -9,6 +9,10 @@ import {
 
 import i18n, { resolveDeviceLanguage, type AppLanguage } from '../../i18n';
 import {
+  ThemeProvider,
+  type ColorSchemePreference,
+} from '../../theme/theme-context';
+import {
   DEFAULT_APP_PREFERENCES,
   loadAppPreferences,
   saveAppPreferences,
@@ -21,6 +25,9 @@ type PreferencesContextValue = {
   /** Effective UI language after resolving System → device. */
   effectiveLanguage: AppLanguage;
   setLocale: (locale: AppPreferences['locale']) => void;
+  /** Stored appearance: `null` = follow device. */
+  colorScheme: ColorSchemePreference;
+  setColorScheme: (colorScheme: ColorSchemePreference) => void;
 };
 
 const PreferencesContext = createContext<PreferencesContextValue | null>(null);
@@ -31,10 +38,13 @@ function resolveEffectiveLanguage(
   return locale ?? resolveDeviceLanguage();
 }
 
-/** App preferences hydrated from AsyncStorage; applies language to i18n. */
+/** App preferences hydrated from AsyncStorage; applies language + theme. */
 export function PreferencesProvider({ children }: { children: ReactNode }) {
   const [locale, setLocaleState] = useState<AppPreferences['locale']>(
     DEFAULT_APP_PREFERENCES.locale,
+  );
+  const [colorScheme, setColorSchemeState] = useState<ColorSchemePreference>(
+    DEFAULT_APP_PREFERENCES.colorScheme,
   );
   const [ready, setReady] = useState(false);
 
@@ -48,7 +58,10 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
       }
 
       const nextLocale = stored?.locale ?? DEFAULT_APP_PREFERENCES.locale;
+      const nextColorScheme =
+        stored?.colorScheme ?? DEFAULT_APP_PREFERENCES.colorScheme;
       setLocaleState(nextLocale);
+      setColorSchemeState(nextColorScheme);
       await i18n.changeLanguage(resolveEffectiveLanguage(nextLocale));
 
       if (!cancelled) {
@@ -68,6 +81,11 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
     void i18n.changeLanguage(resolveEffectiveLanguage(next));
   }, []);
 
+  const setColorScheme = useCallback((next: ColorSchemePreference) => {
+    setColorSchemeState(next);
+    void saveAppPreferences({ colorScheme: next });
+  }, []);
+
   if (!ready) {
     return null;
   }
@@ -78,9 +96,13 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
         locale,
         effectiveLanguage: resolveEffectiveLanguage(locale),
         setLocale,
+        colorScheme,
+        setColorScheme,
       }}
     >
-      {children}
+      <ThemeProvider preference={colorScheme} setPreference={setColorScheme}>
+        {children}
+      </ThemeProvider>
     </PreferencesContext.Provider>
   );
 }

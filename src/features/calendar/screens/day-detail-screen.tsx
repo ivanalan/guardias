@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
 import { getDayInfo } from '../../../lib/shifts';
+import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
@@ -19,6 +20,7 @@ type Props = NativeStackScreenProps<CalendarStackParamList, 'DayDetail'>;
 /** Form sheet: free day or shift summary for the tapped calendar date. */
 export function DayDetailScreen({ route }: Props) {
   const { t, i18n } = useTranslation();
+  const { colors } = useTheme();
   const { periods } = useRotations();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { date } = route.params;
@@ -27,10 +29,17 @@ export function DayDetailScreen({ route }: Props) {
 
   if (dayInfo.kind === 'free') {
     return (
-      <View className="gap-8 bg-canvas p-gutter">
+      <View className="gap-8 p-gutter" style={{ backgroundColor: colors.bg }}>
         <View className="gap-1">
-          <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
-          <Text className="font-mono text-lg">{t('calendar.freeDay')}</Text>
+          <Text
+            className="font-serif text-3xl tracking-tight"
+            style={{ color: colors.text }}
+          >
+            {dateLabel}
+          </Text>
+          <Text className="font-mono text-lg" style={{ color: colors.text }}>
+            {t('calendar.freeDay')}
+          </Text>
         </View>
       </View>
     );
@@ -38,11 +47,23 @@ export function DayDetailScreen({ route }: Props) {
 
   if (dayInfo.kind === 'vacation') {
     return (
-      <View className="gap-8 bg-canvas p-gutter">
+      <View className="gap-8 p-gutter" style={{ backgroundColor: colors.bg }}>
         <View className="gap-1">
-          <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
-          <Text className="font-mono text-lg">{t('calendar.vacationDay')}</Text>
-          <Text className="font-mono text-base opacity-50">{dayInfo.rotationLabel}</Text>
+          <Text
+            className="font-serif text-3xl tracking-tight"
+            style={{ color: colors.text }}
+          >
+            {dateLabel}
+          </Text>
+          <Text className="font-mono text-lg" style={{ color: colors.text }}>
+            {t('calendar.vacationDay')}
+          </Text>
+          <Text
+            className="font-mono text-base opacity-50"
+            style={{ color: colors.text }}
+          >
+            {dayInfo.rotationLabel}
+          </Text>
         </View>
       </View>
     );
@@ -51,10 +72,17 @@ export function DayDetailScreen({ route }: Props) {
   const { shift } = dayInfo;
 
   return (
-    <View className="gap-4 bg-canvas p-gutter">
+    <View className="gap-4 p-gutter" style={{ backgroundColor: colors.bg }}>
       <View className="gap-1">
-        <Text className="font-serif text-3xl tracking-tight">{dateLabel}</Text>
-        <Text className="font-mono text-lg">{shift.rotationLabel}</Text>
+        <Text
+          className="font-serif text-3xl tracking-tight"
+          style={{ color: colors.text }}
+        >
+          {dateLabel}
+        </Text>
+        <Text className="font-mono text-lg" style={{ color: colors.text }}>
+          {shift.rotationLabel}
+        </Text>
       </View>
       <StatsCardGrid>
         <StatsCard

@@ -1,5 +1,5 @@
+import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
-import { WEEKEND_COLOR } from '../../../theme/brand';
 
 type WeekendBannerProps = {
   rangeLabel: string;
@@ -8,17 +8,23 @@ type WeekendBannerProps = {
 
 /** Forest-green next-free-weekend widget. */
 export function WeekendBanner({ rangeLabel, caption }: WeekendBannerProps) {
+  const { colors } = useTheme();
+
   return (
     <View
       className="w-full gap-1 px-gutter py-5"
       style={{
-        backgroundColor: WEEKEND_COLOR,
+        backgroundColor: colors.bgWeekend,
         borderCurve: 'continuous',
         borderRadius: 32,
       }}
     >
-      <Text className="font-serif text-5xl text-white">{rangeLabel}</Text>
-      <Text className="font-mono text-base text-white">{caption}</Text>
+      <Text className="font-serif text-5xl" style={{ color: colors.onColor }}>
+        {rangeLabel}
+      </Text>
+      <Text className="font-mono text-base" style={{ color: colors.onColor }}>
+        {caption}
+      </Text>
     </View>
   );
 }

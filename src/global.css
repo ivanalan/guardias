@@ -11,9 +11,6 @@
     --spacing-tab-clearance: 96px;
     /* Match calendar day markers / form controls (`BORDER_RADIUS` in layout.ts). */
     --radius-xl: 14px;
-    --color-canvas: #f6f1ec;
-    --color-weekend: #085d3a;
-    --color-ink: #1c1b1f;
     /* RN clips descenders when line-height equals font-size (Tailwind default). */
     --text-5xl--line-height: 1.15;
   }

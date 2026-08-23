@@ -1,10 +1,9 @@
 import { addDays, format, getDay } from 'date-fns';
 
 import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
-import { INK_COLOR } from '../../theme/brand';
 import { BORDER_RADIUS } from '../../theme/layout';
 import type { CalendarLegendFilter } from './build-marked-dates';
-import { CALENDAR_MARK_COLORS } from './calendar-mark-colors';
+import type { CalendarMarkColors } from './calendar-mark-colors';
 
 export const CELL_SIZE = 36;
 /** Vertical space between date rows in month / two-week calendars. */
@@ -159,22 +158,34 @@ export function resolveShiftColor(color: string, alpha: number): string {
   return applyMarkColor(color, alpha);
 }
 
-export function resolveWeekendBackground(alpha: number): string {
-  return applyMarkColor(CALENDAR_MARK_COLORS.freeWeekendBackground, alpha);
+export function resolveWeekendBackground(
+  markColors: CalendarMarkColors,
+  alpha: number,
+): string {
+  return applyMarkColor(markColors.freeWeekendBackground, alpha);
 }
 
-export function resolveVacationBackground(alpha: number): string {
-  return applyMarkColor(CALENDAR_MARK_COLORS.vacationBackground, alpha);
+export function resolveVacationBackground(
+  markColors: CalendarMarkColors,
+  alpha: number,
+): string {
+  return applyMarkColor(markColors.vacationBackground, alpha);
 }
 
-export function resolveVacationTextColor(alpha: number): string {
-  return applyMarkColor(CALENDAR_MARK_COLORS.vacationText, alpha);
+export function resolveVacationTextColor(
+  markColors: CalendarMarkColors,
+  alpha: number,
+): string {
+  return applyMarkColor(markColors.vacationText, alpha);
 }
 
-export function resolveShiftTextColor(alpha: number): string {
-  return applyMarkColor(CALENDAR_MARK_COLORS.shiftText, alpha);
+export function resolveShiftTextColor(
+  markColors: CalendarMarkColors,
+  alpha: number,
+): string {
+  return applyMarkColor(markColors.shiftText, alpha);
 }
 
-export function resolveInkTextColor(inactive: boolean): string {
-  return inactive ? withAlpha(INK_COLOR, 0.35) : INK_COLOR;
+export function resolveInkTextColor(ink: string, inactive: boolean): string {
+  return inactive ? withAlpha(ink, 0.35) : ink;
 }

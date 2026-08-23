@@ -1,12 +1,23 @@
 import { DEFAULT_ROTATION_COLOR } from '../../features/rotations/rotation-colors';
-import { WEEKEND_COLOR } from '../../theme/brand';
+import type { ThemeColors } from '../../theme/colors';
+
+export type CalendarMarkColors = {
+  shiftBackground: string;
+  shiftText: string;
+  freeWeekendBackground: string;
+  freeWeekendText: string;
+  vacationBackground: string;
+  vacationText: string;
+};
 
 /** Mark styles for the month calendar (shift, free weekend, vacation). */
-export const CALENDAR_MARK_COLORS = {
-  shiftBackground: DEFAULT_ROTATION_COLOR,
-  shiftText: '#ffffff',
-  freeWeekendBackground: WEEKEND_COLOR,
-  freeWeekendText: '#ffffff',
-  vacationBackground: '#4A47EF',
-  vacationText: '#ffffff',
-} as const;
+export function calendarMarkColorsFor(colors: ThemeColors): CalendarMarkColors {
+  return {
+    shiftBackground: DEFAULT_ROTATION_COLOR,
+    shiftText: colors.onColor,
+    freeWeekendBackground: colors.bgWeekend,
+    freeWeekendText: colors.onColor,
+    vacationBackground: colors.bgVacation,
+    vacationText: colors.onColor,
+  };
+}

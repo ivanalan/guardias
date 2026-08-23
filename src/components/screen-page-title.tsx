@@ -1,8 +1,9 @@
 import type { ReactNode } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Text, View } from '../tw';
 import { SCREEN_GUTTER } from '../theme/layout';
+import { useTheme } from '../theme/theme-context';
+import { Text, View } from '../tw';
 
 /** Icon size for header actions aligned to the page title. */
 export const SCREEN_PAGE_TITLE_ICON_SIZE = 24;
@@ -20,6 +21,7 @@ export function ScreenPageTitle({
   right,
 }: ScreenPageTitleProps) {
   const insets = useSafeAreaInsets();
+  const { colors } = useTheme();
 
   return (
     <View
@@ -30,13 +32,21 @@ export function ScreenPageTitle({
       }}
     >
       <View className="flex-row items-center justify-between gap-3">
-        <Text className="min-w-0 flex-1 font-serif text-[48px] leading-none text-ink">
+        <Text
+          className="min-w-0 flex-1 font-serif text-[48px] leading-none"
+          style={{ color: colors.text }}
+        >
           {title}
         </Text>
         {right ? <View className="shrink-0">{right}</View> : null}
       </View>
       {subtitle ? (
-        <Text className="mt-1 font-mono text-base text-ink">{subtitle}</Text>
+        <Text
+          className="mt-1 font-mono text-base"
+          style={{ color: colors.text }}
+        >
+          {subtitle}
+        </Text>
       ) : null}
     </View>
   );

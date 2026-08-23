@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import type { LayoutChangeEvent } from 'react-native';
 
-import { PILL_TRACK_COLOR } from '../../../theme/brand';
+import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
 
 const MAX_PILLS_PER_ROW = 10;
@@ -26,6 +26,7 @@ export function ShiftsLeftCard({
   color,
   caption,
 }: ShiftsLeftCardProps) {
+  const { colors } = useTheme();
   const filled = Math.max(0, Math.min(remaining, total));
   const [gridWidth, setGridWidth] = useState<number | null>(null);
 
@@ -39,18 +40,24 @@ export function ShiftsLeftCard({
 
   return (
     <View
-      className="w-full gap-4 bg-white px-gutter py-5"
-      style={{ borderCurve: 'continuous', borderRadius: 32 }}
+      className="w-full gap-4 px-gutter py-5"
+      style={{
+        backgroundColor: colors.bg1,
+        borderCurve: 'continuous',
+        borderRadius: 32,
+      }}
     >
       <View className="gap-1">
-        <Text className="font-serif text-5xl text-ink">
+        <Text className="font-serif text-5xl" style={{ color: colors.text }}>
           <Text className="font-serif text-5xl" style={{ color }}>
             {remaining}
           </Text>
           {' / '}
           {total}
         </Text>
-        <Text className="font-mono text-base text-ink">{caption}</Text>
+        <Text className="font-mono text-base" style={{ color: colors.text }}>
+          {caption}
+        </Text>
       </View>
       {total > 0 ? (
         <View className="flex-row flex-wrap gap-1" onLayout={onGridLayout}>
@@ -63,7 +70,7 @@ export function ShiftsLeftCard({
                     height: pillSize,
                     borderRadius: pillSize / 2,
                     backgroundColor:
-                      index < filled ? color : PILL_TRACK_COLOR,
+                      index < filled ? color : colors.bgPillTrack,
                   }}
                 />
               ))

@@ -8,7 +8,8 @@ import { useTranslation } from 'react-i18next';
 import { useWindowDimensions } from 'react-native';
 
 import { SCREEN_PAGE_TITLE_ICON_SIZE } from '../components/screen-page-title';
-import { CANVAS_COLOR, INK_COLOR } from '../theme/brand';
+import type { ThemeColors } from '../theme/colors';
+import { useTheme } from '../theme/theme-context';
 import { Pressable, Text } from '../tw';
 
 /** Space reserved per side for back / save (icons + padding). */
@@ -22,17 +23,19 @@ const ANDROID_HEADER_ACTION_RESERVE = 56;
  * while empty space remains. Force a width based on the window size.
  */
 export function SecondaryHeaderTitle({ children }: { children: string }) {
+  const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isAndroid = process.env.EXPO_OS === 'android';
   const titleWidth = Math.max(0, width - ANDROID_HEADER_ACTION_RESERVE * 2);
 
   return (
     <Text
-      className="font-serif text-3xl text-ink"
+      className="font-serif text-3xl"
       numberOfLines={1}
-      style={
-        isAndroid ? { width: titleWidth, textAlign: 'center' } : undefined
-      }
+      style={{
+        color: colors.text,
+        ...(isAndroid ? { width: titleWidth, textAlign: 'center' } : undefined),
+      }}
     >
       {children}
     </Text>
@@ -42,6 +45,7 @@ export function SecondaryHeaderTitle({ children }: { children: string }) {
 /** Android / non-iOS back control. iOS uses the native stack back button instead. */
 function SecondaryHeaderBackButton({ onPress }: { onPress: () => void }) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
 
   return (
     <Pressable
@@ -54,7 +58,7 @@ function SecondaryHeaderBackButton({ onPress }: { onPress: () => void }) {
       <Ionicons
         name="chevron-back"
         size={SCREEN_PAGE_TITLE_ICON_SIZE}
-        color={INK_COLOR}
+        color={colors.brand}
       />
     </Pressable>
   );
@@ -62,6 +66,7 @@ function SecondaryHeaderBackButton({ onPress }: { onPress: () => void }) {
 
 type SecondaryScreenOptionsArgs = {
   navigation: NativeStackNavigationProp<ParamListBase>;
+  colors: ThemeColors;
 };
 
 /**
@@ -71,16 +76,17 @@ type SecondaryScreenOptionsArgs = {
  * UIBarButtonItem that stretches to ≥36pt and mis-centers the child. Use the
  * native minimal back button (SF Symbol) there; keep the Ionicons control elsewhere.
  */
-export function secondaryScreenOptions({
+export function getSecondaryScreenOptions({
   navigation,
+  colors,
 }: SecondaryScreenOptionsArgs): NativeStackNavigationOptions {
   const useNativeBack = process.env.EXPO_OS === 'ios';
 
   return {
     headerShadowVisible: false,
     headerTitleAlign: 'center',
-    headerTintColor: INK_COLOR,
-    headerStyle: { backgroundColor: CANVAS_COLOR },
+    headerTintColor: colors.brand,
+    headerStyle: { backgroundColor: colors.bg },
     headerBackVisible: useNativeBack,
     ...(useNativeBack
       ? { headerBackButtonDisplayMode: 'minimal' as const }

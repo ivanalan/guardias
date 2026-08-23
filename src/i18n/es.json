@@ -76,6 +76,10 @@
     "languageSystem": "Predeterminado del sistema",
     "languageEn": "English",
     "languageEs": "Español",
+    "appearance": "Apariencia",
+    "appearanceSystem": "Sistema",
+    "appearanceLight": "Claro",
+    "appearanceDark": "Oscuro",
     "openA11y": "Abrir ajustes"
   },
   "shifts": {

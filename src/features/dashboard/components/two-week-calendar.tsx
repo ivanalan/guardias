@@ -18,7 +18,8 @@ import {
   resolveWeekendBackground,
   type DayMarkKind,
 } from '../../calendar/calendar-day-marker';
-import { INK_COLOR } from '../../../theme/brand';
+import { calendarMarkColorsFor } from '../../calendar/calendar-mark-colors';
+import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
 
 type TwoWeekCalendarProps = {
@@ -41,6 +42,8 @@ export function TwoWeekCalendar({
   vacationDates,
   shiftColor,
 }: TwoWeekCalendarProps) {
+  const { colors } = useTheme();
+  const markColors = calendarMarkColorsFor(colors);
   const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
   const shiftColorByDate = new Map<string, string>();
   for (const iso of shiftDates) {
@@ -54,8 +57,9 @@ export function TwoWeekCalendar({
 
   return (
     <View
-      className="w-full bg-white px-gutter py-5"
+      className="w-full px-gutter py-5"
       style={{
+        backgroundColor: colors.bg1,
         borderCurve: 'continuous',
         borderRadius: 32,
         gap: CALENDAR_WEEK_ROW_GAP,
@@ -65,7 +69,8 @@ export function TwoWeekCalendar({
         {weekdayLabels.map((label, index) => (
           <Text
             key={`${label}-${index}`}
-            className="flex-1 text-center font-mono text-sm text-ink"
+            className="flex-1 text-center font-mono text-sm"
+            style={{ color: colors.text }}
           >
             {label}
           </Text>
@@ -78,6 +83,9 @@ export function TwoWeekCalendar({
           todayIso={todayIso}
           markCtx={markCtx}
           shiftColor={shiftColor}
+          inkColor={colors.brand}
+          textColor={colors.text}
+          markColors={markColors}
         />
       ))}
     </View>
@@ -95,9 +103,20 @@ type WeekRowProps = {
   todayIso: string;
   markCtx: MarkCtx;
   shiftColor: string;
+  inkColor: string;
+  textColor: string;
+  markColors: ReturnType<typeof calendarMarkColorsFor>;
 };
 
-function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
+function WeekRow({
+  week,
+  todayIso,
+  markCtx,
+  shiftColor,
+  inkColor,
+  textColor,
+  markColors,
+}: WeekRowProps) {
   const cells: ReactNode[] = [];
 
   for (let index = 0; index < week.length; index += 1) {
@@ -128,7 +147,7 @@ function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
             className="flex-row self-stretch"
             style={{
               height: CELL_SIZE,
-              backgroundColor: resolveWeekendBackground(weekendAlpha),
+              backgroundColor: resolveWeekendBackground(markColors, weekendAlpha),
               ...dayMarkerStyle,
             }}
           >
@@ -138,6 +157,9 @@ function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
               markKind="freeWeekend"
               markAlpha={weekendAlpha}
               shiftColor={shiftColor}
+              inkColor={inkColor}
+              textColor={textColor}
+              markColors={markColors}
             />
             <DayCell
               iso={next}
@@ -145,6 +167,9 @@ function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
               markKind="freeWeekend"
               markAlpha={weekendAlpha}
               shiftColor={shiftColor}
+              inkColor={inkColor}
+              textColor={textColor}
+              markColors={markColors}
             />
           </View>
         </View>,
@@ -160,6 +185,9 @@ function WeekRow({ week, todayIso, markCtx, shiftColor }: WeekRowProps) {
           todayIso={todayIso}
           markKind={markKind}
           shiftColor={shiftColor}
+          inkColor={inkColor}
+          textColor={textColor}
+          markColors={markColors}
         />
       </View>,
     );
@@ -180,6 +208,9 @@ type DayCellProps = {
   todayIso: string;
   markKind: DayMarkKind;
   shiftColor: string;
+  inkColor: string;
+  textColor: string;
+  markColors: ReturnType<typeof calendarMarkColorsFor>;
   markAlpha?: number;
 };
 
@@ -188,6 +219,9 @@ function DayCell({
   todayIso,
   markKind,
   shiftColor,
+  inkColor,
+  textColor,
+  markColors,
   markAlpha,
 }: DayCellProps) {
   const isToday = iso === todayIso;
@@ -198,15 +232,17 @@ function DayCell({
   const isShift = markKind === 'shift';
   const isVacation = markKind === 'vacation';
 
-  const textColor = isVacation
-    ? resolveVacationTextColor(alpha)
+  const textColorMarked = isVacation
+    ? resolveVacationTextColor(markColors, alpha)
     : onWeekend || isShift
-      ? resolveShiftTextColor(alpha)
+      ? resolveShiftTextColor(markColors, alpha)
       : undefined;
-  const markedTextStyle = textColor != null ? { color: textColor } : undefined;
+  const dayTextStyle = {
+    color: textColorMarked ?? textColor,
+  };
 
   const fillColor = isVacation
-    ? resolveVacationBackground(alpha)
+    ? resolveVacationBackground(markColors, alpha)
     : isShift
       ? resolveShiftColor(shiftColor, alpha)
       : undefined;
@@ -228,7 +264,7 @@ function DayCell({
             width: CELL_SIZE,
             height: CELL_SIZE,
             borderWidth: TODAY_BORDER_WIDTH,
-            borderColor: INK_COLOR,
+            borderColor: inkColor,
             padding: TODAY_INNER_GAP,
             ...dayMarkerStyle,
           }}
@@ -241,7 +277,7 @@ function DayCell({
               borderRadius: DAY_MARKER_INNER_RADIUS,
             }}
           >
-            <Text className="font-mono text-sm" style={markedTextStyle}>
+            <Text className="font-mono text-sm" style={dayTextStyle}>
               {label}
             </Text>
           </View>
@@ -253,18 +289,11 @@ function DayCell({
             width: CELL_SIZE,
             height: CELL_SIZE,
             borderWidth: TODAY_BORDER_WIDTH,
-            borderColor: INK_COLOR,
+            borderColor: inkColor,
             ...dayMarkerStyle,
           }}
         >
-          <Text
-            className={
-              markedTextStyle != null
-                ? 'font-mono text-sm'
-                : 'font-mono text-sm text-ink'
-            }
-            style={markedTextStyle}
-          >
+          <Text className="font-mono text-sm" style={dayTextStyle}>
             {label}
           </Text>
         </View>
@@ -278,7 +307,7 @@ function DayCell({
             ...dayMarkerStyle,
           }}
         >
-          <Text className="font-mono text-sm" style={markedTextStyle}>
+          <Text className="font-mono text-sm" style={dayTextStyle}>
             {label}
           </Text>
         </View>
@@ -287,14 +316,7 @@ function DayCell({
           className="items-center justify-center"
           style={{ width: CELL_SIZE, height: CELL_SIZE }}
         >
-          <Text
-            className={
-              markedTextStyle != null
-                ? 'font-mono text-sm'
-                : 'font-mono text-sm text-ink'
-            }
-            style={markedTextStyle}
-          >
+          <Text className="font-mono text-sm" style={dayTextStyle}>
             {label}
           </Text>
         </View>
