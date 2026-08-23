@@ -26,6 +26,7 @@ import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, View } from '../../../tw';
 import { getRangeMarkInputs } from '../../calendar/month-legend-stats';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
+import { resolveRotationColor } from '../../rotations/rotation-colors';
 import { useRotations } from '../../rotations/rotations-context';
 import { NextShiftCard } from '../components/next-shift-card';
 import { ShiftsLeftCard } from '../components/shifts-left-card';
@@ -61,6 +62,7 @@ function ActiveHomeContent({
   language,
 }: ActiveHomeProps) {
   const { t } = useTranslation();
+  const { colors } = useTheme();
   const untilNext = getTimeUntilNextShift(status, now);
   const freeWeekend = getNextFreeWeekend(status.period, now);
   const todayIso = format(now, 'yyyy-MM-dd');
@@ -79,7 +81,7 @@ function ActiveHomeContent({
     0,
     periodProgress.total - periodProgress.completed,
   );
-  const color = status.period.color;
+  const color = resolveRotationColor(status.period.color, colors);
 
   const durationValue = (duration: DurationParts) =>
     t('home.durationLong', {

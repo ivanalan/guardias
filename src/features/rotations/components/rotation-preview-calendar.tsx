@@ -17,6 +17,7 @@ import { CalendarMonthHeader } from '../../calendar/components/calendar-month-he
 import { configureCalendarLocale } from '../../calendar/configure-calendar-locale';
 import { buildMonthMarkedDates } from '../../calendar/month-marks';
 import { getMonthMarkInputs } from '../../calendar/month-legend-stats';
+import { resolveShiftMarks } from '../rotation-colors';
 import { formatFormDate, toISODate } from '../format-period-range';
 import type { RotationPeriod } from '../types';
 
@@ -54,18 +55,22 @@ export function RotationPreviewCalendar({ period, language }: Props) {
         freeWeekendDates: [],
         vacationDates: [],
       };
+  const resolvedShiftMarks = useMemo(
+    () => resolveShiftMarks(monthInputs.shiftMarks, colors),
+    [monthInputs.shiftMarks, colors],
+  );
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const markContext = useMemo(
     () =>
       buildCalendarDayMarkContext(
-        monthInputs.shiftMarks,
+        resolvedShiftMarks,
         monthInputs.freeWeekendDates,
         monthInputs.vacationDates,
         null,
         todayIso,
       ),
     [
-      monthInputs.shiftMarks,
+      resolvedShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
       todayIso,

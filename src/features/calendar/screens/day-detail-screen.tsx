@@ -8,6 +8,7 @@ import { Text, View } from '../../../tw';
 import { StatsCard } from '../../dashboard/components/stats-card';
 import { StatsCardGrid } from '../../dashboard/components/stats-card-grid';
 import { useRotations } from '../../rotations/rotations-context';
+import { resolveRotationColor } from '../../rotations/rotation-colors';
 import type { CalendarStackParamList } from '../calendar-stack';
 import {
   formatDaySheetDate,
@@ -70,6 +71,10 @@ export function DayDetailScreen({ route }: Props) {
   }
 
   const { shift } = dayInfo;
+  const storedIconColor =
+    periods.find((period) => period.id === shift.rotationPeriodId)?.color ??
+    colors.brand;
+  const iconColor = resolveRotationColor(storedIconColor, colors);
 
   return (
     <View className="gap-4 p-gutter" style={{ backgroundColor: colors.bg }}>
@@ -86,7 +91,7 @@ export function DayDetailScreen({ route }: Props) {
       </View>
       <StatsCardGrid>
         <StatsCard
-          tint="brand"
+          iconColor={iconColor}
           icon="log-in-outline"
           value={formatShiftTime(shift.startDateTime)}
           subtitle={t('calendar.startsOn', {
@@ -94,7 +99,7 @@ export function DayDetailScreen({ route }: Props) {
           })}
         />
         <StatsCard
-          tint="indigo"
+          iconColor={iconColor}
           icon="log-out-outline"
           value={formatShiftTime(shift.endDateTime)}
           subtitle={t('calendar.endsOn', {
