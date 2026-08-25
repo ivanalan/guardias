@@ -20,8 +20,8 @@ import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { brandSelection } from '../../../theme/colors';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, TextInput, View } from '../../../tw';
+import { FirstShiftCalendar } from '../components/first-shift-calendar';
 import { RotationColorSwatches } from '../components/rotation-color-swatches';
-import { RotationPreviewCalendar } from '../components/rotation-preview-calendar';
 import {
   defaultRotationEndISO,
   defaultVacationEndWithinPeriod,
@@ -73,7 +73,6 @@ function dismissRotationForm(navigation: Props['navigation']) {
 type ActivePicker =
   | 'start'
   | 'end'
-  | 'firstShift'
   | 'shiftStart'
   | 'vacationStart'
   | 'vacationEnd'
@@ -253,7 +252,9 @@ export function AddRotationScreen({ navigation, route }: Props) {
     startDate,
     endDate,
     pattern: { cycleDays, offset },
-    firstShiftDate: persistedFirstShift,
+    // Use the visible selection so the picker calendar phases from the tapped day.
+    // Save still uses persistedFirstShift (null when selection matches letter default).
+    firstShiftDate: firstShiftOverride,
     vacationStartDate: vacationEnabled ? vacationStartDate : null,
     vacationEndDate: vacationEnabled ? vacationEndDate : null,
     shiftStartTime,
@@ -378,11 +379,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setError(null);
   }
 
-  function onFirstShiftValueChange(_event: unknown, selected: Date) {
-    if (process.env.EXPO_OS === 'android') {
-      setActivePicker(null);
-    }
-    setFirstShiftOverride(toISODate(selected));
+  function onSelectFirstShift(iso: string) {
+    setFirstShiftOverride(iso);
     setError(null);
   }
 
@@ -645,25 +643,12 @@ export function AddRotationScreen({ navigation, route }: Props) {
         </View>
 
         <View>
-          <DateField
-            label={t('shifts.form.firstShiftDate')}
-            valueLabel={formatFormDate(displayedFirstShift, language)}
-            selected={activePicker === 'firstShift'}
-            onPress={() => togglePicker('firstShift')}
+          <FirstShiftCalendar
+            period={draftPeriod}
+            language={language}
+            selectedFirstShift={displayedFirstShift}
+            onSelectFirstShift={onSelectFirstShift}
           />
-          {activePicker === 'firstShift' ? (
-            <PickerSlot>
-              <DateTimePicker
-                value={parseISO(displayedFirstShift)}
-                mode="date"
-                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
-                minimumDate={parseISO(startDate)}
-                maximumDate={parseISO(endDate)}
-                onValueChange={onFirstShiftValueChange}
-                onDismiss={dismissPicker}
-              />
-            </PickerSlot>
-          ) : null}
           {isScheduleError(error) ? (
             <FieldError message={t(`shifts.errors.${error}`)} />
           ) : null}
@@ -760,10 +745,6 @@ export function AddRotationScreen({ navigation, route }: Props) {
         {isVacationError(error) ? (
           <FieldError message={t(`shifts.errors.${error}`)} />
         ) : null}
-
-        <SectionRule label={t('shifts.form.sectionPreview')} />
-
-        <RotationPreviewCalendar period={draftPeriod} language={language} />
       </View>
     </ScrollView>
   );

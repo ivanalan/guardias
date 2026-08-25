@@ -1,10 +1,11 @@
-import { addDays, format } from 'date-fns';
+import { addDays, differenceInCalendarDays, format } from 'date-fns';
 
 import type { RotationPeriod } from '@/features/rotations/types';
 
 import { buildShift, type ComputedShift } from './build-shift';
 import { findPeriodForDate } from './find-period-for-date';
 import { listShiftDatesInRange } from './list-shift-dates-in-range';
+import { parseCalendarDate } from './parse-calendar-date';
 
 /** Whole days + leftover hours between two instants (floored; never negative). */
 export type DurationParts = {
@@ -97,6 +98,44 @@ export function getPeriodShiftProgress(
     }
   }
 
+  return {
+    completed,
+    total,
+    progress: total === 0 ? 0 : completed / total,
+  };
+}
+
+/** Completed vs total inclusive calendar days in a period (vacations not subtracted). */
+export type PeriodDayProgress = {
+  completed: number;
+  total: number;
+  /** 0–1; `0` when `total` is 0. */
+  progress: number;
+};
+
+/**
+ * Inclusive calendar-day progress for `period` relative to `todayIso`
+ * (`YYYY-MM-DD`). Remaining includes today through `endDate`.
+ */
+export function getPeriodDayProgress(
+  period: RotationPeriod,
+  todayIso: string,
+): PeriodDayProgress {
+  const start = parseCalendarDate(period.startDate);
+  const end = parseCalendarDate(period.endDate);
+  const total = Math.max(0, differenceInCalendarDays(end, start) + 1);
+
+  let remaining: number;
+  if (todayIso < period.startDate) {
+    remaining = total;
+  } else if (todayIso > period.endDate) {
+    remaining = 0;
+  } else {
+    remaining =
+      differenceInCalendarDays(end, parseCalendarDate(todayIso)) + 1;
+  }
+
+  const completed = total - remaining;
   return {
     completed,
     total,

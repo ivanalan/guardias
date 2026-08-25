@@ -1,52 +1,67 @@
-import { useState } from 'react';
-import type { LayoutChangeEvent } from 'react-native';
+import * as Haptics from 'expo-haptics';
+import { useRef, useState } from 'react';
+import type {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView as RNScrollView,
+} from 'react-native';
 
 import { useTheme } from '../../../theme/theme-context';
-import { Text, View } from '../../../tw';
+import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { GRID_SLOT_HEIGHT, layoutMarks } from './layout-marks';
 
-const MAX_PILLS_PER_ROW = 10;
-/** Matches `gap-1` between pills. */
-const PILL_GAP = 4;
+const PAGER_DOT_SIZE = 6;
+
+type LeftMode = 'shifts' | 'days';
+
+type MarksPageModel = {
+  remaining: number;
+  total: number;
+  caption: string;
+  color: string;
+};
 
 type ShiftsLeftCardProps = {
   remaining: number;
   total: number;
   color: string;
   caption: string;
+  /** When set with daysTotal + daysCaption, enables swipe/tap toggle to days. */
+  daysRemaining?: number;
+  daysTotal?: number;
+  daysCaption?: string;
 };
 
-function pillSizeForRowWidth(rowWidth: number): number {
-  return (rowWidth - (MAX_PILLS_PER_ROW - 1) * PILL_GAP) / MAX_PILLS_PER_ROW;
-}
+type MarksPageProps = MarksPageModel & {
+  width?: number;
+  onPress?: () => void;
+};
 
-/** Remaining/total serif readout with wrapped rows of equal-size pills (max 10 per row). */
-export function ShiftsLeftCard({
+function MarksPage({
   remaining,
   total,
   color,
   caption,
-}: ShiftsLeftCardProps) {
+  width,
+  onPress,
+}: MarksPageProps) {
   const { colors } = useTheme();
   const filled = Math.max(0, Math.min(remaining, total));
   const [gridWidth, setGridWidth] = useState<number | null>(null);
 
   const onGridLayout = (event: LayoutChangeEvent) => {
-    const width = Math.round(event.nativeEvent.layout.width);
-    setGridWidth((prev) => (prev === width ? prev : width));
+    const nextWidth = Math.round(event.nativeEvent.layout.width);
+    setGridWidth((prev) => (prev === nextWidth ? prev : nextWidth));
   };
 
-  const pillSize =
-    gridWidth != null ? pillSizeForRowWidth(gridWidth) : null;
+  const layout =
+    gridWidth != null && gridWidth > 0
+      ? layoutMarks(total, gridWidth, GRID_SLOT_HEIGHT)
+      : null;
 
-  return (
-    <View
-      className="w-full gap-4 px-gutter py-5"
-      style={{
-        backgroundColor: colors.bg1,
-        borderCurve: 'continuous',
-        borderRadius: 32,
-      }}
-    >
+  const content = (
+    <>
       <View className="gap-1">
         <Text className="font-serif text-5xl" style={{ color: colors.text }}>
           <Text className="font-serif text-5xl" style={{ color }}>
@@ -59,24 +74,184 @@ export function ShiftsLeftCard({
           {caption}
         </Text>
       </View>
-      {total > 0 ? (
-        <View className="flex-row flex-wrap gap-1" onLayout={onGridLayout}>
-          {pillSize != null
-            ? Array.from({ length: total }, (_, index) => (
-                <View
-                  key={index}
-                  style={{
-                    width: pillSize,
-                    height: pillSize,
-                    borderRadius: pillSize / 2,
-                    backgroundColor:
-                      index < filled ? color : colors.bgPillTrack,
-                  }}
-                />
-              ))
-            : null}
-        </View>
+      <View
+        className="justify-center"
+        style={{ height: GRID_SLOT_HEIGHT }}
+        onLayout={onGridLayout}
+      >
+        {layout != null && layout.renderTotal > 0
+          ? Array.from({ length: layout.rows }, (_, row) => (
+              <View
+                key={row}
+                className="flex-row"
+                style={{
+                  gap: layout.gap,
+                  marginTop: row === 0 ? 0 : layout.gap,
+                }}
+              >
+                {Array.from({ length: layout.cols }, (_, col) => {
+                  const index = row * layout.cols + col;
+                  if (index >= layout.renderTotal) {
+                    return null;
+                  }
+                  return (
+                    <View
+                      key={index}
+                      style={{
+                        width: layout.markSize,
+                        height: layout.markSize,
+                        borderRadius: layout.markSize / 2,
+                        backgroundColor:
+                          index < filled ? color : colors.bgPillTrack,
+                      }}
+                    />
+                  );
+                })}
+              </View>
+            ))
+          : null}
+      </View>
+    </>
+  );
+
+  if (onPress != null) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        className="gap-4 px-gutter"
+        style={width != null ? { width } : undefined}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View
+      className="gap-4 px-gutter"
+      style={width != null ? { width } : undefined}
+    >
+      {content}
+    </View>
+  );
+}
+
+/** Remaining/total serif readout with mark grid; optional swipe/tap to days left. */
+export function ShiftsLeftCard({
+  remaining,
+  total,
+  color,
+  caption,
+  daysRemaining,
+  daysTotal,
+  daysCaption,
+}: ShiftsLeftCardProps) {
+  const { colors } = useTheme();
+  const canToggle =
+    daysRemaining != null && daysTotal != null && daysCaption != null;
+  const scrollRef = useRef<RNScrollView>(null);
+  const [mode, setMode] = useState<LeftMode>('shifts');
+  const [pageWidth, setPageWidth] = useState(0);
+
+  const pages: MarksPageModel[] = [
+    { remaining, total, color, caption },
+    ...(canToggle
+      ? [
+          {
+            remaining: daysRemaining,
+            total: daysTotal,
+            color,
+            caption: daysCaption,
+          },
+        ]
+      : []),
+  ];
+
+  const onCardLayout = (event: LayoutChangeEvent) => {
+    const nextWidth = Math.round(event.nativeEvent.layout.width);
+    setPageWidth((prev) => (prev === nextWidth ? prev : nextWidth));
+  };
+
+  const goToMode = (next: LeftMode) => {
+    if (!canToggle || pageWidth === 0) {
+      return;
+    }
+    const index = next === 'shifts' ? 0 : 1;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setMode(next);
+    scrollRef.current?.scrollTo({ x: index * pageWidth, animated: true });
+  };
+
+  const onMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (pageWidth === 0) {
+      return;
+    }
+    const index = Math.round(event.nativeEvent.contentOffset.x / pageWidth);
+    const next: LeftMode = index >= 1 ? 'days' : 'shifts';
+    if (next === mode) {
+      return;
+    }
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setMode(next);
+  };
+
+  const cardStyle = {
+    backgroundColor: colors.bg1,
+    borderCurve: 'continuous' as const,
+    borderRadius: 32,
+  };
+
+  if (!canToggle) {
+    return (
+      <View className="w-full gap-4 py-5" style={cardStyle}>
+        <MarksPage {...pages[0]!} />
+      </View>
+    );
+  }
+
+  return (
+    <View className="w-full gap-4 py-5" style={cardStyle} onLayout={onCardLayout}>
+      {pageWidth > 0 ? (
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          nestedScrollEnabled
+          directionalLockEnabled
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          bounces={false}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+        >
+          <MarksPage
+            {...pages[0]!}
+            width={pageWidth}
+            onPress={() => goToMode('days')}
+          />
+          <MarksPage
+            {...pages[1]!}
+            width={pageWidth}
+            onPress={() => goToMode('shifts')}
+          />
+        </ScrollView>
       ) : null}
+      <View className="flex-row items-center justify-center gap-2">
+        {(['shifts', 'days'] as const).map((page) => (
+          <View
+            key={page}
+            style={{
+              width: PAGER_DOT_SIZE,
+              height: PAGER_DOT_SIZE,
+              borderRadius: PAGER_DOT_SIZE / 2,
+              backgroundColor:
+                mode === page ? colors.text : colors.bgPillTrack,
+            }}
+          />
+        ))}
+      </View>
     </View>
   );
 }

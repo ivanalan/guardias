@@ -7,6 +7,7 @@ import {
   isFreeWeekendSpanStart,
   markColorAlpha,
   PAST_EVENT_OPACITY,
+  shiftMarkColorAlpha,
 } from './calendar-day-marker';
 
 describe('calendar day marker span helpers', () => {
@@ -66,7 +67,7 @@ describe('past event mark alpha', () => {
     expect(isCalendarDatePast('2026-08-20', '2026-08-19')).toBe(false);
   });
 
-  it('uses 0.7 for past marks and 1 for today and future', () => {
+  it('uses past opacity for past marks and 1 for today and future', () => {
     expect(markColorAlpha(false, true)).toBe(PAST_EVENT_OPACITY);
     expect(markColorAlpha(false, false)).toBe(1);
   });
@@ -74,5 +75,29 @@ describe('past event mark alpha', () => {
   it('keeps filter dimming stronger than the past fade', () => {
     expect(markColorAlpha(true, true)).toBe(DIM_OPACITY);
     expect(markColorAlpha(true, false)).toBe(DIM_OPACITY);
+  });
+});
+
+describe('pattern anchor shift alpha', () => {
+  it('dims non-anchor shift days and keeps the anchor full opacity', () => {
+    expect(
+      shiftMarkColorAlpha(false, false, '2026-08-10', '2026-08-06'),
+    ).toBe(DIM_OPACITY);
+    expect(
+      shiftMarkColorAlpha(false, true, '2026-08-06', '2026-08-06'),
+    ).toBe(1);
+    expect(
+      shiftMarkColorAlpha(false, false, '2026-08-06', '2026-08-06'),
+    ).toBe(1);
+  });
+
+  it('falls back to past/filter alpha when no anchor is set', () => {
+    expect(shiftMarkColorAlpha(false, true, '2026-08-06', null)).toBe(
+      PAST_EVENT_OPACITY,
+    );
+    expect(shiftMarkColorAlpha(false, false, '2026-08-06', undefined)).toBe(1);
+    expect(shiftMarkColorAlpha(true, false, '2026-08-10', '2026-08-06')).toBe(
+      DIM_OPACITY,
+    );
   });
 });

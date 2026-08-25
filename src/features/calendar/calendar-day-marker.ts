@@ -32,6 +32,8 @@ export type CalendarDayMarkContext = {
   vacationSet: ReadonlySet<string>;
   filter: CalendarLegendFilter;
   todayIso: string;
+  /** When set, non-anchor shift days render at DIM_OPACITY (first-shift picker). */
+  patternAnchorDate?: string | null;
 };
 
 export type CalendarDayMarkDimming = {
@@ -81,12 +83,42 @@ export function markColorAlpha(
   return 1;
 }
 
+/**
+ * Shift alpha for the first-shift picker: anchor stays full opacity;
+ * other pattern days use DIM_OPACITY (filter dim still wins when active).
+ */
+export function shiftMarkColorAlpha(
+  dimmedByFilter: boolean,
+  isPast: boolean,
+  iso: string,
+  patternAnchorDate: string | null | undefined,
+): number {
+  if (dimmedByFilter) {
+    return DIM_OPACITY;
+  }
+  if (
+    patternAnchorDate != null &&
+    patternAnchorDate !== '' &&
+    iso !== patternAnchorDate
+  ) {
+    return DIM_OPACITY;
+  }
+  if (patternAnchorDate != null && iso === patternAnchorDate) {
+    return 1;
+  }
+  if (isPast) {
+    return PAST_EVENT_OPACITY;
+  }
+  return 1;
+}
+
 export function buildCalendarDayMarkContext(
   shiftMarks: readonly { date: string; color: string }[],
   freeWeekendDates: readonly string[],
   vacationDates: readonly string[],
   filter: CalendarLegendFilter,
   todayIso: string,
+  patternAnchorDate?: string | null,
 ): CalendarDayMarkContext {
   const shiftColorByDate = new Map<string, string>();
   for (const { date, color } of shiftMarks) {
@@ -99,6 +131,7 @@ export function buildCalendarDayMarkContext(
     vacationSet: new Set(vacationDates),
     filter,
     todayIso,
+    patternAnchorDate,
   };
 }
 
