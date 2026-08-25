@@ -4,6 +4,7 @@ import {
   countShiftsRemaining,
   formatDurationParts,
   getHomepageShiftStatus,
+  getPeriodDayProgress,
   getPeriodShiftProgress,
 } from './get-homepage-shift-status';
 
@@ -256,5 +257,50 @@ describe('getPeriodShiftProgress', () => {
     expect(afterLast.completed).toBe(8);
     expect(afterLast.total).toBe(8);
     expect(afterLast.progress).toBe(1);
+  });
+});
+
+describe('getPeriodDayProgress', () => {
+  const julyPeriod = period({
+    id: 'p1',
+    startDate: '2026-07-01',
+    endDate: '2026-07-31',
+    pattern: { cycleDays: 4, offset: 'B' },
+  });
+
+  it('returns full remaining before the period starts', () => {
+    expect(getPeriodDayProgress(julyPeriod, '2026-06-15')).toEqual({
+      completed: 0,
+      total: 31,
+      progress: 0,
+    });
+  });
+
+  it('counts inclusive calendar days mid-period', () => {
+    // Jul 1–31 = 31 days; on Jul 10 → 22 days left (10..31), 9 completed.
+    const mid = getPeriodDayProgress(julyPeriod, '2026-07-10');
+    expect(mid.completed).toBe(9);
+    expect(mid.total).toBe(31);
+    expect(mid.progress).toBeCloseTo(9 / 31);
+  });
+
+  it('includes today on the start and end dates', () => {
+    expect(getPeriodDayProgress(julyPeriod, '2026-07-01')).toEqual({
+      completed: 0,
+      total: 31,
+      progress: 0,
+    });
+    const onEnd = getPeriodDayProgress(julyPeriod, '2026-07-31');
+    expect(onEnd.completed).toBe(30);
+    expect(onEnd.total).toBe(31);
+    expect(onEnd.progress).toBeCloseTo(30 / 31);
+  });
+
+  it('returns full completed after the period ends', () => {
+    expect(getPeriodDayProgress(julyPeriod, '2026-08-01')).toEqual({
+      completed: 31,
+      total: 31,
+      progress: 1,
+    });
   });
 });

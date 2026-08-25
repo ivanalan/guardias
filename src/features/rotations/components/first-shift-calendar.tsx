@@ -5,7 +5,6 @@ import { Calendar, type DateData } from 'react-native-calendars';
 import { useTranslation } from 'react-i18next';
 
 import type { AppLanguage } from '../../../i18n';
-import { listShiftDatesInRange } from '../../../lib/shifts';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { useTheme } from '../../../theme/theme-context';
@@ -24,19 +23,34 @@ import type { RotationPeriod } from '../types';
 type Props = {
   period: RotationPeriod;
   language: AppLanguage;
+  selectedFirstShift: string;
+  onSelectFirstShift: (iso: string) => void;
 };
 
 function monthKey(isoDate: string): string {
   return isoDate.slice(0, 7);
 }
 
-/** Collapsible read-only month calendar preview for the add/edit rotation form. */
-export function RotationPreviewCalendar({ period, language }: Props) {
+function isWithinPeriod(
+  iso: string,
+  startDate: string,
+  endDate: string,
+): boolean {
+  return iso >= startDate && iso <= endDate;
+}
+
+/** First-shift field + expandable calendar; tap a day to set the pattern. */
+export function FirstShiftCalendar({
+  period,
+  language,
+  selectedFirstShift,
+  onSelectFirstShift,
+}: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
   const datesValid = period.startDate < period.endDate;
   const [expanded, setExpanded] = useState(false);
-  const [currentMonth, setCurrentMonth] = useState(period.startDate);
+  const [currentMonth, setCurrentMonth] = useState(selectedFirstShift);
 
   useEffect(() => {
     configureCalendarLocale(language, t('calendar.today'));
@@ -44,9 +58,11 @@ export function RotationPreviewCalendar({ period, language }: Props) {
 
   useEffect(() => {
     setCurrentMonth((prev) =>
-      monthKey(prev) === monthKey(period.startDate) ? prev : period.startDate,
+      monthKey(prev) === monthKey(selectedFirstShift)
+        ? prev
+        : selectedFirstShift,
     );
-  }, [period.startDate]);
+  }, [selectedFirstShift]);
 
   const monthInputs = datesValid
     ? getMonthMarkInputs([period], currentMonth)
@@ -68,12 +84,14 @@ export function RotationPreviewCalendar({ period, language }: Props) {
         monthInputs.vacationDates,
         null,
         todayIso,
+        selectedFirstShift,
       ),
     [
       resolvedShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
       todayIso,
+      selectedFirstShift,
     ],
   );
   const DayComponent = useMemo(
@@ -81,21 +99,8 @@ export function RotationPreviewCalendar({ period, language }: Props) {
     [markContext],
   );
 
-  if (!datesValid) {
-    return null;
-  }
-
-  const shiftDates = listShiftDatesInRange(
-    [period],
-    period.startDate,
-    period.endDate,
-  );
-  const shiftCount = shiftDates.length;
-  const countLabel = t('shifts.form.previewShiftCount', { count: shiftCount });
-  const datesLabel =
-    shiftDates.length > 0
-      ? shiftDates.map((iso) => formatFormDate(iso, language)).join(', ')
-      : null;
+  const valueLabel = formatFormDate(selectedFirstShift, language);
+  const fieldLabel = t('shifts.form.firstShiftDate');
   const toggleLabel = expanded
     ? t('shifts.form.previewHideCalendar')
     : t('shifts.form.previewShowCalendar');
@@ -114,20 +119,31 @@ export function RotationPreviewCalendar({ period, language }: Props) {
     });
   };
 
+  const onDayPress = (day: DateData) => {
+    if (!isWithinPeriod(day.dateString, period.startDate, period.endDate)) {
+      return;
+    }
+    onSelectFirstShift(day.dateString);
+  };
+
   return (
     <View className="gap-1.5">
       <Text
-        className="font-mono text-sm"
+        className="mb-0.5 font-mono text-sm"
         style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
       >
-        {countLabel}
+        {fieldLabel}
+      </Text>
+      <Text
+        className="font-mono text-sm"
+        style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.textMuted }}
+      >
+        {t('shifts.form.firstShiftHint')}
       </Text>
       <Pressable
         accessibilityRole="button"
         accessibilityState={{ expanded }}
-        accessibilityLabel={`${t('shifts.form.preview')}. ${countLabel}${
-          datesLabel != null ? `. ${datesLabel}` : ''
-        }. ${toggleLabel}`}
+        accessibilityLabel={`${fieldLabel}: ${valueLabel}. ${toggleLabel}`}
         onPress={() => setExpanded((prev) => !prev)}
         className="h-14 flex-row items-center rounded-xl px-4 active:opacity-70"
         style={{
@@ -137,26 +153,17 @@ export function RotationPreviewCalendar({ period, language }: Props) {
           backgroundColor: colors.bg1,
         }}
       >
-        {datesLabel != null ? (
-          <Text
-            className="min-w-0 flex-1 pr-2 font-mono text-base"
-            numberOfLines={1}
-            ellipsizeMode="tail"
-            style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
-          >
-            {datesLabel}
-          </Text>
-        ) : (
-          <View className="flex-1" />
-        )}
-        <Ionicons
-          name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={18}
-          color={colors.brand}
-        />
+        <Text
+          className="min-w-0 flex-1 pr-2 font-mono text-base"
+          numberOfLines={1}
+          style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
+        >
+          {valueLabel}
+        </Text>
+        <Ionicons name="calendar-outline" size={18} color={colors.brand} />
       </Pressable>
 
-      {expanded ? (
+      {expanded && datesValid ? (
         <View
           className="overflow-hidden rounded-xl px-3 py-5"
           style={{
@@ -171,6 +178,9 @@ export function RotationPreviewCalendar({ period, language }: Props) {
             onMonthChange={(month: DateData) => {
               setCurrentMonth(month.dateString);
             }}
+            onDayPress={onDayPress}
+            minDate={period.startDate}
+            maxDate={period.endDate}
             enableSwipeMonths
             hideArrows
             firstDay={1}

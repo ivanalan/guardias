@@ -26,6 +26,7 @@ import {
   resolveVacationBackground,
   resolveVacationTextColor,
   resolveWeekendBackground,
+  shiftMarkColorAlpha,
 } from '../calendar-day-marker';
 import { calendarMarkColorsFor } from '../calendar-mark-colors';
 
@@ -218,9 +219,15 @@ function CalendarDayInner({
 
   if (markKind === 'shift' && !inactive) {
     const shiftColor = markContext.shiftColorByDate.get(iso)!;
-    const shiftAlpha = markColorAlpha(dimming.dimShifts, isPast);
+    const shiftAlpha = shiftMarkColorAlpha(
+      dimming.dimShifts,
+      isPast,
+      iso,
+      markContext.patternAnchorDate,
+    );
     const backgroundColor = resolveShiftColor(shiftColor, shiftAlpha);
     const textColor = resolveShiftTextColor(markColors, shiftAlpha);
+    const isPatternAnchor = markContext.patternAnchorDate === iso;
 
     return (
       <DayShell
@@ -229,7 +236,7 @@ function CalendarDayInner({
         onLongPress={handleLongPress}
         testID={testID}
       >
-        {isToday ? (
+        {isToday || isPatternAnchor ? (
           <TodayFilledMarker
             label={label}
             backgroundColor={backgroundColor}

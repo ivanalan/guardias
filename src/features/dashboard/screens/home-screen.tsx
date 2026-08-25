@@ -15,10 +15,12 @@ import type { AppLanguage } from '../../../i18n';
 import {
   getHomepageShiftStatus,
   getNextFreeWeekend,
+  getPeriodDayProgress,
   getPeriodShiftProgress,
   getTimeUntilNextShift,
   type DurationParts,
   type HomepageShiftStatus,
+  type PeriodDayProgress,
   type PeriodShiftProgress,
 } from '../../../lib/shifts';
 import type { TabParamList } from '../../../navigation/types';
@@ -52,6 +54,7 @@ type ActiveHomeProps = {
   status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
   now: Date;
   periodProgress: PeriodShiftProgress;
+  dayProgress: PeriodDayProgress;
   language: AppLanguage;
 };
 
@@ -59,6 +62,7 @@ function ActiveHomeContent({
   status,
   now,
   periodProgress,
+  dayProgress,
   language,
 }: ActiveHomeProps) {
   const { t } = useTranslation();
@@ -80,6 +84,10 @@ function ActiveHomeContent({
   const remaining = Math.max(
     0,
     periodProgress.total - periodProgress.completed,
+  );
+  const daysRemaining = Math.max(
+    0,
+    dayProgress.total - dayProgress.completed,
   );
   const color = resolveRotationColor(status.period.color, colors);
 
@@ -134,6 +142,9 @@ function ActiveHomeContent({
         total={periodProgress.total}
         color={color}
         caption={t('home.shiftsLeft')}
+        daysRemaining={daysRemaining}
+        daysTotal={dayProgress.total}
+        daysCaption={t('home.daysLeft')}
       />
 
       {nextShiftCard}
@@ -208,6 +219,10 @@ export function HomeScreen({ navigation }: Props) {
           status={status}
           now={now}
           periodProgress={getPeriodShiftProgress(status.period, now)}
+          dayProgress={getPeriodDayProgress(
+            status.period,
+            format(now, 'yyyy-MM-dd'),
+          )}
           language={language}
         />
       </ScrollView>

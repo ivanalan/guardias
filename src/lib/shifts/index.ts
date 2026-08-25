@@ -7,11 +7,13 @@ export {
   countShiftsRemaining,
   formatDurationParts,
   getHomepageShiftStatus,
+  getPeriodDayProgress,
   getPeriodShiftProgress,
 } from './get-homepage-shift-status';
 export type {
   DurationParts,
   HomepageShiftStatus,
+  PeriodDayProgress,
   PeriodShiftProgress,
 } from './get-homepage-shift-status';
 export {
