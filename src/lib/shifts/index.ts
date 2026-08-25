@@ -9,6 +9,7 @@ export {
   getHomepageShiftStatus,
   getPeriodDayProgress,
   getPeriodShiftProgress,
+  getPeriodShiftStatus,
 } from './get-homepage-shift-status';
 export type {
   DurationParts,

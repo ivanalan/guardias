@@ -31,11 +31,14 @@ type ShiftsLeftCardProps = {
   daysRemaining?: number;
   daysTotal?: number;
   daysCaption?: string;
+  /** Smaller type for denser screens (e.g. rotation detail). */
+  compact?: boolean;
 };
 
 type MarksPageProps = MarksPageModel & {
   width?: number;
   onPress?: () => void;
+  compact?: boolean;
 };
 
 function MarksPage({
@@ -45,10 +48,13 @@ function MarksPage({
   caption,
   width,
   onPress,
+  compact = false,
 }: MarksPageProps) {
   const { colors } = useTheme();
   const filled = Math.max(0, Math.min(remaining, total));
   const [gridWidth, setGridWidth] = useState<number | null>(null);
+  const titleClass = compact ? 'font-serif text-3xl' : 'font-serif text-5xl';
+  const captionClass = compact ? 'font-mono text-sm' : 'font-mono text-base';
 
   const onGridLayout = (event: LayoutChangeEvent) => {
     const nextWidth = Math.round(event.nativeEvent.layout.width);
@@ -63,14 +69,14 @@ function MarksPage({
   const content = (
     <>
       <View className="gap-1">
-        <Text className="font-serif text-5xl" style={{ color: colors.text }}>
-          <Text className="font-serif text-5xl" style={{ color }}>
+        <Text className={titleClass} style={{ color: colors.text }}>
+          <Text className={titleClass} style={{ color }}>
             {remaining}
           </Text>
           {' / '}
           {total}
         </Text>
-        <Text className="font-mono text-base" style={{ color: colors.text }}>
+        <Text className={captionClass} style={{ color: colors.text }}>
           {caption}
         </Text>
       </View>
@@ -146,6 +152,7 @@ export function ShiftsLeftCard({
   daysRemaining,
   daysTotal,
   daysCaption,
+  compact = false,
 }: ShiftsLeftCardProps) {
   const { colors } = useTheme();
   const canToggle =
@@ -207,7 +214,7 @@ export function ShiftsLeftCard({
   if (!canToggle) {
     return (
       <View className="w-full gap-4 py-5" style={cardStyle}>
-        <MarksPage {...pages[0]!} />
+        <MarksPage {...pages[0]!} compact={compact} />
       </View>
     );
   }
@@ -228,11 +235,13 @@ export function ShiftsLeftCard({
         >
           <MarksPage
             {...pages[0]!}
+            compact={compact}
             width={pageWidth}
             onPress={() => goToMode('days')}
           />
           <MarksPage
             {...pages[1]!}
+            compact={compact}
             width={pageWidth}
             onPress={() => goToMode('shifts')}
           />

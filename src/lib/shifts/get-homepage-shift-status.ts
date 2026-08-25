@@ -208,8 +208,45 @@ function periodById(
 }
 
 /**
+ * Shift status for a single period (primary or secondary) — used by rotation
+ * detail. Does not filter by role.
+ */
+export function getPeriodShiftStatus(
+  period: RotationPeriod,
+  now: Date,
+): HomepageShiftStatus {
+  const scoped = [period];
+  const currentShift = findActiveShift(scoped, now);
+
+  if (currentShift !== null) {
+    const nextInPeriod = findNextShift(scoped, now, period.endDate);
+    return {
+      kind: 'in_shift',
+      period,
+      currentShift,
+      remainingInShift: formatDurationParts(now, currentShift.endDateTime),
+      shiftsRemaining: countShiftsRemaining(period, now),
+      nextShift: nextInPeriod,
+    };
+  }
+
+  const nextShift = findNextShift(scoped, now, period.endDate);
+  if (nextShift !== null) {
+    return {
+      kind: 'between_shifts',
+      period,
+      nextShift,
+      untilStart: formatDurationParts(now, nextShift.startDateTime),
+      shiftsRemaining: countShiftsRemaining(period, now),
+    };
+  }
+
+  return { kind: 'idle' };
+}
+
+/**
  * At-a-glance homepage state: idle, countdown to next shift, or remaining
- * time in the current 24h shift.
+ * time in the current 24h shift. Primary periods only.
  */
 export function getHomepageShiftStatus(
   periods: readonly RotationPeriod[],
@@ -226,31 +263,15 @@ export function getHomepageShiftStatus(
   );
 
   const currentShift = findActiveShift(primaries, now);
-  const nextShift = findNextShift(primaries, now, rangeEnd);
-
   if (currentShift !== null) {
     const period = periodById(primaries, currentShift.rotationPeriodId);
-    // Scope "next" to this period only — homepage cards are per-rotation.
-    const nextInPeriod = findNextShift([period], now, period.endDate);
-    return {
-      kind: 'in_shift',
-      period,
-      currentShift,
-      remainingInShift: formatDurationParts(now, currentShift.endDateTime),
-      shiftsRemaining: countShiftsRemaining(period, now),
-      nextShift: nextInPeriod,
-    };
+    return getPeriodShiftStatus(period, now);
   }
 
+  const nextShift = findNextShift(primaries, now, rangeEnd);
   if (nextShift !== null) {
     const period = periodById(primaries, nextShift.rotationPeriodId);
-    return {
-      kind: 'between_shifts',
-      period,
-      nextShift,
-      untilStart: formatDurationParts(now, nextShift.startDateTime),
-      shiftsRemaining: countShiftsRemaining(period, now),
-    };
+    return getPeriodShiftStatus(period, now);
   }
 
   return { kind: 'idle' };
