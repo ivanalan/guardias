@@ -6,6 +6,7 @@ import {
   getHomepageShiftStatus,
   getPeriodDayProgress,
   getPeriodShiftProgress,
+  getPeriodShiftStatus,
 } from './get-homepage-shift-status';
 
 function period(
@@ -231,6 +232,58 @@ describe('getHomepageShiftStatus', () => {
     expect(
       getHomepageShiftStatus([friendOnly], localDate(2026, 6, 1, 15, 0)),
     ).toEqual({ kind: 'idle' });
+  });
+});
+
+describe('getPeriodShiftStatus', () => {
+  const julyPeriod = period({
+    id: 'p1',
+    startDate: '2026-07-01',
+    endDate: '2026-07-31',
+    pattern: { cycleDays: 4, offset: 'B' },
+  });
+
+  it('returns between_shifts for a primary period', () => {
+    const status = getPeriodShiftStatus(
+      julyPeriod,
+      localDate(2026, 6, 2, 10, 0),
+    );
+    expect(status.kind).toBe('between_shifts');
+    if (status.kind !== 'between_shifts') {
+      return;
+    }
+    expect(status.nextShift.date).toBe('2026-07-05');
+    expect(status.period.id).toBe('p1');
+  });
+
+  it('returns in_shift for a secondary period (unlike homepage)', () => {
+    const friend = period({
+      id: 'friend',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      role: 'secondary',
+      label: 'Maria',
+    });
+    const status = getPeriodShiftStatus(friend, localDate(2026, 6, 1, 15, 0));
+    expect(status.kind).toBe('in_shift');
+    if (status.kind !== 'in_shift') {
+      return;
+    }
+    expect(status.period.id).toBe('friend');
+    expect(status.currentShift.date).toBe('2026-07-01');
+  });
+
+  it('returns idle when the period has no remaining shifts', () => {
+    const past = period({
+      id: 'past',
+      startDate: '2026-01-01',
+      endDate: '2026-01-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+    });
+    expect(getPeriodShiftStatus(past, localDate(2026, 6, 1, 12))).toEqual({
+      kind: 'idle',
+    });
   });
 });
 

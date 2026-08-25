@@ -6,6 +6,8 @@ type NextShiftCardProps = {
   caption: string;
   weekday: string;
   weekdayColor: string;
+  /** Smaller type for denser screens (e.g. rotation detail). */
+  compact?: boolean;
 };
 
 /** Countdown (or time-left) widget with a highlighted weekday. */
@@ -14,8 +16,11 @@ export function NextShiftCard({
   caption,
   weekday,
   weekdayColor,
+  compact = false,
 }: NextShiftCardProps) {
   const { colors } = useTheme();
+  const titleClass = compact ? 'font-serif text-3xl' : 'font-serif text-5xl';
+  const captionClass = compact ? 'font-mono text-sm' : 'font-mono text-base';
 
   return (
     <View
@@ -26,13 +31,13 @@ export function NextShiftCard({
         borderRadius: 32,
       }}
     >
-      <Text className="font-serif text-5xl" style={{ color: colors.text }}>
+      <Text className={titleClass} style={{ color: colors.text }}>
         {duration}
       </Text>
-      <Text className="font-mono text-base" style={{ color: colors.text }}>
+      <Text className={captionClass} style={{ color: colors.text }}>
         {caption}
         {weekday ? (
-          <Text className="font-mono text-base" style={{ color: weekdayColor }}>
+          <Text className={captionClass} style={{ color: weekdayColor }}>
             {weekday}
           </Text>
         ) : null}
