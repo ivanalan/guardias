@@ -19,6 +19,7 @@ import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { NextShiftCard } from '../../dashboard/components/next-shift-card';
 import { ShiftsLeftCard } from '../../dashboard/components/shifts-left-card';
 import { formatWeekdayLong } from '../../dashboard/format-home-copy';
+import { RotationDetailCalendar } from '../components/rotation-detail-calendar';
 import { formatFormDate, formatPeriodRange } from '../format-period-range';
 import { isSecondary } from '../period-role';
 import { resolveRotationColor } from '../rotation-colors';
@@ -308,6 +309,8 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           value={vacationValue}
           caption={t('shifts.detail.vacationLabel')}
         />
+
+        <RotationDetailCalendar period={period} language={language} />
       </ScrollView>
 
       <View
