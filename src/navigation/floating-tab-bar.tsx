@@ -11,14 +11,17 @@ import type { ComponentProps } from 'react';
 import { useMemo } from 'react';
 import { Platform, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import {
-  MagicTabBarNavigation,
-  type MagicNavigationTab,
-} from 'react-native-magic-tab-bar/react-navigation';
+import { MagicTabItem } from './magic-tab-item';
+import type {
+  MagicLabelMode,
+  MagicNavigationTab,
+  MagicTabBarTheme,
+} from './magic-tab-bar-types';
 
 import { useRotations } from '../features/rotations/rotations-context';
 import type { ThemeColors } from '../theme/colors';
 import { useTheme } from '../theme/theme-context';
+import { ContentHuggingTabBar } from './content-hugging-tab-bar';
 import type { TabParamList } from './types';
 
 type TabKey = keyof TabParamList;
@@ -54,7 +57,7 @@ function shouldShowTabBar(state: BottomTabBarProps['state']): boolean {
   return focusedName === TAB_ROOT_SCREENS[tabName];
 }
 
-function floatingTabBarTheme(colors: ThemeColors) {
+function floatingTabBarTheme(colors: ThemeColors): Partial<MagicTabBarTheme> {
   return {
     barColor: 'transparent',
     activePillColor: 'transparent',
@@ -64,9 +67,30 @@ function floatingTabBarTheme(colors: ThemeColors) {
     fontSize: 11,
     height: 64,
     radius: 999,
-    horizontalMargin: 72,
     bottomInset: Platform.OS === 'ios' ? 0 : 16,
-  } as const;
+  };
+}
+
+const MAGIC_TAB_BAR_DEFAULT_THEME: MagicTabBarTheme = {
+  barColor: 'rgba(38, 38, 40, 0.94)',
+  activePillColor: 'rgba(120, 120, 124, 0.55)',
+  activeColor: '#FFFFFF',
+  inactiveColor: '#FFFFFF',
+  iconSize: 22,
+  fontSize: 12,
+  height: 56,
+  radius: 28,
+  badgeColor: '#FF3B30',
+  badgeTextColor: '#FFFFFF',
+  actionColor: '#0A84FF',
+  actionIconColor: '#FFFFFF',
+  horizontalMargin: 14,
+  bottomInset: 10,
+  spring: { mass: 0.6, damping: 18, stiffness: 180 },
+};
+
+function mergeTheme(override?: Partial<MagicTabBarTheme>): MagicTabBarTheme {
+  return { ...MAGIC_TAB_BAR_DEFAULT_THEME, ...override };
 }
 
 function TabBarBlurBackground({
@@ -127,25 +151,32 @@ function buildTabs(t: (key: string) => string): MagicNavigationTab[] {
 }
 
 /** Floating glass chip tab bar for the root navigator. */
-export function FloatingTabBar(props: BottomTabBarProps) {
+export function FloatingTabBar({ state, navigation }: BottomTabBarProps) {
   const { t } = useTranslation();
   const { periods } = useRotations();
   const { colors, scheme } = useTheme();
-  const tabBarTheme = useMemo(() => floatingTabBarTheme(colors), [colors]);
+  const tabBarTheme = useMemo(
+    () => mergeTheme(floatingTabBarTheme(colors)),
+    [colors],
+  );
+  const tabs = useMemo(() => buildTabs(t), [t]);
+  const tabByName = useMemo(() => {
+    const map = new Map<string, MagicNavigationTab>();
+    for (const tab of tabs) map.set(tab.name, tab);
+    return map;
+  }, [tabs]);
   const blurTint: 'light' | 'dark' = scheme === 'dark' ? 'dark' : 'light';
+  const labelMode: MagicLabelMode = 'always';
 
-  if (periods.length === 0 || !shouldShowTabBar(props.state)) {
+  if (periods.length === 0 || !shouldShowTabBar(state)) {
     return null;
   }
 
   return (
-    <MagicTabBarNavigation
-      {...props}
-      tabs={buildTabs(t)}
+    <ContentHuggingTabBar
+      theme={tabBarTheme}
       variant="floating"
       labelPosition="bottom"
-      showLabels="always"
-      haptics
       isTransparent
       renderBackground={() => (
         <TabBarBackground
@@ -153,7 +184,47 @@ export function FloatingTabBar(props: BottomTabBarProps) {
           blurTint={blurTint}
         />
       )}
-      theme={tabBarTheme}
-    />
+    >
+      {state.routes.map((route, index) => {
+        const tab = tabByName.get(route.name);
+        if (!tab) return null;
+
+        const focused = state.index === index;
+
+        const handlePress = () => {
+          const event = navigation.emit({
+            type: 'tabPress',
+            target: route.key,
+            canPreventDefault: true,
+          });
+          if (!focused && !event.defaultPrevented) {
+            navigation.navigate(route.name, route.params);
+          }
+        };
+
+        const handleLongPress = () => {
+          navigation.emit({ type: 'tabLongPress', target: route.key });
+        };
+
+        return (
+          <MagicTabItem
+            key={route.key}
+            name={route.name}
+            icon={tab.icon}
+            label={tab.label}
+            labelMode={labelMode}
+            labelPosition="bottom"
+            badge={tab.badge}
+            disabled={tab.disabled}
+            variant={tab.variant}
+            haptics
+            theme={tabBarTheme}
+            isFocused={focused}
+            onPress={handlePress}
+            onLongPress={handleLongPress}
+          />
+        );
+      })}
+    </ContentHuggingTabBar>
   );
 }
