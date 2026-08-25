@@ -19,6 +19,7 @@ function period(
     vacationEndDate: null,
     shiftStartTime: '07:00',
     color: '#2F69F3',
+    role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -196,6 +197,40 @@ describe('getHomepageShiftStatus', () => {
     // Oct 1 2026 is B on the year calendar.
     expect(status.period.id).toBe('p2');
     expect(status.nextShift.date).toBe('2026-10-01');
+  });
+
+  it('ignores secondary periods for homepage status', () => {
+    const friend = period({
+      id: 'friend',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      role: 'secondary',
+      label: 'Maria',
+    });
+    const now = localDate(2026, 6, 1, 15, 0);
+
+    const withFriend = getHomepageShiftStatus([julyPeriod, friend], now);
+    const withoutFriend = getHomepageShiftStatus([julyPeriod], now);
+
+    expect(withFriend).toEqual(withoutFriend);
+    expect(withFriend.kind).toBe('in_shift');
+    if (withFriend.kind === 'in_shift') {
+      expect(withFriend.period.id).toBe('p1');
+    }
+  });
+
+  it('is idle when only a secondary period exists', () => {
+    const friendOnly = period({
+      id: 'friend',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      role: 'secondary',
+    });
+    expect(
+      getHomepageShiftStatus([friendOnly], localDate(2026, 6, 1, 15, 0)),
+    ).toEqual({ kind: 'idle' });
   });
 });
 

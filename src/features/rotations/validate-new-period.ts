@@ -1,4 +1,5 @@
-import type { RotationPeriod } from './types';
+import type { RotationPeriod, RotationPeriodRole } from './types';
+import { secondaryPeriods } from './period-role';
 
 export type RotationValidationError =
   | 'labelRequired'
@@ -6,7 +7,8 @@ export type RotationValidationError =
   | 'vacationOrder'
   | 'vacationOutOfBounds'
   | 'dateOverlap'
-  | 'firstShiftOutOfBounds';
+  | 'firstShiftOutOfBounds'
+  | 'secondaryLimit';
 
 export type PeriodFormInput = {
   label: string;
@@ -14,6 +16,7 @@ export type PeriodFormInput = {
   endDate: string;
   /** Override ISO date, or null when using the Jan 1 default. */
   firstShiftDate: string | null;
+  role: RotationPeriodRole;
   vacationEnabled: boolean;
   vacationStartDate: string;
   vacationEndDate: string;
@@ -31,16 +34,21 @@ export function datesOverlap(
   return aStart <= bEnd && bStart <= aEnd;
 }
 
-/** First existing period whose range overlaps `[startDate, endDate]`, if any. */
+/**
+ * First existing period with the same `role` whose range overlaps
+ * `[startDate, endDate]`, if any.
+ */
 export function findOverlappingPeriod(
   startDate: string,
   endDate: string,
   periods: readonly RotationPeriod[],
+  role: RotationPeriodRole,
   excludeId?: string,
 ): RotationPeriod | undefined {
   return periods.find(
     (period) =>
       period.id !== excludeId &&
+      period.role === role &&
       datesOverlap(startDate, endDate, period.startDate, period.endDate),
   );
 }
@@ -59,11 +67,21 @@ export function validatePeriodForm(
     return 'dateOrder';
   }
 
+  if (input.role === 'secondary') {
+    const otherSecondary = secondaryPeriods(periods).find(
+      (period) => period.id !== excludeId,
+    );
+    if (otherSecondary != null) {
+      return 'secondaryLimit';
+    }
+  }
+
   if (
     findOverlappingPeriod(
       input.startDate,
       input.endDate,
       periods,
+      input.role,
       excludeId,
     ) != null
   ) {

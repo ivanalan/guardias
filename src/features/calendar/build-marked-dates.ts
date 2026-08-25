@@ -1,11 +1,40 @@
 import type { MarkedDates } from 'react-native-calendars/src/types';
 
-/** Active legend filter; `null` shows all marks at full opacity. */
-export type CalendarLegendFilter =
+export type CalendarLegendFilterKey =
   | 'shifts'
+  | 'secondaryShifts'
   | 'freeWeekends'
-  | 'vacation'
-  | null;
+  | 'vacation';
+
+/** Empty set = show all marks at full opacity. */
+export type CalendarLegendFilterState = ReadonlySet<CalendarLegendFilterKey>;
+
+export const EMPTY_CALENDAR_FILTER: CalendarLegendFilterState = new Set();
+
+export function toggleLegendFilter(
+  current: CalendarLegendFilterState,
+  key: CalendarLegendFilterKey,
+): CalendarLegendFilterState {
+  const next = new Set(current);
+  if (next.has(key)) {
+    next.delete(key);
+  } else {
+    next.add(key);
+  }
+  return next;
+}
+
+export function removeLegendFilter(
+  current: CalendarLegendFilterState,
+  key: CalendarLegendFilterKey,
+): CalendarLegendFilterState {
+  if (!current.has(key)) {
+    return current;
+  }
+  const next = new Set(current);
+  next.delete(key);
+  return next;
+}
 
 /** Shift day mark with the rotation’s calendar color. */
 export type ShiftDateMark = {
@@ -22,7 +51,7 @@ export function buildMarkedDates(
   shiftMarks: readonly ShiftDateMark[],
   freeWeekendDates: readonly string[],
   vacationDates: readonly string[] = [],
-  _filter: CalendarLegendFilter = null,
+  secondaryShiftMarks: readonly ShiftDateMark[] = [],
 ): MarkedDates {
   const marked: MarkedDates = {};
 
@@ -33,6 +62,9 @@ export function buildMarkedDates(
     marked[date] = { marked: true };
   }
   for (const { date } of shiftMarks) {
+    marked[date] = { marked: true };
+  }
+  for (const { date } of secondaryShiftMarks) {
     marked[date] = { marked: true };
   }
 

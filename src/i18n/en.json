@@ -60,15 +60,20 @@
       "shiftsSummary_other": "{{count}} shifts",
       "freeWeekends_one": "Free weekend",
       "freeWeekends_other": "Free weekends",
-      "freeWeekendsSummary_one": "{{count}} free weekend",
-      "freeWeekendsSummary_other": "{{count}} free weekends",
+      "freeWeekendsSummary_one": "Free weekends ({{count}})",
+      "freeWeekendsSummary_other": "Free weekends ({{count}})",
       "vacationDays_one": "Vacation day",
       "vacationDays_other": "Vacation days",
-      "vacationSummary_one": "{{count}} vacation day",
-      "vacationSummary_other": "{{count}} vacation days",
-      "filterShiftsHint": "Highlight shift days on the calendar",
+      "vacationSummary_one": "Vacation ({{count}})",
+      "vacationSummary_other": "Vacation ({{count}})",
+      "filterShiftsHint": "Highlight your shift days on the calendar",
+      "filterFriendShiftsHint": "Highlight your friend’s shift days on the calendar",
       "filterFreeWeekendsHint": "Highlight free weekends on the calendar",
-      "filterVacationHint": "Highlight vacation days on the calendar"
+      "filterVacationHint": "Highlight vacation days on the calendar",
+      "myShiftsSummary_one": "My shifts ({{count}})",
+      "myShiftsSummary_other": "My shifts ({{count}})",
+      "periodShiftsSummary_one": "{{name}} ({{count}})",
+      "periodShiftsSummary_other": "{{name}} ({{count}})"
     }
   },
   "settings": {
@@ -135,15 +140,18 @@
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacation days",
       "vacationStart": "Vacation start",
-      "vacationEnd": "Vacation end"
+      "vacationEnd": "Vacation end",
+      "friendShift": "Friend’s shift",
+      "friendShiftHint": "Turn this on if this is not your shift. It will not show up as the main visualization, but rather a secondary one."
     },
     "errors": {
       "labelRequired": "Name is required.",
       "dateOrder": "End date must be after the start date.",
       "vacationOrder": "Vacation end must be on or after vacation start.",
       "vacationOutOfBounds": "Vacation must fall within the rotation dates.",
-      "dateOverlap": "This date range overlaps another rotation.",
-      "firstShiftOutOfBounds": "First shift must fall within the rotation dates."
+      "dateOverlap": "This date range overlaps another rotation. If this is someone else’s schedule, mark it as a friend’s shift.",
+      "firstShiftOutOfBounds": "First shift must fall within the rotation dates.",
+      "secondaryLimit": "You can only add one friend’s shift for now. Edit or delete the existing one first."
     }
   }
 }

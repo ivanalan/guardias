@@ -1,20 +1,23 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { normalizePeriodRole } from './period-role';
 import { normalizeRotationColor } from './rotation-colors';
 import type { RotationPeriod } from './types';
 
 const STORAGE_KEY = 'guardias.rotationPeriods';
 
-function normalizePeriod(raw: unknown): RotationPeriod | null {
+/** Normalize a raw stored period (also used in tests for migration). */
+export function normalizePeriod(raw: unknown): RotationPeriod | null {
   if (raw == null || typeof raw !== 'object') {
     return null;
   }
-  const period = raw as RotationPeriod;
+  const period = raw as RotationPeriod & { role?: unknown };
   return {
     ...period,
     firstShiftDate:
       typeof period.firstShiftDate === 'string' ? period.firstShiftDate : null,
     color: normalizeRotationColor(period.color),
+    role: normalizePeriodRole(period.role),
   };
 }
 

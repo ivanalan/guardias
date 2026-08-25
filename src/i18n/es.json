@@ -60,15 +60,20 @@
       "shiftsSummary_other": "{{count}} guardias",
       "freeWeekends_one": "Fin libre",
       "freeWeekends_other": "Fines libres",
-      "freeWeekendsSummary_one": "{{count}} fin libre",
-      "freeWeekendsSummary_other": "{{count}} fines libres",
+      "freeWeekendsSummary_one": "Fines libres ({{count}})",
+      "freeWeekendsSummary_other": "Fines libres ({{count}})",
       "vacationDays_one": "Vacaciones",
       "vacationDays_other": "Vacaciones",
-      "vacationSummary_one": "{{count}} vacaciones",
-      "vacationSummary_other": "{{count}} vacaciones",
-      "filterShiftsHint": "Resaltar días de guardia en el calendario",
+      "vacationSummary_one": "Vacaciones ({{count}})",
+      "vacationSummary_other": "Vacaciones ({{count}})",
+      "filterShiftsHint": "Resaltar tus días de guardia en el calendario",
+      "filterFriendShiftsHint": "Resaltar las guardias de tu amigo en el calendario",
       "filterFreeWeekendsHint": "Resaltar fines libres en el calendario",
-      "filterVacationHint": "Resaltar días de vacaciones en el calendario"
+      "filterVacationHint": "Resaltar días de vacaciones en el calendario",
+      "myShiftsSummary_one": "Mis guardias ({{count}})",
+      "myShiftsSummary_other": "Mis guardias ({{count}})",
+      "periodShiftsSummary_one": "{{name}} ({{count}})",
+      "periodShiftsSummary_other": "{{name}} ({{count}})"
     }
   },
   "settings": {
@@ -135,15 +140,18 @@
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacaciones",
       "vacationStart": "Inicio de vacaciones",
-      "vacationEnd": "Fin de vacaciones"
+      "vacationEnd": "Fin de vacaciones",
+      "friendShift": "Guardia de un amigo",
+      "friendShiftHint": "Actívalo si esta no es tu guardia. No aparecerá como la visualización principal, sino como una secundaria."
     },
     "errors": {
       "labelRequired": "El nombre es obligatorio.",
       "dateOrder": "La fecha de fin debe ser posterior a la de inicio.",
       "vacationOrder": "El fin de vacaciones debe ser igual o posterior al inicio.",
       "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación.",
-      "dateOverlap": "Este rango de fechas se traslapa con otra rotación.",
-      "firstShiftOutOfBounds": "La primera guardia debe estar dentro de las fechas de la rotación."
+      "dateOverlap": "Este rango de fechas se traslapa con otra rotación. Si es el horario de otra persona, márcalo como guardia de un amigo.",
+      "firstShiftOutOfBounds": "La primera guardia debe estar dentro de las fechas de la rotación.",
+      "secondaryLimit": "Por ahora solo puedes agregar una guardia de amigo. Edita o elimina la existente primero."
     }
   }
 }

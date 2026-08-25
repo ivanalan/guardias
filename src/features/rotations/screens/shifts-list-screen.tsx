@@ -104,6 +104,7 @@ export function ShiftsListScreen({ navigation }: Props) {
               letter: item.pattern.offset,
             })}
             color={item.color}
+            showPeopleIcon={item.role === 'secondary'}
             onPress={() => {
               navigation.navigate('RotationDetail', { periodId: item.id });
             }}

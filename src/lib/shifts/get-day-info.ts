@@ -1,3 +1,4 @@
+import { primaryPeriods } from '@/features/rotations/period-role';
 import type { RotationPeriod } from '@/features/rotations/types';
 
 import { buildShift, type ComputedShift } from './build-shift';
@@ -24,7 +25,7 @@ export function getDayInfo(
   periods: readonly RotationPeriod[],
   isoDate: string,
 ): DayInfo {
-  const period = findPeriodForDate(periods, isoDate);
+  const period = findPeriodForDate(primaryPeriods(periods), isoDate);
   if (period == null) {
     return { kind: 'free', date: isoDate };
   }

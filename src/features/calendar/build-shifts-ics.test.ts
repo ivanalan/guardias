@@ -13,6 +13,7 @@ function period(
     vacationEndDate: null,
     shiftStartTime: '07:00',
     color: '#2F69F3',
+    role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -109,5 +110,20 @@ describe('buildShiftsIcs', () => {
     const { ics } = buildShiftsIcs(p, now);
 
     expect(ics).toContain('SUMMARY:ER\\; Night\\, Floor\\\\A');
+  });
+
+  it('prefixes SUMMARY with people emoji for secondary periods', () => {
+    const p = period({
+      id: 'friend-1',
+      label: 'Maria',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      role: 'secondary',
+    });
+
+    const { ics } = buildShiftsIcs(p, now);
+
+    expect(ics).toContain('SUMMARY:👥 Maria');
   });
 });

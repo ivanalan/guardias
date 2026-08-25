@@ -94,6 +94,7 @@ function initialFormState(existing: RotationPeriod | undefined) {
       firstShiftOverride: null as string | null,
       shiftStartTime: DEFAULT_SHIFT_START_TIME,
       color: DEFAULT_ROTATION_COLOR,
+      isFriendShift: false,
       vacationEnabled: false,
       vacationStartDate: start,
       vacationEndDate: defaultVacationEndWithinPeriod(start, end),
@@ -110,6 +111,7 @@ function initialFormState(existing: RotationPeriod | undefined) {
     firstShiftOverride: existing.firstShiftDate,
     shiftStartTime: existing.shiftStartTime,
     color: existing.color,
+    isFriendShift: existing.role === 'secondary',
     vacationEnabled:
       existing.vacationStartDate != null && existing.vacationEndDate != null,
     vacationStartDate: vacationStart,
@@ -124,7 +126,11 @@ function isLabelError(error: RotationValidationError | null): boolean {
 }
 
 function isPeriodError(error: RotationValidationError | null): boolean {
-  return error === 'dateOrder' || error === 'dateOverlap';
+  return (
+    error === 'dateOrder' ||
+    error === 'dateOverlap' ||
+    error === 'secondaryLimit'
+  );
 }
 
 function isScheduleError(error: RotationValidationError | null): boolean {
@@ -158,6 +164,7 @@ function isFormDirty(snapshot: FormSnapshot, current: FormSnapshot): boolean {
     snapshot.firstShiftOverride !== current.firstShiftOverride ||
     snapshot.shiftStartTime !== current.shiftStartTime ||
     snapshot.color !== current.color ||
+    snapshot.isFriendShift !== current.isFriendShift ||
     snapshot.vacationEnabled !== current.vacationEnabled ||
     snapshot.vacationStartDate !== current.vacationStartDate ||
     snapshot.vacationEndDate !== current.vacationEndDate
@@ -196,6 +203,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
   );
   const [shiftStartTime, setShiftStartTime] = useState(initial.shiftStartTime);
   const [color, setColor] = useState(initial.color);
+  const [isFriendShift, setIsFriendShift] = useState(initial.isFriendShift);
   const [vacationEnabled, setVacationEnabled] = useState(
     initial.vacationEnabled,
   );
@@ -226,6 +234,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     firstShiftOverride,
     shiftStartTime,
     color,
+    isFriendShift,
     vacationEnabled,
     vacationStartDate,
     vacationEndDate,
@@ -234,6 +243,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
   isDirtyRef.current = isDirty;
 
   const offsets = OFFSETS_FOR_CYCLE[cycleDays];
+  const role = isFriendShift ? 'secondary' : 'primary';
+  const effectiveVacationEnabled = isFriendShift ? false : vacationEnabled;
 
   const defaultFirstShift = getDefaultFirstShiftDate(startDate, endDate, {
     cycleDays,
@@ -255,10 +266,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
     // Use the visible selection so the picker calendar phases from the tapped day.
     // Save still uses persistedFirstShift (null when selection matches letter default).
     firstShiftDate: firstShiftOverride,
-    vacationStartDate: vacationEnabled ? vacationStartDate : null,
-    vacationEndDate: vacationEnabled ? vacationEndDate : null,
+    vacationStartDate: effectiveVacationEnabled ? vacationStartDate : null,
+    vacationEndDate: effectiveVacationEnabled ? vacationEndDate : null,
     shiftStartTime,
     color,
+    role,
     createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
   };
 
@@ -427,6 +439,20 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setError(null);
   }
 
+  function onFriendToggle(enabled: boolean) {
+    setIsFriendShift(enabled);
+    if (enabled) {
+      setVacationEnabled(false);
+      if (
+        activePicker === 'vacationStart' ||
+        activePicker === 'vacationEnd'
+      ) {
+        setActivePicker(null);
+      }
+    }
+    setError(null);
+  }
+
   function save() {
     if (editingId != null && existing == null) {
       return;
@@ -438,7 +464,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
         startDate,
         endDate,
         firstShiftDate: persistedFirstShift,
-        vacationEnabled,
+        role,
+        vacationEnabled: effectiveVacationEnabled,
         vacationStartDate,
         vacationEndDate,
       },
@@ -450,8 +477,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
       return;
     }
 
-    const vacationStart = vacationEnabled ? vacationStartDate : null;
-    const vacationEnd = vacationEnabled ? vacationEndDate : null;
+    const vacationStart = effectiveVacationEnabled ? vacationStartDate : null;
+    const vacationEnd = effectiveVacationEnabled ? vacationEndDate : null;
 
     if (editingId != null && existing != null) {
       updatePeriod({
@@ -465,6 +492,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         vacationEndDate: vacationEnd,
         shiftStartTime,
         color,
+        role,
       });
     } else {
       addPeriod({
@@ -478,6 +506,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         vacationEndDate: vacationEnd,
         shiftStartTime,
         color,
+        role,
         createdAt: new Date().toISOString(),
       });
     }
@@ -508,6 +537,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     firstShiftOverride,
     shiftStartTime,
     color,
+    isFriendShift,
     vacationEnabled,
     vacationStartDate,
     vacationEndDate,
@@ -682,69 +712,100 @@ export function AddRotationScreen({ navigation, route }: Props) {
           ) : null}
         </View>
 
-        <View className="w-full flex-row items-center justify-between py-1">
-          <Text
-            className="font-mono text-sm"
-            style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
-          >
-            {t('shifts.form.vacation')}
-          </Text>
-          <Switch
-            value={vacationEnabled}
-            onValueChange={onVacationToggle}
-            trackColor={{ false: colors.switchTrackOff, true: colors.brand }}
-            thumbColor={colors.bg1}
-          />
-        </View>
-        {vacationEnabled ? (
-          <View>
-            <View className="flex-row gap-3">
-              <DateField
-                label={t('shifts.form.vacationStart')}
-                valueLabel={formatFormDate(vacationStartDate, language)}
-                selected={activePicker === 'vacationStart'}
-                onPress={() => togglePicker('vacationStart')}
-                fill
-              />
-              <DateField
-                label={t('shifts.form.vacationEnd')}
-                valueLabel={formatFormDate(vacationEndDate, language)}
-                selected={activePicker === 'vacationEnd'}
-                onPress={() => togglePicker('vacationEnd')}
-                fill
+        {!isFriendShift ? (
+          <>
+            <View className="w-full flex-row items-center justify-between py-1">
+              <Text
+                className="font-mono text-sm"
+                style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
+              >
+                {t('shifts.form.vacation')}
+              </Text>
+              <Switch
+                value={vacationEnabled}
+                onValueChange={onVacationToggle}
+                trackColor={{ false: colors.switchTrackOff, true: colors.brand }}
+                thumbColor={colors.bg1}
               />
             </View>
-            {activePicker === 'vacationStart' ? (
-              <PickerSlot>
-                <DateTimePicker
-                  value={parseISO(vacationStartDate)}
-                  mode="date"
-                  display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
-                  minimumDate={parseISO(startDate)}
-                  maximumDate={parseISO(endDate)}
-                  onValueChange={onVacationStartValueChange}
-                  onDismiss={dismissPicker}
-                />
-              </PickerSlot>
+            {vacationEnabled ? (
+              <View>
+                <View className="flex-row gap-3">
+                  <DateField
+                    label={t('shifts.form.vacationStart')}
+                    valueLabel={formatFormDate(vacationStartDate, language)}
+                    selected={activePicker === 'vacationStart'}
+                    onPress={() => togglePicker('vacationStart')}
+                    fill
+                  />
+                  <DateField
+                    label={t('shifts.form.vacationEnd')}
+                    valueLabel={formatFormDate(vacationEndDate, language)}
+                    selected={activePicker === 'vacationEnd'}
+                    onPress={() => togglePicker('vacationEnd')}
+                    fill
+                  />
+                </View>
+                {activePicker === 'vacationStart' ? (
+                  <PickerSlot>
+                    <DateTimePicker
+                      value={parseISO(vacationStartDate)}
+                      mode="date"
+                      display={
+                        process.env.EXPO_OS === 'ios' ? 'inline' : 'default'
+                      }
+                      minimumDate={parseISO(startDate)}
+                      maximumDate={parseISO(endDate)}
+                      onValueChange={onVacationStartValueChange}
+                      onDismiss={dismissPicker}
+                    />
+                  </PickerSlot>
+                ) : null}
+                {activePicker === 'vacationEnd' ? (
+                  <PickerSlot>
+                    <DateTimePicker
+                      value={parseISO(vacationEndDate)}
+                      mode="date"
+                      display={
+                        process.env.EXPO_OS === 'ios' ? 'inline' : 'default'
+                      }
+                      minimumDate={parseISO(vacationStartDate)}
+                      maximumDate={parseISO(endDate)}
+                      onValueChange={onVacationEndValueChange}
+                      onDismiss={dismissPicker}
+                    />
+                  </PickerSlot>
+                ) : null}
+              </View>
             ) : null}
-            {activePicker === 'vacationEnd' ? (
-              <PickerSlot>
-                <DateTimePicker
-                  value={parseISO(vacationEndDate)}
-                  mode="date"
-                  display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
-                  minimumDate={parseISO(vacationStartDate)}
-                  maximumDate={parseISO(endDate)}
-                  onValueChange={onVacationEndValueChange}
-                  onDismiss={dismissPicker}
-                />
-              </PickerSlot>
+            {isVacationError(error) ? (
+              <FieldError message={t(`shifts.errors.${error}`)} />
             ) : null}
+          </>
+        ) : null}
+
+        <View className="w-full gap-2 py-1">
+          <View className="w-full flex-row items-center justify-between">
+            <Text
+              className="font-mono text-sm"
+              style={{ ...ANDROID_TEXT_WIDTH_BUMP, color: colors.text }}
+            >
+              {t('shifts.form.friendShift')}
+            </Text>
+            <Switch
+              value={isFriendShift}
+              onValueChange={onFriendToggle}
+              trackColor={{ false: colors.switchTrackOff, true: colors.brand }}
+              thumbColor={colors.bg1}
+            />
           </View>
-        ) : null}
-        {isVacationError(error) ? (
-          <FieldError message={t(`shifts.errors.${error}`)} />
-        ) : null}
+          <Text
+            className="font-mono text-xs"
+            style={{ color: colors.textMuted }}
+          >
+            {t('shifts.form.friendShiftHint')}
+          </Text>
+        </View>
       </View>
     </ScrollView>
   );

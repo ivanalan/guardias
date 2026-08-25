@@ -1,5 +1,6 @@
 import { addDays, differenceInCalendarDays, format } from 'date-fns';
 
+import { primaryPeriods } from '@/features/rotations/period-role';
 import type { RotationPeriod } from '@/features/rotations/types';
 
 import { buildShift, type ComputedShift } from './build-shift';
@@ -214,20 +215,21 @@ export function getHomepageShiftStatus(
   periods: readonly RotationPeriod[],
   now: Date,
 ): HomepageShiftStatus {
-  if (periods.length === 0) {
+  const primaries = primaryPeriods(periods);
+  if (primaries.length === 0) {
     return { kind: 'idle' };
   }
 
-  const rangeEnd = periods.reduce(
+  const rangeEnd = primaries.reduce(
     (max, p) => (p.endDate > max ? p.endDate : max),
-    periods[0]!.endDate,
+    primaries[0]!.endDate,
   );
 
-  const currentShift = findActiveShift(periods, now);
-  const nextShift = findNextShift(periods, now, rangeEnd);
+  const currentShift = findActiveShift(primaries, now);
+  const nextShift = findNextShift(primaries, now, rangeEnd);
 
   if (currentShift !== null) {
-    const period = periodById(periods, currentShift.rotationPeriodId);
+    const period = periodById(primaries, currentShift.rotationPeriodId);
     // Scope "next" to this period only — homepage cards are per-rotation.
     const nextInPeriod = findNextShift([period], now, period.endDate);
     return {
@@ -241,7 +243,7 @@ export function getHomepageShiftStatus(
   }
 
   if (nextShift !== null) {
-    const period = periodById(periods, nextShift.rotationPeriodId);
+    const period = periodById(primaries, nextShift.rotationPeriodId);
     return {
       kind: 'between_shifts',
       period,

@@ -17,10 +17,22 @@ function period(
     vacationEndDate: null,
     shiftStartTime: '07:00',
     color: '#2F69F3',
+    role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
 }
+
+const baseInput = {
+  label: 'ER',
+  startDate: '2026-07-01',
+  endDate: '2026-09-30',
+  firstShiftDate: null as string | null,
+  role: 'primary' as const,
+  vacationEnabled: false,
+  vacationStartDate: '2026-07-01',
+  vacationEndDate: '2026-07-01',
+};
 
 describe('datesOverlap', () => {
   it('detects inclusive overlap on a shared boundary day', () => {
@@ -40,17 +52,46 @@ describe('findOverlappingPeriod', () => {
   const periods = [
     period({ id: '1', startDate: '2026-07-01', endDate: '2026-09-30' }),
     period({ id: '2', startDate: '2026-10-01', endDate: '2026-12-31' }),
+    period({
+      id: 'friend',
+      startDate: '2026-07-01',
+      endDate: '2026-09-30',
+      role: 'secondary',
+    }),
   ];
 
-  it('finds an overlapping period', () => {
+  it('finds an overlapping period of the same role', () => {
     expect(
-      findOverlappingPeriod('2026-09-15', '2026-10-15', periods)?.id,
+      findOverlappingPeriod(
+        '2026-09-15',
+        '2026-10-15',
+        periods,
+        'primary',
+      )?.id,
     ).toBe('1');
   });
 
   it('ignores the excluded id (edit self)', () => {
     expect(
-      findOverlappingPeriod('2026-07-01', '2026-09-30', periods, '1'),
+      findOverlappingPeriod(
+        '2026-07-01',
+        '2026-09-30',
+        periods,
+        'primary',
+        '1',
+      ),
+    ).toBeUndefined();
+  });
+
+  it('ignores secondary when checking primary overlap', () => {
+    expect(
+      findOverlappingPeriod(
+        '2026-07-01',
+        '2026-09-30',
+        periods,
+        'primary',
+        '1',
+      ),
     ).toBeUndefined();
   });
 });
@@ -60,19 +101,104 @@ describe('validatePeriodForm', () => {
     period({ id: '1', startDate: '2026-07-01', endDate: '2026-09-30' }),
   ];
 
-  it('returns dateOverlap when ranges conflict', () => {
+  it('returns dateOverlap when primary ranges conflict', () => {
     expect(
       validatePeriodForm(
         {
-          label: 'ER',
+          ...baseInput,
           startDate: '2026-09-01',
           endDate: '2026-10-01',
-          firstShiftDate: null,
-          vacationEnabled: false,
-          vacationStartDate: '2026-09-01',
-          vacationEndDate: '2026-09-01',
         },
         periods,
+      ),
+    ).toBe('dateOverlap');
+  });
+
+  it('allows secondary overlapping a primary', () => {
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
+          label: 'Maria',
+          role: 'secondary',
+          startDate: '2026-07-01',
+          endDate: '2026-09-30',
+        },
+        periods,
+      ),
+    ).toBeNull();
+  });
+
+  it('returns secondaryLimit when another secondary exists', () => {
+    const withFriend = [
+      ...periods,
+      period({
+        id: 'friend',
+        startDate: '2026-01-01',
+        endDate: '2026-03-31',
+        role: 'secondary',
+      }),
+    ];
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
+          label: 'Other',
+          role: 'secondary',
+          startDate: '2026-04-01',
+          endDate: '2026-06-30',
+        },
+        withFriend,
+      ),
+    ).toBe('secondaryLimit');
+  });
+
+  it('allows editing the existing secondary', () => {
+    const withFriend = [
+      ...periods,
+      period({
+        id: 'friend',
+        startDate: '2026-01-01',
+        endDate: '2026-03-31',
+        role: 'secondary',
+      }),
+    ];
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
+          label: 'Maria',
+          role: 'secondary',
+          startDate: '2026-01-01',
+          endDate: '2026-03-31',
+        },
+        withFriend,
+        'friend',
+      ),
+    ).toBeNull();
+  });
+
+  it('rejects demoting secondary to primary when overlapping a primary', () => {
+    const withFriend = [
+      ...periods,
+      period({
+        id: 'friend',
+        startDate: '2026-07-01',
+        endDate: '2026-09-30',
+        role: 'secondary',
+      }),
+    ];
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
+          label: 'Maria',
+          role: 'primary',
+          startDate: '2026-07-01',
+          endDate: '2026-09-30',
+        },
+        withFriend,
+        'friend',
       ),
     ).toBe('dateOverlap');
   });
@@ -81,13 +207,8 @@ describe('validatePeriodForm', () => {
     expect(
       validatePeriodForm(
         {
+          ...baseInput,
           label: 'Internal medicine',
-          startDate: '2026-07-01',
-          endDate: '2026-09-30',
-          firstShiftDate: null,
-          vacationEnabled: false,
-          vacationStartDate: '2026-07-01',
-          vacationEndDate: '2026-07-01',
         },
         periods,
         '1',
@@ -99,13 +220,8 @@ describe('validatePeriodForm', () => {
     expect(
       validatePeriodForm(
         {
-          label: 'ER',
-          startDate: '2026-07-01',
-          endDate: '2026-09-30',
+          ...baseInput,
           firstShiftDate: '2026-06-30',
-          vacationEnabled: false,
-          vacationStartDate: '2026-07-01',
-          vacationEndDate: '2026-07-01',
         },
         periods,
         '1',
@@ -117,13 +233,8 @@ describe('validatePeriodForm', () => {
     expect(
       validatePeriodForm(
         {
-          label: 'ER',
-          startDate: '2026-07-01',
-          endDate: '2026-09-30',
+          ...baseInput,
           firstShiftDate: '2026-07-02',
-          vacationEnabled: false,
-          vacationStartDate: '2026-07-01',
-          vacationEndDate: '2026-07-01',
         },
         periods,
         '1',

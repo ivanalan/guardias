@@ -23,6 +23,12 @@ export const DEFAULT_PATTERN: RotationPattern = {
 /** Default local time each 24h shift starts (`HH:mm`). */
 export const DEFAULT_SHIFT_START_TIME = '07:00';
 
+/**
+ * `primary` drives Home, free weekends, and calendar fills.
+ * `secondary` (friend/spouse) is calendar dots only.
+ */
+export type RotationPeriodRole = 'primary' | 'secondary';
+
 /** Rotation period fields for the Shifts list (and form save). */
 export type RotationPeriod = {
   id: string;
@@ -45,6 +51,8 @@ export type RotationPeriod = {
   shiftStartTime: string;
   /** Calendar mark color for shift days (`#RRGGBB`). */
   color: string;
+  /** Whose schedule this period represents. */
+  role: RotationPeriodRole;
   /** ISO datetime when the period was created. */
   createdAt: string;
 };

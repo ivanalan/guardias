@@ -2,7 +2,10 @@ import { addDays, format, getDay } from 'date-fns';
 
 import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 import { BORDER_RADIUS } from '../../theme/layout';
-import type { CalendarLegendFilter } from './build-marked-dates';
+import {
+  EMPTY_CALENDAR_FILTER,
+  type CalendarLegendFilterState,
+} from './build-marked-dates';
 import type { CalendarMarkColors } from './calendar-mark-colors';
 
 export const CELL_SIZE = 36;
@@ -15,6 +18,7 @@ export const DAY_MARKER_INNER_RADIUS = Math.max(
   DAY_MARKER_RADIUS - TODAY_INNER_GAP - TODAY_BORDER_WIDTH,
   4,
 );
+export const SECONDARY_DOT_SIZE = 5;
 
 export const dayMarkerStyle = {
   borderCurve: 'continuous' as const,
@@ -28,16 +32,16 @@ export type DayMarkKind = 'shift' | 'vacation' | 'freeWeekend' | 'none';
 
 export type CalendarDayMarkContext = {
   shiftColorByDate: ReadonlyMap<string, string>;
+  secondaryShiftColorByDate: ReadonlyMap<string, string>;
   freeWeekendSet: ReadonlySet<string>;
   vacationSet: ReadonlySet<string>;
-  filter: CalendarLegendFilter;
+  filter: CalendarLegendFilterState;
   todayIso: string;
   /** When set, non-anchor shift days render at DIM_OPACITY (first-shift picker). */
   patternAnchorDate?: string | null;
 };
 
 export type CalendarDayMarkDimming = {
-  dimShifts: boolean;
   dimFreeWeekends: boolean;
   dimVacations: boolean;
 };
@@ -55,13 +59,101 @@ export function withAlpha(hex: string, alpha: number): string {
 }
 
 export function getMarkDimming(
-  filter: CalendarLegendFilter,
+  filter: CalendarLegendFilterState,
 ): CalendarDayMarkDimming {
+  const active = filter.size > 0;
   return {
-    dimShifts: filter != null && filter !== 'shifts',
-    dimFreeWeekends: filter != null && filter !== 'freeWeekends',
-    dimVacations: filter != null && filter !== 'vacation',
+    dimFreeWeekends: active && !filter.has('freeWeekends'),
+    dimVacations: active && !filter.has('vacation'),
   };
+}
+
+/**
+ * Dim primary shift fills when a filter is active and this day is not a
+ * selected match. With both `shifts` and `secondaryShifts` selected, only
+ * shared on-call days stay bright (AND).
+ */
+export function isPrimaryShiftDimmed(
+  filter: CalendarLegendFilterState,
+  hasPrimary: boolean,
+  hasSecondary: boolean,
+): boolean {
+  if (filter.size === 0) {
+    return false;
+  }
+  if (!filter.has('shifts')) {
+    return true;
+  }
+  if (filter.has('secondaryShifts')) {
+    return !(hasPrimary && hasSecondary);
+  }
+  return false;
+}
+
+/**
+ * Dim secondary dots when a filter is active and this day is not a selected
+ * match. With both shift filters selected, only shared days stay bright.
+ */
+export function isSecondaryShiftDimmed(
+  filter: CalendarLegendFilterState,
+  hasPrimary: boolean,
+  hasSecondary: boolean,
+): boolean {
+  if (filter.size === 0) {
+    return false;
+  }
+  if (!filter.has('secondaryShifts')) {
+    return true;
+  }
+  if (filter.has('shifts')) {
+    return !(hasPrimary && hasSecondary);
+  }
+  return false;
+}
+
+export type DayFilterMatchInput = {
+  hasPrimary: boolean;
+  hasSecondary: boolean;
+  markKind: DayMarkKind;
+};
+
+/**
+ * Whether this day matches any selected legend filter (OR across categories;
+ * shifts + secondaryShifts still AND for shared days).
+ */
+export function dayMatchesActiveFilter(
+  filter: CalendarLegendFilterState,
+  { hasPrimary, hasSecondary, markKind }: DayFilterMatchInput,
+): boolean {
+  if (filter.size === 0) {
+    return true;
+  }
+  if (filter.has('shifts')) {
+    if (filter.has('secondaryShifts')) {
+      if (hasPrimary && hasSecondary) {
+        return true;
+      }
+    } else if (hasPrimary) {
+      return true;
+    }
+  } else if (filter.has('secondaryShifts') && hasSecondary) {
+    return true;
+  }
+  if (filter.has('freeWeekends') && markKind === 'freeWeekend') {
+    return true;
+  }
+  if (filter.has('vacation') && markKind === 'vacation') {
+    return true;
+  }
+  return false;
+}
+
+/** Dim day numbers when a filter is active and this day is not a match. */
+export function isDayLabelDimmed(
+  filter: CalendarLegendFilterState,
+  input: DayFilterMatchInput,
+): boolean {
+  return filter.size > 0 && !dayMatchesActiveFilter(filter, input);
 }
 
 /** `YYYY-MM-DD` comparison; today is not past. */
@@ -116,20 +208,26 @@ export function buildCalendarDayMarkContext(
   shiftMarks: readonly { date: string; color: string }[],
   freeWeekendDates: readonly string[],
   vacationDates: readonly string[],
-  filter: CalendarLegendFilter,
+  filter: CalendarLegendFilterState,
   todayIso: string,
   patternAnchorDate?: string | null,
+  secondaryShiftMarks: readonly { date: string; color: string }[] = [],
 ): CalendarDayMarkContext {
   const shiftColorByDate = new Map<string, string>();
   for (const { date, color } of shiftMarks) {
     shiftColorByDate.set(date, color);
   }
+  const secondaryShiftColorByDate = new Map<string, string>();
+  for (const { date, color } of secondaryShiftMarks) {
+    secondaryShiftColorByDate.set(date, color);
+  }
 
   return {
     shiftColorByDate,
+    secondaryShiftColorByDate,
     freeWeekendSet: new Set(freeWeekendDates),
     vacationSet: new Set(vacationDates),
-    filter,
+    filter: filter ?? EMPTY_CALENDAR_FILTER,
     todayIso,
     patternAnchorDate,
   };

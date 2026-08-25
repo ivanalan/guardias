@@ -19,7 +19,9 @@ import type { RotationPeriod } from '../../rotations/types';
 import type { CalendarStackParamList } from '../calendar-stack';
 import {
   buildMarkedDates,
-  type CalendarLegendFilter,
+  EMPTY_CALENDAR_FILTER,
+  removeLegendFilter,
+  type CalendarLegendFilterState,
 } from '../build-marked-dates';
 import { buildCalendarDayMarkContext } from '../calendar-day-marker';
 import { CALENDAR_WEEK_ROW_GAP } from '../calendar-day-marker';
@@ -60,7 +62,9 @@ export function CalendarScreen({ navigation }: Props) {
   // Anchor for CalendarList remount — must not update while scrolling.
   const [scrollAnchor, setScrollAnchor] = useState(visibleMonth);
   const [listSize, setListSize] = useState<ListSize | null>(null);
-  const [filter, setFilter] = useState<CalendarLegendFilter>(null);
+  const [filter, setFilter] = useState<CalendarLegendFilterState>(
+    EMPTY_CALENDAR_FILTER,
+  );
   const [sharing, setSharing] = useState(false);
   const [pickerVisible, setPickerVisible] = useState(false);
   // iOS cannot present the share sheet while the picker Modal is dismissing.
@@ -76,12 +80,20 @@ export function CalendarScreen({ navigation }: Props) {
     () => resolveShiftMarks(monthInputs.shiftMarks, colors),
     [monthInputs.shiftMarks, colors],
   );
+  const resolvedSecondaryShiftMarks = useMemo(
+    () => resolveShiftMarks(monthInputs.secondaryShiftMarks, colors),
+    [monthInputs.secondaryShiftMarks, colors],
+  );
   const resolvedShiftColor = resolveRotationColor(monthInputs.shiftColor, colors);
+  const resolvedSecondaryShiftColor =
+    monthInputs.secondaryShiftColor != null
+      ? resolveRotationColor(monthInputs.secondaryShiftColor, colors)
+      : null;
   const markedDates = buildMarkedDates(
     resolvedShiftMarks,
     monthInputs.freeWeekendDates,
     monthInputs.vacationDates,
-    filter,
+    resolvedSecondaryShiftMarks,
   );
   const todayIso = format(new Date(), 'yyyy-MM-dd');
   const markContext = useMemo(
@@ -92,9 +104,12 @@ export function CalendarScreen({ navigation }: Props) {
         monthInputs.vacationDates,
         filter,
         todayIso,
+        null,
+        resolvedSecondaryShiftMarks,
       ),
     [
       resolvedShiftMarks,
+      resolvedSecondaryShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
       filter,
@@ -107,15 +122,24 @@ export function CalendarScreen({ navigation }: Props) {
   );
 
   useEffect(() => {
-    if (filter === 'vacation' && monthInputs.vacationDayCount === 0) {
-      setFilter(null);
+    if (monthInputs.vacationDayCount === 0 && filter.has('vacation')) {
+      setFilter((prev) => removeLegendFilter(prev, 'vacation'));
     }
   }, [filter, monthInputs.vacationDayCount]);
+
+  useEffect(() => {
+    if (
+      monthInputs.secondaryShiftDayCount === 0 &&
+      filter.has('secondaryShifts')
+    ) {
+      setFilter((prev) => removeLegendFilter(prev, 'secondaryShifts'));
+    }
+  }, [filter, monthInputs.secondaryShiftDayCount]);
 
   const onViewModeChange = (mode: CalendarViewMode) => {
     if (mode === 'scroll') {
       setScrollAnchor(visibleMonth);
-      setFilter(null);
+      setFilter(EMPTY_CALENDAR_FILTER);
     }
     setViewMode(mode);
   };
@@ -321,9 +345,13 @@ export function CalendarScreen({ navigation }: Props) {
         {viewMode === 'month' ? (
           <CalendarMonthLegend
             shiftDayCount={monthInputs.shiftDayCount}
+            secondaryShiftDayCount={monthInputs.secondaryShiftDayCount}
             freeWeekendCount={monthInputs.freeWeekendCount}
             vacationDayCount={monthInputs.vacationDayCount}
             shiftColor={resolvedShiftColor}
+            primaryLabel={monthInputs.primaryLabel}
+            secondaryShiftColor={resolvedSecondaryShiftColor}
+            secondaryLabel={monthInputs.secondaryLabel}
             filter={filter}
             onFilterChange={setFilter}
           />

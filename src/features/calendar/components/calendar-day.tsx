@@ -9,6 +9,7 @@ import {
   CALENDAR_WEEK_ROW_GAP,
   CELL_SIZE,
   DAY_MARKER_INNER_RADIUS,
+  SECONDARY_DOT_SIZE,
   TODAY_BORDER_WIDTH,
   TODAY_INNER_GAP,
   type CalendarDayMarkContext,
@@ -17,8 +18,11 @@ import {
   getDayMarkKind,
   getMarkDimming,
   isCalendarDatePast,
+  isDayLabelDimmed,
   isFreeWeekendSpanEnd,
   isFreeWeekendSpanStart,
+  isPrimaryShiftDimmed,
+  isSecondaryShiftDimmed,
   markColorAlpha,
   resolveInkTextColor,
   resolveShiftColor,
@@ -27,6 +31,7 @@ import {
   resolveVacationTextColor,
   resolveWeekendBackground,
   shiftMarkColorAlpha,
+  withAlpha,
 } from '../calendar-day-marker';
 import { calendarMarkColorsFor } from '../calendar-mark-colors';
 
@@ -110,6 +115,33 @@ function CalendarDayInner({
   const markKind = getDayMarkKind(iso, markContext);
   const dimming = getMarkDimming(markContext.filter);
   const isPast = isCalendarDatePast(iso, markContext.todayIso);
+  const hasPrimary = markContext.shiftColorByDate.has(iso);
+  const secondaryColor = markContext.secondaryShiftColorByDate.get(iso);
+  const hasSecondary = secondaryColor != null;
+  const primaryDimmed = isPrimaryShiftDimmed(
+    markContext.filter,
+    hasPrimary,
+    hasSecondary,
+  );
+  const secondaryDimmed = isSecondaryShiftDimmed(
+    markContext.filter,
+    hasPrimary,
+    hasSecondary,
+  );
+  const labelDimmed = isDayLabelDimmed(markContext.filter, {
+    hasPrimary,
+    hasSecondary,
+    markKind,
+  });
+  const labelAlpha = markColorAlpha(labelDimmed, isPast);
+  const secondaryDot =
+    !inactive && secondaryColor != null ? (
+      <SecondaryDot
+        color={secondaryColor}
+        dimmed={secondaryDimmed}
+        isPast={isPast}
+      />
+    ) : null;
 
   const handlePress = () => {
     if (date != null) {
@@ -132,11 +164,7 @@ function CalendarDayInner({
     !inactive
   ) {
     // Background comes from Saturday’s 200%-wide pill; keep this cell above it.
-    const weekendAlpha = markColorAlpha(
-      dimming.dimFreeWeekends,
-      isPast,
-    );
-    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, labelAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -154,13 +182,14 @@ function CalendarDayInner({
               label={label}
               textColor={textColor}
               inkColor={colors.brand}
+              secondaryDot={secondaryDot}
             />
           ) : (
-            <View style={dayMarkerBoxStyle}>
-              <Text className="font-mono text-sm" style={{ color: textColor }}>
-                {label}
-              </Text>
-            </View>
+            <DayLabelBox
+              textColor={textColor}
+              label={label}
+              secondaryDot={secondaryDot}
+            />
           )}
         </Pressable>
       </View>
@@ -175,12 +204,9 @@ function CalendarDayInner({
       addCalendarDays(iso, 1),
       markContext.todayIso,
     );
-    const weekendAlpha = markColorAlpha(
-      dimming.dimFreeWeekends,
-      weekendPast,
-    );
+    const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, weekendPast);
     const weekendBg = resolveWeekendBackground(markColors, weekendAlpha);
-    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, labelAlpha);
 
     return (
       <View style={daySlotStyle}>
@@ -193,23 +219,23 @@ function CalendarDayInner({
           className="active:opacity-80"
           style={weekendSpanPressableStyle}
         >
-          <View
-            pointerEvents="none"
-            style={weekendSpanPillStyle(weekendBg)}
-          />
+          <View pointerEvents="none" style={weekendSpanPillStyle(weekendBg)} />
           {isToday ? (
             <View style={{ zIndex: 1 }}>
               <TodayOutline
                 label={label}
                 textColor={textColor}
                 inkColor={colors.brand}
+                secondaryDot={secondaryDot}
               />
             </View>
           ) : (
-            <View style={[dayMarkerBoxStyle, { zIndex: 1 }]}>
-              <Text className="font-mono text-sm" style={{ color: textColor }}>
-                {label}
-              </Text>
+            <View style={{ zIndex: 1 }}>
+              <DayLabelBox
+                textColor={textColor}
+                label={label}
+                secondaryDot={secondaryDot}
+              />
             </View>
           )}
         </Pressable>
@@ -220,13 +246,13 @@ function CalendarDayInner({
   if (markKind === 'shift' && !inactive) {
     const shiftColor = markContext.shiftColorByDate.get(iso)!;
     const shiftAlpha = shiftMarkColorAlpha(
-      dimming.dimShifts,
+      primaryDimmed,
       isPast,
       iso,
       markContext.patternAnchorDate,
     );
     const backgroundColor = resolveShiftColor(shiftColor, shiftAlpha);
-    const textColor = resolveShiftTextColor(markColors, shiftAlpha);
+    const textColor = resolveShiftTextColor(markColors, labelAlpha);
     const isPatternAnchor = markContext.patternAnchorDate === iso;
 
     return (
@@ -242,21 +268,15 @@ function CalendarDayInner({
             backgroundColor={backgroundColor}
             textColor={textColor}
             inkColor={colors.brand}
+            secondaryDot={secondaryDot}
           />
         ) : (
-          <View
-            className="items-center justify-center"
-            style={{
-              width: CELL_SIZE,
-              height: CELL_SIZE,
-              backgroundColor,
-              ...dayMarkerStyle,
-            }}
-          >
-            <Text className="font-mono text-sm" style={{ color: textColor }}>
-              {label}
-            </Text>
-          </View>
+          <FilledDayMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+            secondaryDot={secondaryDot}
+          />
         )}
       </DayShell>
     );
@@ -264,8 +284,11 @@ function CalendarDayInner({
 
   if (markKind === 'vacation' && !inactive) {
     const vacationAlpha = markColorAlpha(dimming.dimVacations, isPast);
-    const backgroundColor = resolveVacationBackground(markColors, vacationAlpha);
-    const textColor = resolveVacationTextColor(markColors, vacationAlpha);
+    const backgroundColor = resolveVacationBackground(
+      markColors,
+      vacationAlpha,
+    );
+    const textColor = resolveVacationTextColor(markColors, labelAlpha);
 
     return (
       <DayShell
@@ -280,21 +303,15 @@ function CalendarDayInner({
             backgroundColor={backgroundColor}
             textColor={textColor}
             inkColor={colors.brand}
+            secondaryDot={secondaryDot}
           />
         ) : (
-          <View
-            className="items-center justify-center"
-            style={{
-              width: CELL_SIZE,
-              height: CELL_SIZE,
-              backgroundColor,
-              ...dayMarkerStyle,
-            }}
-          >
-            <Text className="font-mono text-sm" style={{ color: textColor }}>
-              {label}
-            </Text>
-          </View>
+          <FilledDayMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+            secondaryDot={secondaryDot}
+          />
         )}
       </DayShell>
     );
@@ -303,7 +320,7 @@ function CalendarDayInner({
   if (markKind === 'freeWeekend' && !inactive) {
     const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, isPast);
     const backgroundColor = resolveWeekendBackground(markColors, weekendAlpha);
-    const textColor = resolveShiftTextColor(markColors, weekendAlpha);
+    const textColor = resolveShiftTextColor(markColors, labelAlpha);
 
     return (
       <DayShell
@@ -318,27 +335,25 @@ function CalendarDayInner({
             backgroundColor={backgroundColor}
             textColor={textColor}
             inkColor={colors.brand}
+            secondaryDot={secondaryDot}
           />
         ) : (
-          <View
-            className="items-center justify-center"
-            style={{
-              width: CELL_SIZE,
-              height: CELL_SIZE,
-              backgroundColor,
-              ...dayMarkerStyle,
-            }}
-          >
-            <Text className="font-mono text-sm" style={{ color: textColor }}>
-              {label}
-            </Text>
-          </View>
+          <FilledDayMarker
+            label={label}
+            backgroundColor={backgroundColor}
+            textColor={textColor}
+            secondaryDot={secondaryDot}
+          />
         )}
       </DayShell>
     );
   }
 
-  const textColor = resolveInkTextColor(colors.text, inactive);
+  const textColor = inactive
+    ? resolveInkTextColor(colors.text, true)
+    : labelAlpha < 1
+      ? withAlpha(colors.text, labelAlpha)
+      : colors.text;
 
   return (
     <DayShell
@@ -352,16 +367,14 @@ function CalendarDayInner({
           label={label}
           textColor={textColor}
           inkColor={colors.brand}
+          secondaryDot={secondaryDot}
         />
       ) : (
-        <View
-          className="items-center justify-center"
-          style={{ width: CELL_SIZE, height: CELL_SIZE }}
-        >
-          <Text className="font-mono text-sm" style={{ color: textColor }}>
-            {label}
-          </Text>
-        </View>
+        <DayLabelBox
+          textColor={textColor}
+          label={label}
+          secondaryDot={inactive ? null : secondaryDot}
+        />
       )}
     </DayShell>
   );
@@ -374,6 +387,115 @@ type DayShellProps = {
   onLongPress: () => void;
   testID?: string;
 };
+
+const SECONDARY_DOT_GAP = 4;
+
+/** Keeps the day fill at CELL_SIZE and parks the friend dot fully below it. */
+function DayMarkWithSecondaryDot({
+  children,
+  secondaryDot,
+}: {
+  children: ReactNode;
+  secondaryDot: ReactNode;
+}) {
+  return (
+    <View
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        alignItems: 'center',
+      }}
+    >
+      {children}
+      {secondaryDot != null ? (
+        <View
+          pointerEvents="none"
+          style={{
+            position: 'absolute',
+            top: CELL_SIZE + SECONDARY_DOT_GAP,
+            alignItems: 'center',
+          }}
+        >
+          {secondaryDot}
+        </View>
+      ) : null}
+    </View>
+  );
+}
+
+function DayLabelBox({
+  label,
+  textColor,
+  secondaryDot,
+}: {
+  label: string;
+  textColor: string;
+  secondaryDot: ReactNode;
+}) {
+  return (
+    <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
+      <View style={dayMarkerBoxStyle}>
+        <Text className="font-mono text-sm" style={{ color: textColor }}>
+          {label}
+        </Text>
+      </View>
+    </DayMarkWithSecondaryDot>
+  );
+}
+
+function FilledDayMarker({
+  label,
+  backgroundColor,
+  textColor,
+  secondaryDot,
+}: {
+  label: string;
+  backgroundColor: string;
+  textColor: string;
+  secondaryDot: ReactNode;
+}) {
+  return (
+    <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
+      <View
+        className="items-center justify-center"
+        style={{
+          width: CELL_SIZE,
+          height: CELL_SIZE,
+          backgroundColor,
+          ...dayMarkerStyle,
+        }}
+      >
+        <Text className="font-mono text-sm" style={{ color: textColor }}>
+          {label}
+        </Text>
+      </View>
+    </DayMarkWithSecondaryDot>
+  );
+}
+
+function SecondaryDot({
+  color,
+  dimmed,
+  isPast,
+}: {
+  color: string;
+  dimmed: boolean;
+  isPast: boolean;
+}) {
+  const alpha = markColorAlpha(dimmed, isPast);
+  const backgroundColor = alpha < 1 ? withAlpha(color, alpha) : color;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        width: SECONDARY_DOT_SIZE,
+        height: SECONDARY_DOT_SIZE,
+        borderRadius: SECONDARY_DOT_SIZE / 2,
+        backgroundColor,
+      }}
+    />
+  );
+}
 
 function DayShell({
   children,
@@ -402,26 +524,30 @@ function TodayOutline({
   label,
   textColor,
   inkColor,
+  secondaryDot,
 }: {
   label: string;
   textColor: string;
   inkColor: string;
+  secondaryDot?: ReactNode;
 }) {
   return (
-    <View
-      className="items-center justify-center"
-      style={{
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        borderWidth: TODAY_BORDER_WIDTH,
-        borderColor: inkColor,
-        ...dayMarkerStyle,
-      }}
-    >
-      <Text className="font-mono text-sm" style={{ color: textColor }}>
-        {label}
-      </Text>
-    </View>
+    <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
+      <View
+        className="items-center justify-center"
+        style={{
+          width: CELL_SIZE,
+          height: CELL_SIZE,
+          borderWidth: TODAY_BORDER_WIDTH,
+          borderColor: inkColor,
+          ...dayMarkerStyle,
+        }}
+      >
+        <Text className="font-mono text-sm" style={{ color: textColor }}>
+          {label}
+        </Text>
+      </View>
+    </DayMarkWithSecondaryDot>
   );
 }
 
@@ -430,36 +556,40 @@ function TodayFilledMarker({
   backgroundColor,
   textColor,
   inkColor,
+  secondaryDot,
 }: {
   label: string;
   backgroundColor: string;
   textColor: string;
   inkColor: string;
+  secondaryDot?: ReactNode;
 }) {
   return (
-    <View
-      className="items-center justify-center"
-      style={{
-        width: CELL_SIZE,
-        height: CELL_SIZE,
-        borderWidth: TODAY_BORDER_WIDTH,
-        borderColor: inkColor,
-        padding: TODAY_INNER_GAP,
-        ...dayMarkerStyle,
-      }}
-    >
+    <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
       <View
-        className="flex-1 self-stretch items-center justify-center"
+        className="items-center justify-center"
         style={{
-          backgroundColor,
-          borderCurve: 'continuous',
-          borderRadius: DAY_MARKER_INNER_RADIUS,
+          width: CELL_SIZE,
+          height: CELL_SIZE,
+          borderWidth: TODAY_BORDER_WIDTH,
+          borderColor: inkColor,
+          padding: TODAY_INNER_GAP,
+          ...dayMarkerStyle,
         }}
       >
-        <Text className="font-mono text-sm" style={{ color: textColor }}>
-          {label}
-        </Text>
+        <View
+          className="flex-1 self-stretch items-center justify-center"
+          style={{
+            backgroundColor,
+            borderCurve: 'continuous',
+            borderRadius: DAY_MARKER_INNER_RADIUS,
+          }}
+        >
+          <Text className="font-mono text-sm" style={{ color: textColor }}>
+            {label}
+          </Text>
+        </View>
       </View>
-    </View>
+    </DayMarkWithSecondaryDot>
   );
 }

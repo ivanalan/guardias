@@ -14,6 +14,7 @@ function period(
     vacationEndDate: null,
     shiftStartTime: '07:00',
     color: '#2F69F3',
+    role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };

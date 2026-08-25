@@ -8,6 +8,11 @@ import {
 
 import { isShiftDay, listShiftDatesInRange, parseCalendarDate } from '../../lib/shifts';
 import { DEFAULT_ROTATION_COLOR } from '../rotations/rotation-colors';
+import {
+  findSecondaryPeriod,
+  primaryPeriods,
+  secondaryPeriods,
+} from '../rotations/period-role';
 import type { RotationPeriod } from '../rotations/types';
 import type { ShiftDateMark } from './build-marked-dates';
 import { countFreeWeekends, listFreeWeekendDates } from './free-weekends';
@@ -16,6 +21,7 @@ import { listVacationDatesInRange } from './vacation-dates';
 /** Shared shift / free-weekend / vacation marks for an inclusive date range. */
 export type RangeMarkInputs = {
   shiftMarks: ShiftDateMark[];
+  secondaryShiftMarks: ShiftDateMark[];
   freeWeekendDates: string[];
   vacationDates: string[];
 };
@@ -23,16 +29,55 @@ export type RangeMarkInputs = {
 /** Shared shift / free-weekend / vacation inputs for the visible calendar month. */
 export type MonthMarkInputs = RangeMarkInputs & {
   shiftDayCount: number;
+  secondaryShiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
   /** Dominant period color for shift days in this month (legend chip). */
   shiftColor: string;
+  /** Primary period label for the shifts legend chip, if any. */
+  primaryLabel: string | null;
+  /** Friend period color for the secondary legend chip, if any. */
+  secondaryShiftColor: string | null;
+  /** Friend period label for the secondary legend chip, if any. */
+  secondaryLabel: string | null;
 };
+
+const EMPTY_RANGE_MARKS: RangeMarkInputs = {
+  shiftMarks: [],
+  secondaryShiftMarks: [],
+  freeWeekendDates: [],
+  vacationDates: [],
+};
+
+function shiftMarksForPeriods(
+  periods: readonly RotationPeriod[],
+  from: string,
+  to: string,
+  paddedFrom: string,
+  paddedTo: string,
+): { marks: ShiftDateMark[]; paddedShiftSet: ReadonlySet<string> } {
+  const shiftDates = listShiftDatesInRange(periods, paddedFrom, paddedTo);
+  const paddedShiftSet = new Set(shiftDates);
+  const marks: ShiftDateMark[] = [];
+  for (const date of shiftDates) {
+    if (date < from || date > to) {
+      continue;
+    }
+    const period = periods.find((item) => isShiftDay(item, date));
+    if (period != null) {
+      marks.push({ date, color: period.color });
+    }
+  }
+  return { marks, paddedShiftSet };
+}
 
 /**
  * Shift dates, free weekends, and vacation days for `[from, to]`
  * (`YYYY-MM-DD`). Pads ±6 days when resolving shifts so free weekends on the
  * range edge (Fri before / Sun after) stay correct.
+ *
+ * Primary periods drive fills, free weekends, and vacation. Secondary periods
+ * contribute dots only (`secondaryShiftMarks`).
  */
 export function getRangeMarkInputs(
   periods: readonly RotationPeriod[],
@@ -49,7 +94,7 @@ function buildRangeMarkInputs(
 ): { marks: RangeMarkInputs; paddedShiftSet: ReadonlySet<string> } {
   if (from > to) {
     return {
-      marks: { shiftMarks: [], freeWeekendDates: [], vacationDates: [] },
+      marks: EMPTY_RANGE_MARKS,
       paddedShiftSet: new Set(),
     };
   }
@@ -59,24 +104,34 @@ function buildRangeMarkInputs(
   const paddedFrom = format(addDays(fromDate, -6), 'yyyy-MM-dd');
   const paddedTo = format(addDays(toDate, 6), 'yyyy-MM-dd');
 
-  const shiftDates = listShiftDatesInRange(periods, paddedFrom, paddedTo);
-  const paddedShiftSet = new Set(shiftDates);
-  const freeWeekendDates = listFreeWeekendDates(paddedShiftSet, from, to);
-  const vacationDates = listVacationDatesInRange(periods, from, to);
+  const primaries = primaryPeriods(periods);
+  const secondaries = secondaryPeriods(periods);
 
-  const shiftMarks: ShiftDateMark[] = [];
-  for (const date of shiftDates) {
-    if (date < from || date > to) {
-      continue;
-    }
-    const period = periods.find((item) => isShiftDay(item, date));
-    if (period != null) {
-      shiftMarks.push({ date, color: period.color });
-    }
-  }
+  const { marks: shiftMarks, paddedShiftSet } = shiftMarksForPeriods(
+    primaries,
+    from,
+    to,
+    paddedFrom,
+    paddedTo,
+  );
+  const { marks: secondaryShiftMarks } = shiftMarksForPeriods(
+    secondaries,
+    from,
+    to,
+    paddedFrom,
+    paddedTo,
+  );
+
+  const freeWeekendDates = listFreeWeekendDates(paddedShiftSet, from, to);
+  const vacationDates = listVacationDatesInRange(primaries, from, to);
 
   return {
-    marks: { shiftMarks, freeWeekendDates, vacationDates },
+    marks: {
+      shiftMarks,
+      secondaryShiftMarks,
+      freeWeekendDates,
+      vacationDates,
+    },
     paddedShiftSet,
   };
 }
@@ -95,13 +150,26 @@ export function getMonthMarkInputs(
   const to = format(monthEnd, 'yyyy-MM-dd');
 
   const { marks, paddedShiftSet } = buildRangeMarkInputs(periods, from, to);
+  const primaries = primaryPeriods(periods);
+  const secondary = findSecondaryPeriod(periods);
+  const secondaryShiftDayCount = marks.secondaryShiftMarks.length;
+  const firstShiftDate = marks.shiftMarks[0]?.date;
+  const primaryForMonth =
+    firstShiftDate != null
+      ? primaries.find((item) => isShiftDay(item, firstShiftDate))
+      : primaries[0];
 
   return {
     ...marks,
     shiftDayCount: marks.shiftMarks.length,
+    secondaryShiftDayCount,
     freeWeekendCount: countFreeWeekends(paddedShiftSet, from, to),
     vacationDayCount: marks.vacationDates.length,
     shiftColor: marks.shiftMarks[0]?.color ?? DEFAULT_ROTATION_COLOR,
+    primaryLabel: primaryForMonth?.label ?? null,
+    secondaryShiftColor:
+      marks.secondaryShiftMarks[0]?.color ?? secondary?.color ?? null,
+    secondaryLabel: secondary != null ? secondary.label : null,
   };
 }
 
@@ -122,6 +190,7 @@ export function getMarkInputsForMonthWindow(
 
   const centerStart = startOfMonth(parseCalendarDate(centerMonthDate));
   const shiftByDate = new Map<string, ShiftDateMark>();
+  const secondaryByDate = new Map<string, ShiftDateMark>();
   const freeWeekendSet = new Set<string>();
   const vacationSet = new Set<string>();
 
@@ -130,6 +199,9 @@ export function getMarkInputsForMonthWindow(
     const inputs = getMonthMarkInputs(periods, monthDate);
     for (const mark of inputs.shiftMarks) {
       shiftByDate.set(mark.date, mark);
+    }
+    for (const mark of inputs.secondaryShiftMarks) {
+      secondaryByDate.set(mark.date, mark);
     }
     for (const date of inputs.freeWeekendDates) {
       freeWeekendSet.add(date);
@@ -141,17 +213,23 @@ export function getMarkInputsForMonthWindow(
 
   return {
     shiftMarks: [...shiftByDate.values()],
+    secondaryShiftMarks: [...secondaryByDate.values()],
     freeWeekendDates: [...freeWeekendSet],
     vacationDates: [...vacationSet],
     shiftDayCount: center.shiftDayCount,
+    secondaryShiftDayCount: center.secondaryShiftDayCount,
     freeWeekendCount: center.freeWeekendCount,
     vacationDayCount: center.vacationDayCount,
     shiftColor: center.shiftColor,
+    primaryLabel: center.primaryLabel,
+    secondaryShiftColor: center.secondaryShiftColor,
+    secondaryLabel: center.secondaryLabel,
   };
 }
 
 export type MonthLegendStats = {
   shiftDayCount: number;
+  secondaryShiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
 };
@@ -161,7 +239,16 @@ export function getMonthLegendStats(
   periods: readonly RotationPeriod[],
   monthDate: string,
 ): MonthLegendStats {
-  const { shiftDayCount, freeWeekendCount, vacationDayCount } =
-    getMonthMarkInputs(periods, monthDate);
-  return { shiftDayCount, freeWeekendCount, vacationDayCount };
+  const {
+    shiftDayCount,
+    secondaryShiftDayCount,
+    freeWeekendCount,
+    vacationDayCount,
+  } = getMonthMarkInputs(periods, monthDate);
+  return {
+    shiftDayCount,
+    secondaryShiftDayCount,
+    freeWeekendCount,
+    vacationDayCount,
+  };
 }

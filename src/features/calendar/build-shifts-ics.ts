@@ -104,6 +104,9 @@ export function buildShiftsIcs(
   );
   const interval = period.pattern.cycleDays;
   const exDates = listVacationExDates(period);
+  // People emoji marks friend/secondary series in calendar apps (no Ionicons).
+  const summary =
+    period.role === 'secondary' ? `👥 ${period.label}` : period.label;
 
   lines.push(
     'BEGIN:VEVENT',
@@ -112,7 +115,7 @@ export function buildShiftsIcs(
     `DTSTART;VALUE=DATE:${formatIcsDate(firstShift)}`,
     `DTEND;VALUE=DATE:${formatIcsDate(firstExclusiveEnd)}`,
     `RRULE:FREQ=DAILY;INTERVAL=${interval};UNTIL=${formatIcsDate(period.endDate)}`,
-    `SUMMARY:${escapeIcsText(period.label)}`,
+    `SUMMARY:${escapeIcsText(summary)}`,
     'ORGANIZER:MAILTO:noreply@guardias.app',
     'STATUS:CONFIRMED',
     'TRANSP:OPAQUE',

@@ -68,6 +68,7 @@ export function FirstShiftCalendar({
     ? getMonthMarkInputs([period], currentMonth)
     : {
         shiftMarks: [],
+        secondaryShiftMarks: [],
         freeWeekendDates: [],
         vacationDates: [],
       };
@@ -82,9 +83,10 @@ export function FirstShiftCalendar({
         resolvedShiftMarks,
         monthInputs.freeWeekendDates,
         monthInputs.vacationDates,
-        null,
+        new Set(),
         todayIso,
         selectedFirstShift,
+        [],
       ),
     [
       resolvedShiftMarks,

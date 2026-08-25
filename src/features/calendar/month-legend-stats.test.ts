@@ -19,6 +19,7 @@ function period(
     vacationEndDate: null,
     shiftStartTime: '07:00',
     color: '#2F69F3',
+    role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -181,8 +182,44 @@ describe('getRangeMarkInputs', () => {
     const range = getRangeMarkInputs([july], '2026-07-01', '2026-07-31');
 
     expect(range.shiftMarks).toEqual(month.shiftMarks);
+    expect(range.secondaryShiftMarks).toEqual(month.secondaryShiftMarks);
     expect(range.freeWeekendDates).toEqual(month.freeWeekendDates);
     expect(range.vacationDates).toEqual(month.vacationDates);
+  });
+
+  it('adds secondary dots without changing primary free weekends', () => {
+    const mine = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      color: '#2F69F3',
+    });
+    const friend = period({
+      id: 'friend',
+      label: 'Maria',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      color: '#0D9488',
+      role: 'secondary',
+    });
+
+    const primaryOnly = getMonthMarkInputs([mine], '2026-07-15');
+    const both = getMonthMarkInputs([mine, friend], '2026-07-15');
+
+    expect(both.shiftMarks).toEqual(primaryOnly.shiftMarks);
+    expect(both.freeWeekendDates).toEqual(primaryOnly.freeWeekendDates);
+    expect(both.secondaryShiftDayCount).toBeGreaterThan(0);
+    expect(both.primaryLabel).toBe('Test');
+    expect(both.secondaryLabel).toBe('Maria');
+    expect(both.secondaryShiftColor).toBe('#0D9488');
+    expect(both.secondaryShiftMarks.every((m) => m.color === '#0D9488')).toBe(
+      true,
+    );
+    // Jul 1 2026 is B — friend shift, not mine (A).
+    expect(both.secondaryShiftMarks.map((m) => m.date)).toContain('2026-07-01');
+    expect(both.shiftMarks.map((m) => m.date)).not.toContain('2026-07-01');
   });
 });
 

@@ -64,12 +64,16 @@ export function ExportPeriodPickerModal({
                 <RotationPeriodRow
                   key={period.id}
                   label={period.label}
-                  meta={formatPeriodRange(
-                    period.startDate,
-                    period.endDate,
-                    language,
-                  )}
+                  meta={t('shifts.rowMeta', {
+                    range: formatPeriodRange(
+                      period.startDate,
+                      period.endDate,
+                      language,
+                    ),
+                    letter: period.pattern.offset,
+                  })}
                   color={period.color}
+                  showPeopleIcon={period.role === 'secondary'}
                   onPress={() => {
                     onSelect(period);
                   }}
