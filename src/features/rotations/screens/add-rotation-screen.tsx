@@ -71,12 +71,7 @@ function dismissRotationForm(navigation: Props['navigation']) {
 }
 
 type ActivePicker =
-  | 'start'
-  | 'end'
-  | 'shiftStart'
-  | 'vacationStart'
-  | 'vacationEnd'
-  | null;
+  'start' | 'end' | 'shiftStart' | 'vacationStart' | 'vacationEnd' | null;
 
 const FIELD_BOX_CLASS =
   'h-14 flex-row items-center rounded-xl border border-neutral-200 px-4';
@@ -443,10 +438,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     setIsFriendShift(enabled);
     if (enabled) {
       setVacationEnabled(false);
-      if (
-        activePicker === 'vacationStart' ||
-        activePicker === 'vacationEnd'
-      ) {
+      if (activePicker === 'vacationStart' || activePicker === 'vacationEnd') {
         setActivePicker(null);
       }
     }
@@ -704,7 +696,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <DateTimePicker
                 value={parseHHMM(shiftStartTime)}
                 mode="time"
-                display={process.env.EXPO_OS === 'ios' ? 'inline' : 'default'}
+                display={process.env.EXPO_OS === 'ios' ? 'spinner' : 'default'}
                 onValueChange={onShiftStartValueChange}
                 onDismiss={dismissPicker}
               />
@@ -724,7 +716,10 @@ export function AddRotationScreen({ navigation, route }: Props) {
               <Switch
                 value={vacationEnabled}
                 onValueChange={onVacationToggle}
-                trackColor={{ false: colors.switchTrackOff, true: colors.brand }}
+                trackColor={{
+                  false: colors.switchTrackOff,
+                  true: colors.brand,
+                }}
                 thumbColor={colors.bg1}
               />
             </View>
@@ -854,9 +849,7 @@ function DateField({
         style={[
           { borderCurve: 'continuous' },
           {
-            backgroundColor: selected
-              ? selection.backgroundSubtle
-              : colors.bg1,
+            backgroundColor: selected ? selection.backgroundSubtle : colors.bg1,
           },
         ]}
       >
@@ -965,11 +958,17 @@ function SectionRule({ label }: { label: string }) {
 
   return (
     <View className="flex-row items-center gap-3 py-1">
-      <View className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+      <View
+        className="h-px flex-1"
+        style={{ backgroundColor: colors.border }}
+      />
       <Text className="font-mono text-sm" style={{ color: colors.textMuted }}>
         {label}
       </Text>
-      <View className="h-px flex-1" style={{ backgroundColor: colors.border }} />
+      <View
+        className="h-px flex-1"
+        style={{ backgroundColor: colors.border }}
+      />
     </View>
   );
 }
