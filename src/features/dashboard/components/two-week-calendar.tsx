@@ -4,6 +4,7 @@ import {
   CALENDAR_WEEK_ROW_GAP,
   CELL_SIZE,
   DAY_MARKER_INNER_RADIUS,
+  SECONDARY_DOT_SIZE,
   TODAY_BORDER_WIDTH,
   TODAY_INNER_GAP,
   dayMarkerStyle,
@@ -16,6 +17,7 @@ import {
   resolveVacationBackground,
   resolveVacationTextColor,
   resolveWeekendBackground,
+  withAlpha,
   type DayMarkKind,
 } from '../../calendar/calendar-day-marker';
 import { calendarMarkColorsFor } from '../../calendar/calendar-mark-colors';
@@ -26,10 +28,10 @@ type TwoWeekCalendarProps = {
   dates: readonly string[];
   weekdayLabels: readonly string[];
   todayIso: string;
-  shiftDates: ReadonlySet<string>;
+  shiftColorByDate: ReadonlyMap<string, string>;
+  secondaryShiftColorByDate: ReadonlyMap<string, string>;
   freeWeekendDates: ReadonlySet<string>;
   vacationDates: ReadonlySet<string>;
-  shiftColor: string;
 };
 
 /** Two-week Monday-start strip with shift / vacation marks and weekend pills. */
@@ -37,20 +39,17 @@ export function TwoWeekCalendar({
   dates,
   weekdayLabels,
   todayIso,
-  shiftDates,
+  shiftColorByDate,
+  secondaryShiftColorByDate,
   freeWeekendDates,
   vacationDates,
-  shiftColor,
 }: TwoWeekCalendarProps) {
   const { colors } = useTheme();
   const markColors = calendarMarkColorsFor(colors);
   const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
-  const shiftColorByDate = new Map<string, string>();
-  for (const iso of shiftDates) {
-    shiftColorByDate.set(iso, shiftColor);
-  }
   const markCtx = {
     shiftColorByDate,
+    secondaryShiftColorByDate,
     freeWeekendSet: freeWeekendDates,
     vacationSet: vacationDates,
   };
@@ -82,7 +81,6 @@ export function TwoWeekCalendar({
           week={week}
           todayIso={todayIso}
           markCtx={markCtx}
-          shiftColor={shiftColor}
           inkColor={colors.brand}
           textColor={colors.text}
           markColors={markColors}
@@ -94,6 +92,7 @@ export function TwoWeekCalendar({
 
 type MarkCtx = {
   shiftColorByDate: ReadonlyMap<string, string>;
+  secondaryShiftColorByDate: ReadonlyMap<string, string>;
   freeWeekendSet: ReadonlySet<string>;
   vacationSet: ReadonlySet<string>;
 };
@@ -102,7 +101,6 @@ type WeekRowProps = {
   week: readonly string[];
   todayIso: string;
   markCtx: MarkCtx;
-  shiftColor: string;
   inkColor: string;
   textColor: string;
   markColors: ReturnType<typeof calendarMarkColorsFor>;
@@ -112,7 +110,6 @@ function WeekRow({
   week,
   todayIso,
   markCtx,
-  shiftColor,
   inkColor,
   textColor,
   markColors,
@@ -156,7 +153,7 @@ function WeekRow({
               todayIso={todayIso}
               markKind="freeWeekend"
               markAlpha={weekendAlpha}
-              shiftColor={shiftColor}
+              markCtx={markCtx}
               inkColor={inkColor}
               textColor={textColor}
               markColors={markColors}
@@ -166,7 +163,7 @@ function WeekRow({
               todayIso={todayIso}
               markKind="freeWeekend"
               markAlpha={weekendAlpha}
-              shiftColor={shiftColor}
+              markCtx={markCtx}
               inkColor={inkColor}
               textColor={textColor}
               markColors={markColors}
@@ -184,7 +181,7 @@ function WeekRow({
           iso={iso}
           todayIso={todayIso}
           markKind={markKind}
-          shiftColor={shiftColor}
+          markCtx={markCtx}
           inkColor={inkColor}
           textColor={textColor}
           markColors={markColors}
@@ -207,18 +204,20 @@ type DayCellProps = {
   iso: string;
   todayIso: string;
   markKind: DayMarkKind;
-  shiftColor: string;
+  markCtx: MarkCtx;
   inkColor: string;
   textColor: string;
   markColors: ReturnType<typeof calendarMarkColorsFor>;
   markAlpha?: number;
 };
 
+const SECONDARY_DOT_GAP = 4;
+
 function DayCell({
   iso,
   todayIso,
   markKind,
-  shiftColor,
+  markCtx,
   inkColor,
   textColor,
   markColors,
@@ -226,11 +225,18 @@ function DayCell({
 }: DayCellProps) {
   const isToday = iso === todayIso;
   const label = dayNumber(iso);
+  const isPast = isCalendarDatePast(iso, todayIso);
   const alpha =
-    markAlpha ?? markColorAlpha(false, isCalendarDatePast(iso, todayIso));
+    markAlpha ?? markColorAlpha(false, isPast);
   const onWeekend = markKind === 'freeWeekend';
   const isShift = markKind === 'shift';
   const isVacation = markKind === 'vacation';
+  const shiftColor = markCtx.shiftColorByDate.get(iso);
+  const secondaryColor = markCtx.secondaryShiftColorByDate.get(iso);
+  const secondaryDot =
+    secondaryColor != null ? (
+      <SecondaryDot color={secondaryColor} isPast={isPast} />
+    ) : null;
 
   const textColorMarked = isVacation
     ? resolveVacationTextColor(markColors, alpha)
@@ -243,10 +249,75 @@ function DayCell({
 
   const fillColor = isVacation
     ? resolveVacationBackground(markColors, alpha)
-    : isShift
+    : isShift && shiftColor != null
       ? resolveShiftColor(shiftColor, alpha)
       : undefined;
   const todayFilled = isToday && fillColor != null;
+
+  const dayContent = todayFilled ? (
+    <View
+      className="items-center justify-center"
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        borderWidth: TODAY_BORDER_WIDTH,
+        borderColor: inkColor,
+        padding: TODAY_INNER_GAP,
+        ...dayMarkerStyle,
+      }}
+    >
+      <View
+        className="flex-1 self-stretch items-center justify-center"
+        style={{
+          backgroundColor: fillColor,
+          borderCurve: 'continuous',
+          borderRadius: DAY_MARKER_INNER_RADIUS,
+        }}
+      >
+        <Text className="font-mono text-sm" style={dayTextStyle}>
+          {label}
+        </Text>
+      </View>
+    </View>
+  ) : isToday ? (
+    <View
+      className="items-center justify-center"
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        borderWidth: TODAY_BORDER_WIDTH,
+        borderColor: inkColor,
+        ...dayMarkerStyle,
+      }}
+    >
+      <Text className="font-mono text-sm" style={dayTextStyle}>
+        {label}
+      </Text>
+    </View>
+  ) : fillColor != null && !onWeekend ? (
+    <View
+      className="items-center justify-center"
+      style={{
+        width: CELL_SIZE,
+        height: CELL_SIZE,
+        backgroundColor: fillColor,
+        ...dayMarkerStyle,
+      }}
+    >
+      <Text className="font-mono text-sm" style={dayTextStyle}>
+        {label}
+      </Text>
+    </View>
+  ) : (
+    <View
+      className="items-center justify-center"
+      style={{ width: CELL_SIZE, height: CELL_SIZE }}
+    >
+      <Text className="font-mono text-sm" style={dayTextStyle}>
+        {label}
+      </Text>
+    </View>
+  );
 
   return (
     <View
@@ -257,70 +328,49 @@ function DayCell({
           : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }
       }
     >
-      {todayFilled ? (
-        <View
-          className="items-center justify-center"
-          style={{
-            width: CELL_SIZE,
-            height: CELL_SIZE,
-            borderWidth: TODAY_BORDER_WIDTH,
-            borderColor: inkColor,
-            padding: TODAY_INNER_GAP,
-            ...dayMarkerStyle,
-          }}
-        >
+      <View
+        style={{
+          width: CELL_SIZE,
+          height: CELL_SIZE,
+          alignItems: 'center',
+        }}
+      >
+        {dayContent}
+        {secondaryDot != null ? (
           <View
-            className="flex-1 self-stretch items-center justify-center"
+            pointerEvents="none"
             style={{
-              backgroundColor: fillColor,
-              borderCurve: 'continuous',
-              borderRadius: DAY_MARKER_INNER_RADIUS,
+              position: 'absolute',
+              top: CELL_SIZE + SECONDARY_DOT_GAP,
+              alignItems: 'center',
             }}
           >
-            <Text className="font-mono text-sm" style={dayTextStyle}>
-              {label}
-            </Text>
+            {secondaryDot}
           </View>
-        </View>
-      ) : isToday ? (
-        <View
-          className="items-center justify-center"
-          style={{
-            width: CELL_SIZE,
-            height: CELL_SIZE,
-            borderWidth: TODAY_BORDER_WIDTH,
-            borderColor: inkColor,
-            ...dayMarkerStyle,
-          }}
-        >
-          <Text className="font-mono text-sm" style={dayTextStyle}>
-            {label}
-          </Text>
-        </View>
-      ) : fillColor != null && !onWeekend ? (
-        <View
-          className="items-center justify-center"
-          style={{
-            width: CELL_SIZE,
-            height: CELL_SIZE,
-            backgroundColor: fillColor,
-            ...dayMarkerStyle,
-          }}
-        >
-          <Text className="font-mono text-sm" style={dayTextStyle}>
-            {label}
-          </Text>
-        </View>
-      ) : (
-        <View
-          className="items-center justify-center"
-          style={{ width: CELL_SIZE, height: CELL_SIZE }}
-        >
-          <Text className="font-mono text-sm" style={dayTextStyle}>
-            {label}
-          </Text>
-        </View>
-      )}
+        ) : null}
+      </View>
     </View>
+  );
+}
+
+function SecondaryDot({
+  color,
+  isPast,
+}: {
+  color: string;
+  isPast: boolean;
+}) {
+  const alpha = markColorAlpha(false, isPast);
+  const backgroundColor = alpha < 1 ? withAlpha(color, alpha) : color;
+  return (
+    <View
+      pointerEvents="none"
+      style={{
+        width: SECONDARY_DOT_SIZE,
+        height: SECONDARY_DOT_SIZE,
+        borderRadius: SECONDARY_DOT_SIZE / 2,
+        backgroundColor,
+      }}
+    />
   );
 }

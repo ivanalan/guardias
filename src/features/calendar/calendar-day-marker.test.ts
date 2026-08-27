@@ -2,6 +2,7 @@ import {
   addCalendarDays,
   dayMatchesActiveFilter,
   DIM_OPACITY,
+  PATTERN_SHIFT_OPACITY,
   getDayMarkKind,
   isCalendarDatePast,
   isDayLabelDimmed,
@@ -86,7 +87,7 @@ describe('pattern anchor shift alpha', () => {
   it('dims non-anchor shift days and keeps the anchor full opacity', () => {
     expect(
       shiftMarkColorAlpha(false, false, '2026-08-10', '2026-08-06'),
-    ).toBe(DIM_OPACITY);
+    ).toBe(PATTERN_SHIFT_OPACITY);
     expect(
       shiftMarkColorAlpha(false, true, '2026-08-06', '2026-08-06'),
     ).toBe(1);
