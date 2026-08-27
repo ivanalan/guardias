@@ -1,5 +1,5 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -28,8 +28,12 @@ import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, View } from '../../../tw';
 import { getRangeMarkInputs } from '../../calendar/month-legend-stats';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
-import { resolveRotationColor } from '../../rotations/rotation-colors';
+import {
+  resolveRotationColor,
+  resolveShiftMarks,
+} from '../../rotations/rotation-colors';
 import { useRotations } from '../../rotations/rotations-context';
+import type { RotationPeriod } from '../../rotations/types';
 import { NextShiftCard } from '../components/next-shift-card';
 import { ShiftsLeftCard } from '../components/shifts-left-card';
 import { TwoWeekCalendar } from '../components/two-week-calendar';
@@ -52,6 +56,7 @@ type Props = CompositeScreenProps<
 
 type ActiveHomeProps = {
   status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
+  periods: readonly RotationPeriod[];
   now: Date;
   periodProgress: PeriodShiftProgress;
   dayProgress: PeriodDayProgress;
@@ -60,6 +65,7 @@ type ActiveHomeProps = {
 
 function ActiveHomeContent({
   status,
+  periods,
   now,
   periodProgress,
   dayProgress,
@@ -73,12 +79,29 @@ function ActiveHomeContent({
   const windowDates = getTwoWeekDates(now);
   const windowStart = windowDates[0]!;
   const windowEnd = windowDates[13]!;
-  const markInputs = getRangeMarkInputs(
-    [status.period],
-    windowStart,
-    windowEnd,
+  const markInputs = getRangeMarkInputs(periods, windowStart, windowEnd);
+  const resolvedShiftMarks = useMemo(
+    () => resolveShiftMarks(markInputs.shiftMarks, colors),
+    [markInputs.shiftMarks, colors],
   );
-  const shiftDates = new Set(markInputs.shiftMarks.map((mark) => mark.date));
+  const resolvedSecondaryShiftMarks = useMemo(
+    () => resolveShiftMarks(markInputs.secondaryShiftMarks, colors),
+    [markInputs.secondaryShiftMarks, colors],
+  );
+  const shiftColorByDate = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const { date, color } of resolvedShiftMarks) {
+      map.set(date, color);
+    }
+    return map;
+  }, [resolvedShiftMarks]);
+  const secondaryShiftColorByDate = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const { date, color } of resolvedSecondaryShiftMarks) {
+      map.set(date, color);
+    }
+    return map;
+  }, [resolvedSecondaryShiftMarks]);
   const freeWeekendDates = new Set(markInputs.freeWeekendDates);
   const vacationDates = new Set(markInputs.vacationDates);
   const remaining = Math.max(
@@ -131,10 +154,10 @@ function ActiveHomeContent({
         dates={windowDates}
         weekdayLabels={weekdayInitials(language)}
         todayIso={todayIso}
-        shiftDates={shiftDates}
+        shiftColorByDate={shiftColorByDate}
+        secondaryShiftColorByDate={secondaryShiftColorByDate}
         freeWeekendDates={freeWeekendDates}
         vacationDates={vacationDates}
-        shiftColor={color}
       />
 
       <ShiftsLeftCard
@@ -217,6 +240,7 @@ export function HomeScreen({ navigation }: Props) {
       >
         <ActiveHomeContent
           status={status}
+          periods={periods}
           now={now}
           periodProgress={getPeriodShiftProgress(status.period, now)}
           dayProgress={getPeriodDayProgress(

@@ -19,8 +19,8 @@ export const EMPTY_STATE_PREVIEW = {
   freeWeekendDates: ['2026-08-08', '2026-08-09'],
 } as const;
 
-export const EMPTY_STATE_PREVIEW_SHIFT_DATES = new Set<string>(
-  EMPTY_STATE_PREVIEW.shiftDates,
+export const EMPTY_STATE_PREVIEW_SHIFT_COLOR_BY_DATE = new Map<string, string>(
+  EMPTY_STATE_PREVIEW.shiftDates.map((date) => [date, EMPTY_STATE_PREVIEW.shiftColor]),
 );
 
 export const EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES = new Set<string>(

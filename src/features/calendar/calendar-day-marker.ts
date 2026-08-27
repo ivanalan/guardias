@@ -27,6 +27,8 @@ export const dayMarkerStyle = {
 
 export const DIM_OPACITY = 0.3;
 export const PAST_EVENT_OPACITY = 0.5;
+/** Non-anchor shift days in the first-shift picker (add/edit rotation). */
+export const PATTERN_SHIFT_OPACITY = 0.65;
 
 export type DayMarkKind = 'shift' | 'vacation' | 'freeWeekend' | 'none';
 
@@ -37,7 +39,7 @@ export type CalendarDayMarkContext = {
   vacationSet: ReadonlySet<string>;
   filter: CalendarLegendFilterState;
   todayIso: string;
-  /** When set, non-anchor shift days render at DIM_OPACITY (first-shift picker). */
+  /** When set, non-anchor shift days render at PATTERN_SHIFT_OPACITY (first-shift picker). */
   patternAnchorDate?: string | null;
 };
 
@@ -177,7 +179,7 @@ export function markColorAlpha(
 
 /**
  * Shift alpha for the first-shift picker: anchor stays full opacity;
- * other pattern days use DIM_OPACITY (filter dim still wins when active).
+ * other pattern days use PATTERN_SHIFT_OPACITY (filter dim still wins when active).
  */
 export function shiftMarkColorAlpha(
   dimmedByFilter: boolean,
@@ -193,7 +195,7 @@ export function shiftMarkColorAlpha(
     patternAnchorDate !== '' &&
     iso !== patternAnchorDate
   ) {
-    return DIM_OPACITY;
+    return PATTERN_SHIFT_OPACITY;
   }
   if (patternAnchorDate != null && iso === patternAnchorDate) {
     return 1;
