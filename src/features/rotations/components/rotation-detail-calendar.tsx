@@ -93,6 +93,7 @@ function RotationDetailMonthCard({
         current={monthDate}
         enableSwipeMonths={false}
         hideArrows
+        hideDayNames
         firstDay={1}
         monthFormat="MMMM"
         markingType="custom"

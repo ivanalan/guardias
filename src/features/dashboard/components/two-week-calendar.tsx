@@ -140,14 +140,26 @@ function WeekRow({
           className="flex-[2]"
           style={{ paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }}
         >
-          <View
-            className="flex-row self-stretch"
-            style={{
-              height: CELL_SIZE,
-              backgroundColor: resolveWeekendBackground(markColors, weekendAlpha),
-              ...dayMarkerStyle,
-            }}
-          >
+          <View className="flex-row self-stretch" style={{ height: CELL_SIZE }}>
+            <View
+              pointerEvents="none"
+              style={{
+                position: 'absolute',
+                top: 0,
+                bottom: 0,
+                // Parent is Sat+Sun: 25% is each day’s center. Inset by
+                // half CELL_SIZE so the capsule ends on the day markers.
+                left: '25%',
+                marginLeft: -CELL_SIZE / 2,
+                right: '25%',
+                marginRight: -CELL_SIZE / 2,
+                backgroundColor: resolveWeekendBackground(
+                  markColors,
+                  weekendAlpha,
+                ),
+                ...dayMarkerStyle,
+              }}
+            />
             <DayCell
               iso={iso}
               todayIso={todayIso}

@@ -16,13 +16,10 @@ import {
   dayMarkerStyle,
   dayNumber,
   getDayMarkKind,
-  getMarkDimming,
   isCalendarDatePast,
-  isDayLabelDimmed,
+  isDayDimmedByFilter,
   isFreeWeekendSpanEnd,
   isFreeWeekendSpanStart,
-  isPrimaryShiftDimmed,
-  isSecondaryShiftDimmed,
   markColorAlpha,
   resolveInkTextColor,
   resolveShiftColor,
@@ -70,9 +67,12 @@ function weekendSpanPillStyle(backgroundColor: string) {
     position: 'absolute' as const,
     top: '50%' as const,
     marginTop: -CELL_SIZE / 2,
-    left: 0,
-    // Equal flex day cells → 200% covers Saturday + Sunday with one fill.
-    width: '200%' as const,
+    // Saturday marker left: this cell’s center minus half CELL_SIZE.
+    left: '50%' as const,
+    marginLeft: -CELL_SIZE / 2,
+    // Sunday marker right: 50% into Sunday plus half CELL_SIZE.
+    right: '-50%' as const,
+    marginRight: -CELL_SIZE / 2,
     height: CELL_SIZE,
     backgroundColor,
     zIndex: 0,
@@ -113,32 +113,21 @@ function CalendarDayInner({
   const isToday = iso === markContext.todayIso || state === 'today';
   const label = dayNumber(iso);
   const markKind = getDayMarkKind(iso, markContext);
-  const dimming = getMarkDimming(markContext.filter);
   const isPast = isCalendarDatePast(iso, markContext.todayIso);
   const hasPrimary = markContext.shiftColorByDate.has(iso);
   const secondaryColor = markContext.secondaryShiftColorByDate.get(iso);
   const hasSecondary = secondaryColor != null;
-  const primaryDimmed = isPrimaryShiftDimmed(
-    markContext.filter,
-    hasPrimary,
-    hasSecondary,
-  );
-  const secondaryDimmed = isSecondaryShiftDimmed(
-    markContext.filter,
-    hasPrimary,
-    hasSecondary,
-  );
-  const labelDimmed = isDayLabelDimmed(markContext.filter, {
+  const dimmedByFilter = isDayDimmedByFilter(markContext.filter, {
     hasPrimary,
     hasSecondary,
     markKind,
   });
-  const labelAlpha = markColorAlpha(labelDimmed, isPast);
+  const labelAlpha = markColorAlpha(dimmedByFilter, isPast);
   const secondaryDot =
     !inactive && secondaryColor != null ? (
       <SecondaryDot
         color={secondaryColor}
-        dimmed={secondaryDimmed}
+        dimmed={dimmedByFilter}
         isPast={isPast}
       />
     ) : null;
@@ -163,7 +152,7 @@ function CalendarDayInner({
     isFreeWeekendSpanEnd(iso, markContext.freeWeekendSet, markKind) &&
     !inactive
   ) {
-    // Background comes from Saturday’s 200%-wide pill; keep this cell above it.
+    // Background comes from Saturday’s spanning pill; keep this cell above it.
     const textColor = resolveShiftTextColor(markColors, labelAlpha);
 
     return (
@@ -204,7 +193,7 @@ function CalendarDayInner({
       addCalendarDays(iso, 1),
       markContext.todayIso,
     );
-    const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, weekendPast);
+    const weekendAlpha = markColorAlpha(dimmedByFilter, weekendPast);
     const weekendBg = resolveWeekendBackground(markColors, weekendAlpha);
     const textColor = resolveShiftTextColor(markColors, labelAlpha);
 
@@ -246,7 +235,7 @@ function CalendarDayInner({
   if (markKind === 'shift' && !inactive) {
     const shiftColor = markContext.shiftColorByDate.get(iso)!;
     const shiftAlpha = shiftMarkColorAlpha(
-      primaryDimmed,
+      dimmedByFilter,
       isPast,
       iso,
       markContext.patternAnchorDate,
@@ -283,7 +272,7 @@ function CalendarDayInner({
   }
 
   if (markKind === 'vacation' && !inactive) {
-    const vacationAlpha = markColorAlpha(dimming.dimVacations, isPast);
+    const vacationAlpha = markColorAlpha(dimmedByFilter, isPast);
     const backgroundColor = resolveVacationBackground(
       markColors,
       vacationAlpha,
@@ -318,7 +307,7 @@ function CalendarDayInner({
   }
 
   if (markKind === 'freeWeekend' && !inactive) {
-    const weekendAlpha = markColorAlpha(dimming.dimFreeWeekends, isPast);
+    const weekendAlpha = markColorAlpha(dimmedByFilter, isPast);
     const backgroundColor = resolveWeekendBackground(markColors, weekendAlpha);
     const textColor = resolveShiftTextColor(markColors, labelAlpha);
 

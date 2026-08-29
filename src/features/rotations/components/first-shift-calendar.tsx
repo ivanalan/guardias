@@ -185,6 +185,7 @@ export function FirstShiftCalendar({
             maxDate={period.endDate}
             enableSwipeMonths
             hideArrows
+            hideDayNames
             firstDay={1}
             monthFormat="MMMM"
             markingType="custom"
