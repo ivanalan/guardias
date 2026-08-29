@@ -43,11 +43,6 @@ export type CalendarDayMarkContext = {
   patternAnchorDate?: string | null;
 };
 
-export type CalendarDayMarkDimming = {
-  dimFreeWeekends: boolean;
-  dimVacations: boolean;
-};
-
 /** Day-of-month label from `YYYY-MM-DD`. */
 export function dayNumber(iso: string): string {
   return String(Number(iso.slice(8, 10)));
@@ -60,59 +55,6 @@ export function withAlpha(hex: string, alpha: number): string {
   return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
-export function getMarkDimming(
-  filter: CalendarLegendFilterState,
-): CalendarDayMarkDimming {
-  const active = filter.size > 0;
-  return {
-    dimFreeWeekends: active && !filter.has('freeWeekends'),
-    dimVacations: active && !filter.has('vacation'),
-  };
-}
-
-/**
- * Dim primary shift fills when a filter is active and this day is not a
- * selected match. With both `shifts` and `secondaryShifts` selected, only
- * shared on-call days stay bright (AND).
- */
-export function isPrimaryShiftDimmed(
-  filter: CalendarLegendFilterState,
-  hasPrimary: boolean,
-  hasSecondary: boolean,
-): boolean {
-  if (filter.size === 0) {
-    return false;
-  }
-  if (!filter.has('shifts')) {
-    return true;
-  }
-  if (filter.has('secondaryShifts')) {
-    return !(hasPrimary && hasSecondary);
-  }
-  return false;
-}
-
-/**
- * Dim secondary dots when a filter is active and this day is not a selected
- * match. With both shift filters selected, only shared days stay bright.
- */
-export function isSecondaryShiftDimmed(
-  filter: CalendarLegendFilterState,
-  hasPrimary: boolean,
-  hasSecondary: boolean,
-): boolean {
-  if (filter.size === 0) {
-    return false;
-  }
-  if (!filter.has('secondaryShifts')) {
-    return true;
-  }
-  if (filter.has('shifts')) {
-    return !(hasPrimary && hasSecondary);
-  }
-  return false;
-}
-
 export type DayFilterMatchInput = {
   hasPrimary: boolean;
   hasSecondary: boolean;
@@ -120,38 +62,30 @@ export type DayFilterMatchInput = {
 };
 
 /**
- * Whether this day matches any selected legend filter (OR across categories;
- * shifts + secondaryShifts still AND for shared days).
+ * Whether this day satisfies every selected legend filter (AND across
+ * categories). An empty filter matches every day.
  */
 export function dayMatchesActiveFilter(
   filter: CalendarLegendFilterState,
   { hasPrimary, hasSecondary, markKind }: DayFilterMatchInput,
 ): boolean {
-  if (filter.size === 0) {
-    return true;
+  if (filter.has('shifts') && !hasPrimary) {
+    return false;
   }
-  if (filter.has('shifts')) {
-    if (filter.has('secondaryShifts')) {
-      if (hasPrimary && hasSecondary) {
-        return true;
-      }
-    } else if (hasPrimary) {
-      return true;
-    }
-  } else if (filter.has('secondaryShifts') && hasSecondary) {
-    return true;
+  if (filter.has('secondaryShifts') && !hasSecondary) {
+    return false;
   }
-  if (filter.has('freeWeekends') && markKind === 'freeWeekend') {
-    return true;
+  if (filter.has('freeWeekends') && markKind !== 'freeWeekend') {
+    return false;
   }
-  if (filter.has('vacation') && markKind === 'vacation') {
-    return true;
+  if (filter.has('vacation') && markKind !== 'vacation') {
+    return false;
   }
-  return false;
+  return true;
 }
 
-/** Dim day numbers when a filter is active and this day is not a match. */
-export function isDayLabelDimmed(
+/** Every mark on a day dims together when the day fails the active filter. */
+export function isDayDimmedByFilter(
   filter: CalendarLegendFilterState,
   input: DayFilterMatchInput,
 ): boolean {
@@ -259,6 +193,14 @@ export function addCalendarDays(iso: string, amount: number): string {
   return format(addDays(parseCalendarDate(iso), amount), 'yyyy-MM-dd');
 }
 
+/**
+ * The pill only exists inside one month grid, so a partner in another month
+ * cannot paint (or be painted by) this cell.
+ */
+function isSameCalendarMonth(iso: string, other: string): boolean {
+  return iso.slice(0, 7) === other.slice(0, 7);
+}
+
 /** Saturday that starts a Sat–Sun free-weekend pill (partner must also be free). */
 export function isFreeWeekendSpanStart(
   iso: string,
@@ -268,7 +210,8 @@ export function isFreeWeekendSpanStart(
   if (markKind !== 'freeWeekend' || getDay(parseCalendarDate(iso)) !== 6) {
     return false;
   }
-  return freeWeekendSet.has(addCalendarDays(iso, 1));
+  const sunday = addCalendarDays(iso, 1);
+  return isSameCalendarMonth(iso, sunday) && freeWeekendSet.has(sunday);
 }
 
 /** Sunday covered by a Sat–Sun pill rendered from Saturday. */
@@ -280,7 +223,8 @@ export function isFreeWeekendSpanEnd(
   if (markKind !== 'freeWeekend' || getDay(parseCalendarDate(iso)) !== 0) {
     return false;
   }
-  return freeWeekendSet.has(addCalendarDays(iso, -1));
+  const saturday = addCalendarDays(iso, -1);
+  return isSameCalendarMonth(iso, saturday) && freeWeekendSet.has(saturday);
 }
 
 function applyMarkColor(hex: string, alpha: number): string {

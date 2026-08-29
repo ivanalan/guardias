@@ -5,11 +5,9 @@ import {
   PATTERN_SHIFT_OPACITY,
   getDayMarkKind,
   isCalendarDatePast,
-  isDayLabelDimmed,
+  isDayDimmedByFilter,
   isFreeWeekendSpanEnd,
   isFreeWeekendSpanStart,
-  isPrimaryShiftDimmed,
-  isSecondaryShiftDimmed,
   markColorAlpha,
   PAST_EVENT_OPACITY,
   shiftMarkColorAlpha,
@@ -52,6 +50,17 @@ describe('calendar day marker span helpers', () => {
     expect(getDayMarkKind('2026-08-01', shiftCtx)).toBe('shift');
     expect(
       isFreeWeekendSpanStart('2026-08-01', freeWeekendSet, 'shift'),
+    ).toBe(false);
+  });
+
+  it('does not span across a month boundary', () => {
+    // Sat 2026-10-31 + Sun 2026-11-01 sit in different month grids.
+    const crossMonth = new Set(['2026-10-31', '2026-11-01']);
+    expect(
+      isFreeWeekendSpanEnd('2026-11-01', crossMonth, 'freeWeekend'),
+    ).toBe(false);
+    expect(
+      isFreeWeekendSpanStart('2026-10-31', crossMonth, 'freeWeekend'),
     ).toBe(false);
   });
 
@@ -107,33 +116,7 @@ describe('pattern anchor shift alpha', () => {
   });
 });
 
-describe('multi-select shift filter dimming', () => {
-  it('dims nothing when the filter set is empty', () => {
-    expect(isPrimaryShiftDimmed(new Set(), true, false)).toBe(false);
-    expect(isSecondaryShiftDimmed(new Set(), false, true)).toBe(false);
-  });
-
-  it('dims the unselected shift layer', () => {
-    expect(isPrimaryShiftDimmed(new Set(['shifts']), true, false)).toBe(false);
-    expect(isSecondaryShiftDimmed(new Set(['shifts']), false, true)).toBe(true);
-    expect(
-      isPrimaryShiftDimmed(new Set(['secondaryShifts']), true, false),
-    ).toBe(true);
-    expect(
-      isSecondaryShiftDimmed(new Set(['secondaryShifts']), false, true),
-    ).toBe(false);
-  });
-
-  it('AND-dims non-shared days when both shift filters are selected', () => {
-    const both = new Set(['shifts', 'secondaryShifts'] as const);
-    expect(isPrimaryShiftDimmed(both, true, true)).toBe(false);
-    expect(isSecondaryShiftDimmed(both, true, true)).toBe(false);
-    expect(isPrimaryShiftDimmed(both, true, false)).toBe(true);
-    expect(isSecondaryShiftDimmed(both, false, true)).toBe(true);
-  });
-});
-
-describe('day label filter matching', () => {
+describe('legend filter matching', () => {
   it('matches everything when the filter set is empty', () => {
     expect(
       dayMatchesActiveFilter(new Set(), {
@@ -143,7 +126,7 @@ describe('day label filter matching', () => {
       }),
     ).toBe(true);
     expect(
-      isDayLabelDimmed(new Set(), {
+      isDayDimmedByFilter(new Set(), {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'none',
@@ -154,28 +137,28 @@ describe('day label filter matching', () => {
   it('dims unmarked and non-shift days when filtering shifts only', () => {
     const shifts = new Set(['shifts'] as const);
     expect(
-      isDayLabelDimmed(shifts, {
+      isDayDimmedByFilter(shifts, {
         hasPrimary: true,
         hasSecondary: false,
         markKind: 'shift',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(shifts, {
+      isDayDimmedByFilter(shifts, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'none',
       }),
     ).toBe(true);
     expect(
-      isDayLabelDimmed(shifts, {
+      isDayDimmedByFilter(shifts, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'freeWeekend',
       }),
     ).toBe(true);
     expect(
-      isDayLabelDimmed(shifts, {
+      isDayDimmedByFilter(shifts, {
         hasPrimary: false,
         hasSecondary: true,
         markKind: 'none',
@@ -183,38 +166,38 @@ describe('day label filter matching', () => {
     ).toBe(true);
   });
 
-  it('keeps friend-shift day labels bright including free-weekend days', () => {
+  it('keeps friend-shift days bright including free-weekend days', () => {
     const friend = new Set(['secondaryShifts'] as const);
     expect(
-      isDayLabelDimmed(friend, {
+      isDayDimmedByFilter(friend, {
         hasPrimary: false,
         hasSecondary: true,
         markKind: 'none',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(friend, {
+      isDayDimmedByFilter(friend, {
         hasPrimary: true,
         hasSecondary: true,
         markKind: 'shift',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(friend, {
+      isDayDimmedByFilter(friend, {
         hasPrimary: false,
         hasSecondary: true,
         markKind: 'freeWeekend',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(friend, {
+      isDayDimmedByFilter(friend, {
         hasPrimary: true,
         hasSecondary: false,
         markKind: 'shift',
       }),
     ).toBe(true);
     expect(
-      isDayLabelDimmed(friend, {
+      isDayDimmedByFilter(friend, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'none',
@@ -247,32 +230,57 @@ describe('day label filter matching', () => {
     ).toBe(false);
   });
 
+  it('AND-matches friend shifts with free weekends', () => {
+    const both = new Set(['secondaryShifts', 'freeWeekends'] as const);
+    expect(
+      dayMatchesActiveFilter(both, {
+        hasPrimary: false,
+        hasSecondary: true,
+        markKind: 'freeWeekend',
+      }),
+    ).toBe(true);
+    expect(
+      dayMatchesActiveFilter(both, {
+        hasPrimary: false,
+        hasSecondary: true,
+        markKind: 'none',
+      }),
+    ).toBe(false);
+    expect(
+      dayMatchesActiveFilter(both, {
+        hasPrimary: false,
+        hasSecondary: false,
+        markKind: 'freeWeekend',
+      }),
+    ).toBe(false);
+  });
+
   it('matches free weekends and vacations only for those filters', () => {
     const weekends = new Set(['freeWeekends'] as const);
     const vacation = new Set(['vacation'] as const);
     expect(
-      isDayLabelDimmed(weekends, {
+      isDayDimmedByFilter(weekends, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'freeWeekend',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(weekends, {
+      isDayDimmedByFilter(weekends, {
         hasPrimary: true,
         hasSecondary: false,
         markKind: 'shift',
       }),
     ).toBe(true);
     expect(
-      isDayLabelDimmed(vacation, {
+      isDayDimmedByFilter(vacation, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'vacation',
       }),
     ).toBe(false);
     expect(
-      isDayLabelDimmed(vacation, {
+      isDayDimmedByFilter(vacation, {
         hasPrimary: false,
         hasSecondary: false,
         markKind: 'none',

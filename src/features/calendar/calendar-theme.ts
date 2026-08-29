@@ -86,7 +86,7 @@ export function calendarThemeFor(
         flexDirection: 'row',
         flex: 1,
         justifyContent: 'flex-start',
-        alignItems: 'center',
+        alignItems: 'stretch',
         overflow: 'visible',
         alignSelf: 'stretch',
       },
@@ -97,21 +97,6 @@ export function calendarThemeFor(
       },
       arrow: {
         padding: 6,
-      },
-      week: {
-        marginTop: 4,
-        marginBottom: 8,
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-      },
-      dayHeader: {
-        marginTop: 2,
-        marginBottom: 7,
-        width: 32,
-        textAlign: 'center',
-        fontSize: 14,
-        fontWeight: '400',
-        color: colors.text,
       },
     },
   } as NonNullable<CalendarProps['theme']>;
@@ -168,20 +153,25 @@ export const CALENDAR_LIST_ITEM_GAP = 12;
 const MONTH_TITLE_LINE_HEIGHT = 38;
 const HEADER_MARGIN_BOTTOM = 8;
 const WEEKDAY_ROW_MARGIN_TOP = 4;
-const WEEKDAY_ROW_MARGIN_BOTTOM = 8;
 const DAY_HEADER_MARGIN_TOP = 2;
 const DAY_HEADER_FONT_SIZE = 14;
 const DAY_HEADER_MARGIN_BOTTOM = 7;
 const WEEK_COUNT = 6;
 const WEEK_ROW_HEIGHT = CELL_SIZE + CALENDAR_WEEK_ROW_GAP;
 
+/**
+ * Weekday row sits inside our header (`hideDayNames`). marginTop includes the
+ * old header-to-week gap so CalendarList item pitch stays unchanged.
+ */
+export const CALENDAR_WEEKDAY_ROW_MARGIN_TOP =
+  HEADER_MARGIN_BOTTOM + WEEKDAY_ROW_MARGIN_TOP + DAY_HEADER_MARGIN_TOP;
+export const CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM = DAY_HEADER_MARGIN_BOTTOM;
+
 const listHeaderHeight = MONTH_TITLE_LINE_HEIGHT + HEADER_MARGIN_BOTTOM;
 const listWeekdayRowHeight =
-  WEEKDAY_ROW_MARGIN_TOP +
-  DAY_HEADER_MARGIN_TOP +
+  CALENDAR_WEEKDAY_ROW_MARGIN_TOP +
   DAY_HEADER_FONT_SIZE +
-  DAY_HEADER_MARGIN_BOTTOM +
-  WEEKDAY_ROW_MARGIN_BOTTOM;
+  CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM;
 const listMonthGridHeight =
   WEEK_COUNT * WEEK_ROW_HEIGHT + (WEEK_COUNT - 1) * CALENDAR_WEEK_ROW_GAP;
 

@@ -283,6 +283,7 @@ export function CalendarScreen({ navigation }: Props) {
               onDayPress={onDayPress}
               enableSwipeMonths
               hideArrows
+              hideDayNames
               firstDay={1}
               monthFormat="MMMM"
               markingType="custom"
@@ -326,6 +327,7 @@ export function CalendarScreen({ navigation }: Props) {
               }}
               onDayPress={onDayPress}
               hideArrows
+              hideDayNames
               pastScrollRange={24}
               futureScrollRange={24}
               showScrollIndicator
