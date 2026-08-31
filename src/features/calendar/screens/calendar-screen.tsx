@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
 import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
-import { Pressable, View } from '../../../tw';
+import { Pressable, ScrollView, View } from '../../../tw';
 import { FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
 import { useTheme } from '../../../theme/theme-context';
 import { toISODate } from '../../rotations/format-period-range';
@@ -236,8 +236,8 @@ export function CalendarScreen({ navigation }: Props) {
     );
   };
 
-  return (
-    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
+  const header = (
+    <>
       <ScreenPageTitle
         title={t('tabs.calendar')}
         right={
@@ -260,19 +260,18 @@ export function CalendarScreen({ navigation }: Props) {
       <View className="mb-3 mt-3 px-gutter">
         <CalendarViewToggle value={viewMode} onChange={onViewModeChange} />
       </View>
-      <View
-        className="flex-1 px-gutter"
-        style={
-          viewMode === 'month'
-            ? { paddingBottom: FLOATING_TAB_BAR_CLEARANCE }
-            : undefined
-        }
-      >
-        <View
-          className={viewMode === 'scroll' ? 'min-h-0 flex-1' : undefined}
-          onLayout={onListContainerLayout}
+    </>
+  );
+
+  return (
+    <View className="flex-1" style={{ backgroundColor: colors.bg }}>
+      {viewMode === 'month' ? (
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ paddingBottom: FLOATING_TAB_BAR_CLEARANCE }}
         >
-          {viewMode === 'month' ? (
+          {header}
+          <View className="px-gutter">
             <Calendar
               key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
               style={calendarCardStyle(colors)}
@@ -299,66 +298,73 @@ export function CalendarScreen({ navigation }: Props) {
               )}
               theme={calendarThemeFor(colors)}
             />
-          ) : listSize != null ? (
-            <CalendarList
-              key={`scroll-${language}-${scrollAnchor.slice(0, 7)}-${CALENDAR_WEEK_ROW_GAP}`}
-              current={scrollAnchor}
-              style={{ height: listSize.height }}
-              contentContainerStyle={{
-                paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
-              }}
-              calendarWidth={listSize.width}
-              calendarHeight={CALENDAR_LIST_ITEM_HEIGHT}
-              calendarStyle={{
-                ...calendarCardStyle(colors),
-                minHeight: CALENDAR_LIST_CARD_HEIGHT,
-                marginBottom: CALENDAR_LIST_ITEM_GAP,
-              }}
-              onVisibleMonthsChange={(months: DateData[]) => {
-                const primary = months[0];
-                if (primary == null) {
-                  return;
-                }
-                setVisibleMonth((prev) =>
-                  prev.slice(0, 7) === primary.dateString.slice(0, 7)
-                    ? prev
-                    : primary.dateString,
-                );
-              }}
-              onDayPress={onDayPress}
-              hideArrows
-              hideDayNames
-              pastScrollRange={24}
-              futureScrollRange={24}
-              showScrollIndicator
-              removeClippedSubviews={false}
-              firstDay={1}
-              monthFormat="MMMM"
-              markingType="custom"
-              markedDates={markedDates}
-              dayComponent={DayComponent}
-              renderHeader={(date) => (
-                <CalendarMonthTitle date={date} monthFormat="MMMM" />
-              )}
-              theme={calendarListThemeFor(colors)}
+            <CalendarMonthLegend
+              shiftDayCount={monthInputs.shiftDayCount}
+              secondaryShiftDayCount={monthInputs.secondaryShiftDayCount}
+              freeWeekendCount={monthInputs.freeWeekendCount}
+              vacationDayCount={monthInputs.vacationDayCount}
+              shiftColor={resolvedShiftColor}
+              primaryLabel={monthInputs.primaryLabel}
+              secondaryShiftColor={resolvedSecondaryShiftColor}
+              secondaryLabel={monthInputs.secondaryLabel}
+              filter={filter}
+              onFilterChange={setFilter}
             />
-          ) : null}
-        </View>
-        {viewMode === 'month' ? (
-          <CalendarMonthLegend
-            shiftDayCount={monthInputs.shiftDayCount}
-            secondaryShiftDayCount={monthInputs.secondaryShiftDayCount}
-            freeWeekendCount={monthInputs.freeWeekendCount}
-            vacationDayCount={monthInputs.vacationDayCount}
-            shiftColor={resolvedShiftColor}
-            primaryLabel={monthInputs.primaryLabel}
-            secondaryShiftColor={resolvedSecondaryShiftColor}
-            secondaryLabel={monthInputs.secondaryLabel}
-            filter={filter}
-            onFilterChange={setFilter}
-          />
-        ) : null}
-      </View>
+          </View>
+        </ScrollView>
+      ) : (
+        <>
+          {header}
+          <View className="flex-1 px-gutter">
+            <View className="min-h-0 flex-1" onLayout={onListContainerLayout}>
+              {listSize != null ? (
+                <CalendarList
+                  key={`scroll-${language}-${scrollAnchor.slice(0, 7)}-${CALENDAR_WEEK_ROW_GAP}`}
+                  current={scrollAnchor}
+                  style={{ height: listSize.height }}
+                  contentContainerStyle={{
+                    paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
+                  }}
+                  calendarWidth={listSize.width}
+                  calendarHeight={CALENDAR_LIST_ITEM_HEIGHT}
+                  calendarStyle={{
+                    ...calendarCardStyle(colors),
+                    minHeight: CALENDAR_LIST_CARD_HEIGHT,
+                    marginBottom: CALENDAR_LIST_ITEM_GAP,
+                  }}
+                  onVisibleMonthsChange={(months: DateData[]) => {
+                    const primary = months[0];
+                    if (primary == null) {
+                      return;
+                    }
+                    setVisibleMonth((prev) =>
+                      prev.slice(0, 7) === primary.dateString.slice(0, 7)
+                        ? prev
+                        : primary.dateString,
+                    );
+                  }}
+                  onDayPress={onDayPress}
+                  hideArrows
+                  hideDayNames
+                  pastScrollRange={24}
+                  futureScrollRange={24}
+                  showScrollIndicator
+                  removeClippedSubviews={false}
+                  firstDay={1}
+                  monthFormat="MMMM"
+                  markingType="custom"
+                  markedDates={markedDates}
+                  dayComponent={DayComponent}
+                  renderHeader={(date) => (
+                    <CalendarMonthTitle date={date} monthFormat="MMMM" />
+                  )}
+                  theme={calendarListThemeFor(colors)}
+                />
+              ) : null}
+            </View>
+          </View>
+        </>
+      )}
       <ExportPeriodPickerModal
         visible={pickerVisible}
         periods={periods}

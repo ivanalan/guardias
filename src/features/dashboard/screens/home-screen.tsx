@@ -213,31 +213,33 @@ export function HomeScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
-      <ScreenPageTitle
-        title={formatHomeDateTitle(now, language)}
-        subtitle={subtitle}
-        right={
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('settings.openA11y')}
-            onPress={() => {
-              navigation.navigate('Settings');
-            }}
-            className="px-2 active:opacity-60"
-            hitSlop={8}
-          >
-            <Ionicons
-              name="settings-outline"
-              size={SCREEN_PAGE_TITLE_ICON_SIZE}
-              color={colors.brand}
-            />
-          </Pressable>
-        }
-      />
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-4 p-gutter pb-tab-clearance"
+        contentContainerClassName="flex-grow gap-4 px-gutter pb-tab-clearance"
       >
+        <View className="-mx-gutter mb-2">
+          <ScreenPageTitle
+            title={formatHomeDateTitle(now, language)}
+            subtitle={subtitle}
+            right={
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('settings.openA11y')}
+                onPress={() => {
+                  navigation.navigate('Settings');
+                }}
+                className="px-2 active:opacity-60"
+                hitSlop={8}
+              >
+                <Ionicons
+                  name="settings-outline"
+                  size={SCREEN_PAGE_TITLE_ICON_SIZE}
+                  color={colors.brand}
+                />
+              </Pressable>
+            }
+          />
+        </View>
         <ActiveHomeContent
           status={status}
           periods={periods}
