@@ -49,34 +49,36 @@ export function ShiftsListScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
-      <ScreenPageTitle
-        title={t('tabs.shifts')}
-        right={
-          <Pressable
-            accessibilityRole="button"
-            accessibilityLabel={t('shifts.addA11y')}
-            onPress={() => {
-              navigation.navigate('AddRotation');
-            }}
-            className="px-2 active:opacity-60"
-            hitSlop={8}
-          >
-            <Ionicons
-              name="add"
-              size={SCREEN_PAGE_TITLE_ICON_SIZE}
-              color={colors.brand}
-            />
-          </Pressable>
-        }
-      />
       <SectionList
         sections={sections}
         keyExtractor={keyExtractor}
+        ListHeaderComponent={
+          <ScreenPageTitle
+            title={t('tabs.shifts')}
+            right={
+              <Pressable
+                accessibilityRole="button"
+                accessibilityLabel={t('shifts.addA11y')}
+                onPress={() => {
+                  navigation.navigate('AddRotation');
+                }}
+                className="px-2 active:opacity-60"
+                hitSlop={8}
+              >
+                <Ionicons
+                  name="add"
+                  size={SCREEN_PAGE_TITLE_ICON_SIZE}
+                  color={colors.brand}
+                />
+              </Pressable>
+            }
+          />
+        }
+        ListHeaderComponentStyle={{ marginHorizontal: -SCREEN_GUTTER }}
         contentContainerStyle={{
           flexGrow: 1,
           gap: 12,
           paddingHorizontal: SCREEN_GUTTER,
-          paddingTop: 12,
           paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
         }}
         stickySectionHeadersEnabled={false}
