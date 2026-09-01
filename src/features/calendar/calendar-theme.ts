@@ -150,11 +150,14 @@ export function calendarCardStyle(colors: ThemeColors) {
 /** Canvas gap between year-view month cards. */
 export const CALENDAR_LIST_ITEM_GAP = 12;
 
-const MONTH_TITLE_LINE_HEIGHT = 38;
+/** Month title line height — shared by the month header and the year-list title. */
+export const CALENDAR_MONTH_TITLE_LINE_HEIGHT = 46;
+/** Weekday label line height — pinned so the list item pitch stays exact. */
+export const CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT = 20;
+
 const HEADER_MARGIN_BOTTOM = 8;
 const WEEKDAY_ROW_MARGIN_TOP = 4;
 const DAY_HEADER_MARGIN_TOP = 2;
-const DAY_HEADER_FONT_SIZE = 14;
 const DAY_HEADER_MARGIN_BOTTOM = 7;
 const WEEK_COUNT = 6;
 const WEEK_ROW_HEIGHT = CELL_SIZE + CALENDAR_WEEK_ROW_GAP;
@@ -167,10 +170,11 @@ export const CALENDAR_WEEKDAY_ROW_MARGIN_TOP =
   HEADER_MARGIN_BOTTOM + WEEKDAY_ROW_MARGIN_TOP + DAY_HEADER_MARGIN_TOP;
 export const CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM = DAY_HEADER_MARGIN_BOTTOM;
 
-const listHeaderHeight = MONTH_TITLE_LINE_HEIGHT + HEADER_MARGIN_BOTTOM;
+const listHeaderHeight =
+  CALENDAR_MONTH_TITLE_LINE_HEIGHT + HEADER_MARGIN_BOTTOM;
 const listWeekdayRowHeight =
   CALENDAR_WEEKDAY_ROW_MARGIN_TOP +
-  DAY_HEADER_FONT_SIZE +
+  CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT +
   CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM;
 const listMonthGridHeight =
   WEEK_COUNT * WEEK_ROW_HEIGHT + (WEEK_COUNT - 1) * CALENDAR_WEEK_ROW_GAP;
@@ -184,7 +188,8 @@ export const CALENDAR_LIST_CARD_HEIGHT =
 
 /**
  * CalendarList getItemLayout pitch. Must match card height + gap or the list
- * opens scrolled past the current month.
+ * opens scrolled past the current month. The title / weekday line heights above
+ * are authoritative — change them here, not in the header components.
  */
 export const CALENDAR_LIST_ITEM_HEIGHT =
   CALENDAR_LIST_CARD_HEIGHT + CALENDAR_LIST_ITEM_GAP;

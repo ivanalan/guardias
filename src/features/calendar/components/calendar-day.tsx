@@ -117,11 +117,19 @@ function CalendarDayInner({
   const hasPrimary = markContext.shiftColorByDate.has(iso);
   const secondaryColor = markContext.secondaryShiftColorByDate.get(iso);
   const hasSecondary = secondaryColor != null;
-  const dimmedByFilter = isDayDimmedByFilter(markContext.filter, {
-    hasPrimary,
-    hasSecondary,
-    markKind,
-  });
+  const dimmedByFilter = isDayDimmedByFilter(
+    markContext.filter,
+    {
+      hasPrimary,
+      hasSecondary,
+      markKind,
+    },
+    {
+      inactive,
+      iso,
+      visibleMonthKey: markContext.visibleMonthKey,
+    },
+  );
   const labelAlpha = markColorAlpha(dimmedByFilter, isPast);
   const secondaryDot =
     !inactive && secondaryColor != null ? (

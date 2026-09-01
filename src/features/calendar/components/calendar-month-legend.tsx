@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import type { ComponentProps } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '../../../theme/theme-context';
@@ -11,26 +10,24 @@ import {
   type CalendarLegendFilterState,
 } from '../build-marked-dates';
 
-type IconName = ComponentProps<typeof Ionicons>['name'];
-
 type Props = {
   shiftDayCount: number;
   secondaryShiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
-  /** Period color for the shifts chip (border + selected fill). */
+  /** Period color for the shifts chip (dot + selected fill). */
   shiftColor: string;
-  /** Primary period label for the shifts pill. */
+  /** Primary period label for the shifts chip. */
   primaryLabel: string | null;
-  /** Friend period color; null hides the secondary pill. */
+  /** Friend period color; null hides the secondary chip. */
   secondaryShiftColor: string | null;
-  /** Friend period label for the secondary pill. */
+  /** Friend period label for the secondary chip. */
   secondaryLabel: string | null;
   filter: CalendarLegendFilterState;
   onFilterChange: (filter: CalendarLegendFilterState) => void;
 };
 
-/** Summary pills: month counts + multi-select calendar filters. */
+/** Summary chips: month counts + multi-select calendar filters. */
 export function CalendarMonthLegend({
   shiftDayCount,
   secondaryShiftDayCount,
@@ -45,7 +42,6 @@ export function CalendarMonthLegend({
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
-  const filterActive = filter.size > 0;
 
   const toggle = (kind: CalendarLegendFilterKey) => {
     onFilterChange(toggleLegendFilter(filter, kind));
@@ -64,8 +60,10 @@ export function CalendarMonthLegend({
   return (
     <View className="mt-4 flex-row flex-wrap gap-3">
       {shiftDayCount > 0 ? (
-        <LegendPill
-          label={
+        <LegendChip
+          label={trimmedPrimary ?? t('calendar.legend.myShiftsLabel')}
+          count={shiftDayCount}
+          accessibilityLabel={
             trimmedPrimary != null
               ? t('calendar.legend.periodShiftsSummary', {
                   name: trimmedPrimary,
@@ -74,50 +72,49 @@ export function CalendarMonthLegend({
               : t('calendar.legend.myShiftsSummary', { count: shiftDayCount })
           }
           accessibilityHint={t('calendar.legend.filterShiftsHint')}
-          borderColor={shiftColor}
+          color={shiftColor}
           selected={filter.has('shifts')}
-          muted={filterActive && !filter.has('shifts')}
           onPress={() => toggle('shifts')}
           colors={colors}
-          icon="heart"
         />
       ) : null}
       {showSecondary ? (
-        <LegendPill
-          label={t('calendar.legend.periodShiftsSummary', {
+        <LegendChip
+          label={secondaryLabel.trim()}
+          count={secondaryShiftDayCount}
+          accessibilityLabel={t('calendar.legend.periodShiftsSummary', {
             name: secondaryLabel,
             count: secondaryShiftDayCount,
           })}
           accessibilityHint={t('calendar.legend.filterFriendShiftsHint')}
-          borderColor={secondaryShiftColor}
+          color={secondaryShiftColor}
           selected={filter.has('secondaryShifts')}
-          muted={filterActive && !filter.has('secondaryShifts')}
           onPress={() => toggle('secondaryShifts')}
           colors={colors}
-          icon="people"
         />
       ) : null}
-      <LegendPill
-        label={t('calendar.legend.freeWeekendsSummary', {
+      <LegendChip
+        label={t('calendar.legend.freeWeekendsLabel')}
+        count={freeWeekendCount}
+        accessibilityLabel={t('calendar.legend.freeWeekendsSummary', {
           count: freeWeekendCount,
         })}
         accessibilityHint={t('calendar.legend.filterFreeWeekendsHint')}
-        borderColor={colors.bgWeekend}
+        color={colors.bgWeekend}
         selected={filter.has('freeWeekends')}
-        muted={filterActive && !filter.has('freeWeekends')}
         onPress={() => toggle('freeWeekends')}
         colors={colors}
-        icon="leaf"
       />
       {vacationDayCount > 0 ? (
-        <LegendPill
-          label={t('calendar.legend.vacationSummary', {
+        <LegendChip
+          label={t('calendar.legend.vacationLabel')}
+          count={vacationDayCount}
+          accessibilityLabel={t('calendar.legend.vacationSummary', {
             count: vacationDayCount,
           })}
           accessibilityHint={t('calendar.legend.filterVacationHint')}
-          borderColor={colors.bgVacation}
+          color={colors.bgVacation}
           selected={filter.has('vacation')}
-          muted={filterActive && !filter.has('vacation')}
           onPress={() => toggle('vacation')}
           colors={colors}
         />
@@ -126,57 +123,81 @@ export function CalendarMonthLegend({
   );
 }
 
-type LegendPillProps = {
+/** Fixed leading-graphic box so the dot and the close icon occupy equal space. */
+const LEADING_SLOT_SIZE = 14;
+
+type LegendChipProps = {
   label: string;
+  count: number;
+  accessibilityLabel: string;
   accessibilityHint: string;
-  borderColor: string;
+  color: string;
   selected: boolean;
-  muted: boolean;
   onPress: () => void;
   colors: ThemeColors;
-  icon?: IconName;
 };
 
-function LegendPill({
+function LegendChip({
   label,
+  count,
+  accessibilityLabel,
   accessibilityHint,
-  borderColor,
+  color,
   selected,
-  muted,
   onPress,
   colors,
-  icon,
-}: LegendPillProps) {
-  const accent = selected ? colors.onColor : borderColor;
-
+}: LegendChipProps) {
   return (
     <Pressable
       accessibilityRole="button"
       accessibilityState={{ selected }}
-      accessibilityLabel={label}
+      accessibilityLabel={accessibilityLabel}
       accessibilityHint={accessibilityHint}
       onPress={onPress}
-      className="active:opacity-70"
+      className="flex-row items-center gap-2 active:opacity-70"
       style={{
         borderCurve: 'continuous',
-        borderRadius: 16,
-        borderWidth: 1.5,
-        borderColor,
-        backgroundColor: selected ? borderColor : colors.bg1,
-        paddingHorizontal: 16,
-        paddingVertical: 10,
-        opacity: muted ? 0.45 : 1,
-        flexDirection: 'row',
-        alignItems: 'center',
-        gap: 8,
+        borderRadius: 999,
+        backgroundColor: selected ? color : colors.bg1,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
       }}
     >
-      {icon != null ? <Ionicons name={icon} size={14} color={accent} /> : null}
+      <View
+        className="items-center justify-center"
+        style={{ width: LEADING_SLOT_SIZE, height: LEADING_SLOT_SIZE }}
+      >
+        {selected ? (
+          <Ionicons
+            name="close"
+            size={LEADING_SLOT_SIZE}
+            color={colors.onColor}
+          />
+        ) : (
+          <View
+            style={{
+              width: 10,
+              height: 10,
+              borderRadius: 5,
+              backgroundColor: color,
+            }}
+          />
+        )}
+      </View>
       <Text
         className="font-mono text-sm"
         style={{ color: selected ? colors.onColor : colors.text }}
       >
         {label}
+      </Text>
+      <Text
+        className="font-mono text-sm"
+        style={{
+          color: selected ? colors.onColor : colors.textMuted,
+          opacity: selected ? 0.75 : 1,
+        }}
+      >
+        {count}
       </Text>
     </Pressable>
   );

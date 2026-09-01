@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Guardias — Calendar legend options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>
+  /* ---------------------------------------------------------------
+     Workbench chrome (not part of the app)
+     --------------------------------------------------------------- */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 28px 96px;
+    background: #14161a;
+    color: #e7e9ee;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1 { font: 600 22px/1.3 inherit; margin: 0 0 6px; }
+  h2 { font: 600 15px/1.3 inherit; margin: 40px 0 14px; color: #cfd4de; }
+  .sub { color: #9aa2b1; max-width: 78ch; margin: 0 0 24px; }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0 0 28px;
+    background: rgba(20, 22, 26, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; }
+  .toolbar .glabel { color: #8b93a3; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+  .seg { display: inline-flex; background: #1d2027; border: 1px solid #2b3038; border-radius: 8px; padding: 2px; }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: #aeb6c4;
+    font: 500 13px/1 inherit; padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: #3a4250; color: #fff; }
+  .ghost {
+    appearance: none; background: transparent; color: #aeb6c4;
+    border: 1px solid #2b3038; border-radius: 8px; padding: 7px 12px;
+    font: 500 13px/1 inherit; cursor: pointer;
+  }
+  .ghost:hover { color: #fff; border-color: #465065; }
+
+  .frames { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-start; }
+
+  .frame { width: 344px; }
+  .frame header { margin: 0 0 10px; }
+  .frame .tag {
+    display: inline-block; font: 600 11px/1 inherit; letter-spacing: .08em;
+    text-transform: uppercase; color: #8b93a3; margin-bottom: 5px;
+  }
+  .frame .tag.rec { color: #7ee0a8; }
+  .frame h3 { font: 600 15px/1.3 inherit; margin: 0 0 4px; color: #f2f4f8; }
+  .frame .why { color: #9aa2b1; font-size: 13px; margin: 0; min-height: 3em; }
+
+  /* Simulated device surface — this is where app theme tokens take over */
+  .device {
+    border-radius: 26px;
+    padding: 18px 16px 20px;      /* stands in for px-gutter (24) at this scale */
+    background: var(--bg);
+    border: 1px solid #2b3038;
+    overflow: hidden;
+  }
+
+  .notes { margin-top: 12px; font-size: 12.5px; color: #9aa2b1; }
+  .notes ul { margin: 6px 0 0; padding-left: 18px; }
+  .notes li { margin-bottom: 3px; }
+  .notes .con { color: #e9a3a3; }
+  .notes .pro { color: #9fd8b4; }
+
+  .verdict {
+    margin-top: 34px; padding: 20px 22px; max-width: 96ch;
+    background: #191c22; border: 1px solid #262a32; border-radius: 12px;
+  }
+  .verdict p { color: #b9c0cd; }
+  .verdict strong { color: #f2f4f8; }
+  .verdict ol { color: #b9c0cd; padding-left: 20px; }
+  .verdict code { background: #23272f; padding: 1px 5px; border-radius: 4px; font-size: 12.5px; }
+
+  /* ---------------------------------------------------------------
+     App theme tokens — mirrored from src/theme/colors.ts
+     --------------------------------------------------------------- */
+  .device[data-scheme="light"] {
+    --bg: #F6F1EC;
+    --bg1: #FFFFFF;
+    --text: #1C1B1F;
+    --brand: #1C1B1F;
+    --onColor: #FFFFFF;
+    --weekend: #007259;
+    --vacation: #4A47EF;
+    --textMuted: #49454F;
+    --textDisabled: #C4C4C4;
+    --border: #E5E5E5;
+    --accentRed: #DC211E;
+    --accentBlue: #2F69F3;
+  }
+  .device[data-scheme="dark"] {
+    --bg: #171616;
+    --bg1: #2A2927;
+    --text: #E8DFDF;
+    --brand: #E8DFDF;
+    --onColor: #FFFFFF;
+    --weekend: #0A6A42;
+    --vacation: #3E3CD4;
+    --textMuted: #A8A29E;
+    --textDisabled: #5C5C5C;
+    --border: #3F3F3F;
+    --accentRed: #C11E1E;
+    --accentBlue: #1C4FA1;
+  }
+
+  /* Geometry from calendar-day-marker.ts / layout.ts, scaled for the page */
+  .device {
+    --cell: 34px;          /* CELL_SIZE 36 */
+    --radius: 13px;        /* BORDER_RADIUS 14 */
+    --rowgap: 8px;         /* CALENDAR_WEEK_ROW_GAP */
+    --dim: 0.3;            /* DIM_OPACITY */
+  }
+
+  .mono { font-family: Menlo, Consolas, "DejaVu Sans Mono", monospace; }
+
+  /* --- calendar card ------------------------------------------- */
+  .card {
+    background: var(--bg1);
+    border-radius: 22px;
+    padding: 14px 12px 16px;
+  }
+  .card.with-footer { padding-bottom: 0; }
+
+  .cardhead {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 6px 10px;
+  }
+  .cardhead .month {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 30px; line-height: 1.1; color: var(--text);
+  }
+  .cardhead .arrows { display: flex; gap: 14px; color: var(--text); opacity: .75; font-size: 17px; }
+
+  .wdays, .week { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .wdays span {
+    text-align: center; font-size: 12px; color: var(--text); opacity: .8;
+    padding-bottom: 6px;
+  }
+
+  .week { position: relative; }
+  .daycell {
+    position: relative;
+    height: calc(var(--cell) + var(--rowgap));
+    display: flex; align-items: center; justify-content: center;
+  }
+  .mark {
+    position: relative; z-index: 1;
+    width: var(--cell); height: var(--cell);
+    border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; color: var(--text);
+  }
+  .mark.filled { color: var(--onColor); }
+  .mark.today { border: 1.5px solid var(--brand); }
+  .mark.today.filled { border: 1.5px solid var(--brand); padding: 2px; }
+  .mark.today.filled > i {
+    display: flex; align-items: center; justify-content: center;
+    flex: 1; align-self: stretch; border-radius: 8px; font-style: normal;
+  }
+  .daycell.inactive .mark { color: var(--textDisabled); }
+  /* Sat–Sun free-weekend capsule, painted from Saturday */
+  .wkspan {
+    position: absolute; z-index: 0;
+    top: 50%; margin-top: calc(var(--cell) / -2);
+    left: 50%; margin-left: calc(var(--cell) / -2);
+    right: -50%; margin-right: calc(var(--cell) / -2);
+    height: var(--cell);
+    border-radius: var(--radius);
+    background: var(--weekend);
+  }
+  .dot2 {
+    position: absolute; bottom: 1px; left: 50%; transform: translateX(-50%);
+    width: 5px; height: 5px; border-radius: 50%; z-index: 2;
+  }
+  [data-dim="1"] { opacity: var(--dim); }
+
+  /* --- Option A: current outlined pills ------------------------- */
+  .legendA { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+  .pillA {
+    appearance: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 8px;
+    border: 1.5px solid var(--c);
+    border-radius: 16px;
+    background: var(--bg1);
+    padding: 10px 16px;
+    font-family: Menlo, Consolas, monospace; font-size: 13px;
+    color: var(--text);
+  }
+  .pillA[data-selected="1"] { background: var(--c); color: var(--onColor); }
+  .pillA[data-muted="1"] { opacity: .45; }
+  .pillA svg { width: 14px; height: 14px; fill: currentColor; flex: none; }
+  .pillA[data-selected="0"] svg { fill: var(--c); }
+
+  /* --- Option B: color-key rows --------------------------------- */
+  .legendB { margin-top: 16px; }
+  .rowB {
+    appearance: none; cursor: pointer; width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    background: transparent; border: 0;
+    padding: 9px 8px; border-radius: 12px;
+    text-align: left;
+  }
+  .rowB:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
+  .rowB .lbl {
+    flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    font-family: Menlo, Consolas, monospace; font-size: 13.5px; color: var(--text);
+  }
+  .rowB .num {
+    font-family: Menlo, Consolas, monospace; font-size: 13.5px; color: var(--textMuted);
+    font-variant-numeric: tabular-nums;
+  }
+  .rowB[data-selected="0"][data-any="1"] .lbl,
+  .rowB[data-selected="0"][data-any="1"] .num { color: var(--textMuted); }
+
+  /* mark tokens quote the grid, at ~half scale */
+  .tok { flex: none; display: block; }
+  .tok.sq { width: 18px; height: 18px; border-radius: 7px; background: var(--c); }
+  .tok.cap { width: 28px; height: 16px; border-radius: 8px; background: var(--c); }
+  .rowB[data-selected="0"][data-any="1"] .tok.sq,
+  .rowB[data-selected="0"][data-any="1"] .tok.cap {
+    background: transparent; box-shadow: inset 0 0 0 2px var(--c);
+  }
+  /* keep the weekend capsule the same optical width as a square token */
+  .tokwrap { flex: none; width: 28px; display: flex; justify-content: center; }
+
+  .showall {
+    appearance: none; cursor: pointer; background: transparent; border: 0;
+    margin: 4px 0 0 8px; padding: 6px 0;
+    font-family: Menlo, Consolas, monospace; font-size: 13px;
+    color: var(--text); text-decoration: underline; text-underline-offset: 3px;
+  }
+  .showall[hidden] { display: none; }
+
+  /* --- Option C: tinted capsules, one non-wrapping row ---------- */
+  .legendC {
+    margin-top: 16px;
+    display: flex; gap: 8px;
+    overflow-x: auto; scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .legendC::-webkit-scrollbar { display: none; }
+  .chipC {
+    appearance: none; cursor: pointer; flex: none;
+    display: inline-flex; align-items: center; gap: 7px;
+    border: 0; border-radius: 999px;
+    background: color-mix(in srgb, var(--text) 6%, transparent);
+    padding: 8px 13px;
+    font-family: Menlo, Consolas, monospace; font-size: 13px;
+    color: var(--textMuted);
+  }
+  .chipC .cdot { width: 9px; height: 9px; border-radius: 50%; background: var(--c); flex: none; }
+  .chipC .cnum { font-variant-numeric: tabular-nums; opacity: .85; }
+  .chipC[data-selected="1"] {
+    background: color-mix(in srgb, var(--c) 16%, transparent);
+    color: var(--text);
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 42%, transparent);
+  }
+
+  /* --- Option D: legend docked inside the calendar card --------- */
+  .legendD { margin-top: 14px; border-top: 1px solid var(--border); padding: 6px 0 4px; }
+  .legendD .rowB { padding: 7px 6px; border-radius: 10px; }
+  .legendD .dhead {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 8px 6px 2px;
+  }
+  .legendD .dhead .cap {
+    font-family: Menlo, Consolas, monospace; font-size: 11.5px;
+    letter-spacing: .04em; text-transform: uppercase; color: var(--textMuted);
+  }
+  .legendD .showall { margin: 0; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Calendar legend — UI/UX options</h1>
+<p class="sub">
+  Live mockup of the block under the month grid (<code style="color:#cdd3de">CalendarMonthLegend</code>). Colors, 36pt marks,
+  radius 14, mono type and the 0.3 dim are mirrored from the real theme. The legend is interactive in every frame: tap an
+  item to focus that layer and the grid dims the rest, exactly like today's filter.
+</p>
+
+<div class="toolbar">
+  <div class="group">
+    <span class="glabel">Theme</span>
+    <div class="seg" id="segScheme">
+      <button data-v="light" aria-pressed="true">Light</button>
+      <button data-v="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+  <div class="group">
+    <span class="glabel">Language</span>
+    <div class="seg" id="segLang">
+      <button data-v="es" aria-pressed="true">ES</button>
+      <button data-v="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+  <div class="group">
+    <span class="glabel">Rotation names</span>
+    <div class="seg" id="segNames">
+      <button data-v="short" aria-pressed="true">Short</button>
+      <button data-v="long" aria-pressed="false">Long (worst case)</button>
+    </div>
+  </div>
+  <div class="group">
+    <span class="glabel">Layers</span>
+    <div class="seg" id="segLayers">
+      <button data-v="4" aria-pressed="true">4 (friend + vacation)</button>
+      <button data-v="2" aria-pressed="false">2 (solo)</button>
+    </div>
+  </div>
+  <button class="ghost" id="btnReset">Clear all filters</button>
+</div>
+
+<div class="frames" id="frames"></div>
+
+<div class="verdict">
+  <p><strong>Recommendation: B, and steal D's divider.</strong> The pills read as dated for three reasons that a restyle alone
+  doesn't fix: the thick colored stroke is the 2017-era Material filter chip, variable-width pills wrap into a ragged
+  tag cloud as soon as a rotation has a real name, and nothing signals that a legend is also a filter.</p>
+  <ol>
+    <li><strong>B (color-key rows)</strong> — the token <em>is</em> the mark from the grid, so the legend teaches the color
+      code instead of restating it in a border. Fixed one-per-line layout means a long rotation name truncates instead of
+      reflowing the block. Selection moves into the token (filled vs hollow) so unselected rows read as "not focused"
+      rather than disabled, and <em>Show all</em> gives the filtered state an exit.</li>
+    <li><strong>D</strong> is B docked inside the white card under a hairline. It stops the legend from floating in the
+      cream background and makes it feel like part of the calendar. Cheap to add on top of B.</li>
+    <li><strong>C</strong> is the option if you want to keep chip shapes: no colored stroke, tint fill for selection,
+      horizontal scroll so it never wraps. A visual refresh, not a better legend.</li>
+  </ol>
+  <p>None of these touch the filter logic in <code>build-marked-dates.ts</code> or the dimming in
+  <code>calendar-day.tsx</code> — the change is confined to <code>calendar-month-legend.tsx</code> plus a few i18n keys
+  (count split out of the label, new <em>Show all</em> / <em>Mostrar todo</em>).</p>
+</div>
+
+<script>
+/* ============================================================
+   Fake month: August 2026 (Aug 1 is a Saturday), Monday-start
+   ============================================================ */
+const YEAR = 2026, MONTH = 7;            // 0-based month
+const TODAY = '2026-08-30';
+
+const SHIFTS   = [3, 7, 11, 15, 19, 23, 27, 31];   // every 4th day, like an A/B/C/D rotation
+const FRIEND   = [4, 8, 12, 16, 20, 24, 28];
+const VACATION = [24, 25, 26];
+const FREE_WEEKENDS = [[1, 2], [8, 9], [29, 30]];  // weekends with no shift
+
+const iso = (d) => `${YEAR}-${String(MONTH + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+const freeSet = new Set(FREE_WEEKENDS.flat());
+const satStarts = new Set(FREE_WEEKENDS.map(([sat]) => sat));
+
+const COPY = {
+  es: {
+    month: 'Agosto',
+    wdays: ['L', 'M', 'M', 'J', 'V', 'S', 'D'],
+    mine: 'Mis guardias',
+    free: 'Fines libres',
+    vac: 'Vacaciones',
+    showAll: 'Mostrar todo',
+    key: 'Referencia',
+    nameShort: 'Cirugía',
+    nameLong: 'R1 Cirugía General',
+    friendShort: 'Ana',
+    friendLong: 'Ana — Pediatría T2'
+  },
+  en: {
+    month: 'August',
+    wdays: ['M', 'T', 'W', 'T', 'F', 'S', 'S'],
+    mine: 'My shifts',
+    free: 'Free weekends',
+    vac: 'Vacation',
+    showAll: 'Show all',
+    key: 'Key',
+    nameShort: 'Surgery',
+    nameLong: 'R1 General Surgery',
+    friendShort: 'Ana',
+    friendLong: 'Ana — Pediatrics T2'
+  }
+};
+
+const ICONS = {
+  heart: '<svg viewBox="0 0 24 24"><path d="M12 21s-6.7-4.4-9.2-8.1C.9 10.2 2 6.5 5.2 5.4c2-.7 4 .1 5 1.7 1-1.6 3-2.4 5-1.7 3.2 1.1 4.3 4.8 2.4 7.5C18.7 16.6 12 21 12 21z"/></svg>',
+  people: '<svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><circle cx="16.6" cy="9" r="2.4"/><path d="M2.5 19c0-3.4 2.9-5.3 6.5-5.3s6.5 1.9 6.5 5.3z"/><path d="M17 13.9c2.7.2 4.5 1.9 4.5 4.4H17z"/></svg>',
+  leaf: '<svg viewBox="0 0 24 24"><path d="M20.5 3.5C10 3.5 4 8.8 4 17v3.5h2.2V17c0-4.4 2.7-7.6 7.3-8.9-3 2.1-4.8 5.1-5.2 8.9 7.3-1.1 12.6-6.3 12.2-13.5z"/></svg>'
+};
+
+/* ---------- state ----------
+   Overridable from the URL so one exact state can be shared, e.g.
+   ?scheme=dark&lang=en&names=long&filter=shifts                      */
+const state = { scheme: 'light', lang: 'es', names: 'short', layers: 4 };
+const query = new URLSearchParams(location.search);
+for (const k of ['scheme', 'lang', 'names']) {
+  if (query.get(k)) state[k] = query.get(k);
+}
+if (query.get('layers')) state.layers = Number(query.get('layers'));
+
+const OPTIONS = [
+  {
+    id: 'A', tag: 'Baseline — today', name: 'Outlined pills (current)',
+    why: 'Colored 1.5px stroke, filled when selected, whole pill fades to 45% when another layer is focused.',
+    pro: [], con: [
+      'Colored-stroke chip is the 2017-era Material look',
+      'Wraps to a ragged 2-row tag cloud with real names',
+      'Muted 45% reads as disabled, not "not focused"',
+      'Color sits on a border; the grid uses filled marks',
+      'No way to tell you are filtered, or to clear it'
+    ]
+  },
+  {
+    id: 'B', tag: 'Recommended', rec: true, name: 'Color-key rows',
+    why: 'One row per layer: the actual mark, the name, the count. Selection lives in the token; Show all clears.',
+    pro: [
+      'Token is the same shape as the grid mark',
+      'Long names truncate instead of reflowing',
+      'Hollow token = not focused, not disabled',
+      'Count is a numeral, not chip text',
+      'Show all appears only when filtered'
+    ],
+    con: ['Taller than one chip row (about 4 x 40pt)']
+  },
+  {
+    id: 'D', tag: 'Recommended add-on', rec: true, name: 'Key docked in the card',
+    why: 'Same rows as B, moved inside the white calendar card under a hairline divider.',
+    pro: [
+      'Legend belongs to the calendar instead of floating',
+      'Hairline replaces 4 competing borders',
+      'Reads as a caption, so it stops competing with the grid'
+    ],
+    con: ['Makes the card taller', 'Slightly less obvious that rows are tappable']
+  },
+  {
+    id: 'C', tag: 'Alternative', name: 'Tinted capsules, one row',
+    why: 'Keeps the chip shape but drops the stroke: color dot, tint fill for selection, scrolls instead of wrapping.',
+    pro: [
+      'Smallest change, still feels current',
+      'Never wraps — horizontal scroll',
+      'Tint fill is calmer than a solid fill'
+    ],
+    con: [
+      'Still a chip row, so legend-vs-filter stays ambiguous',
+      'Off-screen chips are easy to miss',
+      'Color reduced to a small dot'
+    ]
+  }
+];
+
+/* ---------- layer model ---------- */
+function layers() {
+  const c = COPY[state.lang];
+  const long = state.names === 'long';
+  const out = [{
+    key: 'shifts',
+    label: long ? c.nameLong : c.nameShort,
+    count: SHIFTS.length,
+    color: 'var(--accentRed)',
+    token: 'sq',
+    icon: 'heart'
+  }];
+  if (state.layers === 4) {
+    out.push({
+      key: 'secondaryShifts',
+      label: long ? c.friendLong : c.friendShort,
+      count: FRIEND.length,
+      color: 'var(--accentBlue)',
+      token: 'sq',
+      icon: 'people'
+    });
+  }
+  out.push({
+    key: 'freeWeekends',
+    label: c.free,
+    count: FREE_WEEKENDS.length,
+    color: 'var(--weekend)',
+    token: 'cap',
+    icon: 'leaf'
+  });
+  if (state.layers === 4) {
+    out.push({
+      key: 'vacation',
+      label: c.vac,
+      count: VACATION.length,
+      color: 'var(--vacation)',
+      token: 'sq',
+      icon: null
+    });
+  }
+  return out;
+}
+
+/* Option A keeps the "Name (n)" string that ships today */
+const labelA = (l) => `${l.label} (${l.count})`;
+
+/* ---------- grid ---------- */
+function markKind(day) {
+  if (state.layers === 4 && VACATION.includes(day)) return 'vacation';
+  if (SHIFTS.includes(day)) return 'shift';
+  if (freeSet.has(day)) return 'freeWeekend';
+  return 'none';
+}
+
+function buildGrid(filter) {
+  const first = new Date(YEAR, MONTH, 1);
+  const daysInMonth = new Date(YEAR, MONTH + 1, 0).getDate();
+  const lead = (first.getDay() + 6) % 7;            // Monday-start offset
+  const cells = [];
+  for (let i = 0; i < lead; i++) cells.push(null);
+  for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+  while (cells.length % 7) cells.push(null);
+
+  let html = '';
+  for (let w = 0; w < cells.length / 7; w++) {
+    html += '<div class="week">';
+    for (let i = 0; i < 7; i++) {
+      const day = cells[w * 7 + i];
+      if (day == null) { html += '<div class="daycell inactive"><span class="mark mono"></span></div>'; continue; }
+
+      const kind = markKind(day);
+      const isToday = iso(day) === TODAY;
+      const hasFriend = state.layers === 4 && FRIEND.includes(day) && kind !== 'vacation';
+      const dim = filter.size > 0 && !filter.has(kindToKey(kind, hasFriend)) ? '1' : '0';
+
+      let span = '';
+      if (kind === 'freeWeekend' && satStarts.has(day)) {
+        span = `<span class="wkspan" data-dim="${dim}"></span>`;
+      }
+
+      let mark;
+      if (kind === 'shift' || kind === 'vacation') {
+        const bg = kind === 'vacation' ? 'var(--vacation)' : 'var(--accentRed)';
+        mark = isToday
+          ? `<span class="mark mono today filled" data-dim="${dim}"><i style="background:${bg}">${day}</i></span>`
+          : `<span class="mark mono filled" data-dim="${dim}" style="background:${bg}">${day}</span>`;
+      } else if (isToday) {
+        mark = `<span class="mark mono today">${day}</span>`;
+      } else {
+        mark = `<span class="mark mono">${day}</span>`;
+      }
+
+      const dot = hasFriend
+        ? `<span class="dot2" data-dim="${filter.size > 0 && !filter.has('secondaryShifts') ? '1' : '0'}" style="background:var(--accentBlue)"></span>`
+        : '';
+
+      html += `<div class="daycell">${span}${mark}${dot}</div>`;
+    }
+    html += '</div>';
+  }
+  return html;
+}
+
+/* which filter key a day satisfies */
+function kindToKey(kind, hasFriend) {
+  if (kind === 'vacation') return 'vacation';
+  if (kind === 'shift') return 'shifts';
+  if (kind === 'freeWeekend') return 'freeWeekends';
+  return hasFriend ? 'secondaryShifts' : '__none__';
+}
+
+/* ---------- legend variants ---------- */
+function legendHTML(optId, filter) {
+  const c = COPY[state.lang];
+  const ls = layers();
+  const any = filter.size > 0 ? '1' : '0';
+
+  if (optId === 'A') {
+    return `<div class="legendA">${ls.map((l) => {
+      const sel = filter.has(l.key) ? '1' : '0';
+      const muted = any === '1' && sel === '0' ? '1' : '0';
+      return `<button class="pillA" data-key="${l.key}" data-selected="${sel}" data-muted="${muted}" style="--c:${l.color}">
+        ${l.icon ? ICONS[l.icon] : ''}<span>${labelA(l)}</span>
+      </button>`;
+    }).join('')}</div>`;
+  }
+
+  if (optId === 'C') {
+    return `<div class="legendC">${ls.map((l) => {
+      const sel = filter.has(l.key) ? '1' : '0';
+      return `<button class="chipC" data-key="${l.key}" data-selected="${sel}" style="--c:${l.color}">
+        <span class="cdot"></span><span>${l.label}</span><span class="cnum">${l.count}</span>
+      </button>`;
+    }).join('')}
+    </div>`;
+  }
+
+  // B and D share the row markup
+  const rows = ls.map((l) => {
+    const sel = filter.has(l.key) ? '1' : '0';
+    const tok = `<span class="tokwrap"><span class="tok ${l.token}" style="--c:${l.color}"></span></span>`;
+    return `<button class="rowB" data-key="${l.key}" data-selected="${sel}" data-any="${any}">
+      ${tok}<span class="lbl">${l.label}</span><span class="num">${l.count}</span>
+    </button>`;
+  }).join('');
+
+  if (optId === 'D') {
+    return `<div class="legendD">
+      <div class="dhead">
+        <span class="cap">${c.key}</span>
+        <button class="showall" data-clear="1" ${any === '1' ? '' : 'hidden'}>${c.showAll}</button>
+      </div>
+      ${rows}
+    </div>`;
+  }
+
+  return `<div class="legendB">
+    ${rows}
+    <button class="showall" data-clear="1" ${any === '1' ? '' : 'hidden'}>${c.showAll}</button>
+  </div>`;
+}
+
+/* ---------- frames ---------- */
+const filters = new Map(OPTIONS.map((o) => [o.id, new Set()]));
+if (query.get('filter')) {
+  const keys = query.get('filter').split(',').filter(Boolean);
+  for (const set of filters.values()) keys.forEach((k) => set.add(k));
+}
+
+function frameHTML(opt) {
+  const c = COPY[state.lang];
+  const filter = filters.get(opt.id);
+  const docked = opt.id === 'D';
+  const notes = [
+    ...opt.pro.map((t) => `<li class="pro">+ ${t}</li>`),
+    ...opt.con.map((t) => `<li class="con">- ${t}</li>`)
+  ].join('');
+
+  return `
+  <section class="frame" data-opt="${opt.id}">
+    <header>
+      <span class="tag ${opt.rec ? 'rec' : ''}">${opt.id} · ${opt.tag}</span>
+      <h3>${opt.name}</h3>
+      <p class="why">${opt.why}</p>
+    </header>
+    <div class="device" data-scheme="${state.scheme}">
+      <div class="card ${docked ? 'with-footer' : ''}">
+        <div class="cardhead">
+          <span class="month">${c.month}</span>
+          <span class="arrows mono"><span>&#8249;</span><span>&#8250;</span></span>
+        </div>
+        <div class="wdays mono">${c.wdays.map((d) => `<span>${d}</span>`).join('')}</div>
+        ${buildGrid(filter)}
+        ${docked ? legendHTML('D', filter) : ''}
+      </div>
+      ${docked ? '' : legendHTML(opt.id, filter)}
+    </div>
+    <div class="notes"><ul>${notes}</ul></div>
+  </section>`;
+}
+
+function render() {
+  document.getElementById('frames').innerHTML = OPTIONS.map(frameHTML).join('');
+}
+
+/* keep the toolbar in sync when state came from the URL */
+function syncToolbar() {
+  const pairs = [
+    ['segScheme', state.scheme],
+    ['segLang', state.lang],
+    ['segNames', state.names],
+    ['segLayers', String(state.layers)]
+  ];
+  for (const [id, value] of pairs) {
+    for (const b of document.getElementById(id).children) {
+      b.setAttribute('aria-pressed', String(b.dataset.v === value));
+    }
+  }
+}
+
+/* ---------- events ---------- */
+document.addEventListener('click', (e) => {
+  const frame = e.target.closest('.frame');
+  if (frame) {
+    const id = frame.dataset.opt;
+    const clear = e.target.closest('[data-clear]');
+    if (clear) { filters.get(id).clear(); render(); return; }
+    const btn = e.target.closest('[data-key]');
+    if (btn) {
+      const set = filters.get(id);
+      const key = btn.dataset.key;
+      set.has(key) ? set.delete(key) : set.add(key);
+      render();
+      return;
+    }
+  }
+
+  const seg = e.target.closest('.seg button');
+  if (seg) {
+    const which = seg.parentElement.id;
+    const v = seg.dataset.v;
+    if (which === 'segScheme') state.scheme = v;
+    if (which === 'segLang') state.lang = v;
+    if (which === 'segNames') state.names = v;
+    if (which === 'segLayers') {
+      state.layers = Number(v);
+      // dropping layers must also drop their filters, like the app's effects do
+      if (state.layers === 2) {
+        for (const set of filters.values()) { set.delete('secondaryShifts'); set.delete('vacation'); }
+      }
+    }
+    [...seg.parentElement.children].forEach((b) => b.setAttribute('aria-pressed', String(b === seg)));
+    render();
+    return;
+  }
+
+  if (e.target.id === 'btnReset') {
+    for (const set of filters.values()) set.clear();
+    render();
+  }
+});
+
+syncToolbar();
+render();
+</script>
+</body>
+</html>

@@ -2,6 +2,7 @@ import type XDate from 'xdate';
 
 import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
+import { CALENDAR_MONTH_TITLE_LINE_HEIGHT } from '../calendar-theme';
 import { CalendarWeekdayRow } from './calendar-weekday-row';
 
 /** Month title for react-native-calendars `renderHeader` (avoids serif clipping). */
@@ -19,7 +20,7 @@ export function CalendarMonthTitle({
       <Text
         className="font-serif text-4xl"
         style={{
-          lineHeight: 46,
+          lineHeight: CALENDAR_MONTH_TITLE_LINE_HEIGHT,
           paddingRight: 8,
           flexShrink: 0,
           color: colors.text,

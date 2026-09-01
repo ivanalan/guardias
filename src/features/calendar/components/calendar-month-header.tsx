@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
+import { CALENDAR_MONTH_TITLE_LINE_HEIGHT } from '../calendar-theme';
 import { CalendarWeekdayRow } from './calendar-weekday-row';
 
 type CalendarMonthHeaderProps = {
@@ -28,7 +29,11 @@ export function CalendarMonthHeader({
       <View className="flex-row items-center justify-between">
         <Text
           className="font-serif text-4xl"
-          style={{ lineHeight: 46, flexShrink: 0, color: colors.text }}
+          style={{
+            lineHeight: CALENDAR_MONTH_TITLE_LINE_HEIGHT,
+            flexShrink: 0,
+            color: colors.text,
+          }}
         >
           {date?.toString(monthFormat) ?? ''}
         </Text>

@@ -36,6 +36,38 @@ export function removeLegendFilter(
   return next;
 }
 
+/** Center-month legend counts used to drop filters that no longer apply. */
+export type LegendFilterMonthCounts = {
+  shiftDayCount: number;
+  secondaryShiftDayCount: number;
+  freeWeekendCount: number;
+  vacationDayCount: number;
+};
+
+const FILTER_COUNT_KEYS: readonly [
+  CalendarLegendFilterKey,
+  keyof LegendFilterMonthCounts,
+][] = [
+  ['shifts', 'shiftDayCount'],
+  ['secondaryShifts', 'secondaryShiftDayCount'],
+  ['freeWeekends', 'freeWeekendCount'],
+  ['vacation', 'vacationDayCount'],
+];
+
+/** Drop selected categories whose visible-month count is 0. */
+export function pruneLegendFilterForMonthCounts(
+  current: CalendarLegendFilterState,
+  counts: LegendFilterMonthCounts,
+): CalendarLegendFilterState {
+  let next = current;
+  for (const [key, countKey] of FILTER_COUNT_KEYS) {
+    if (counts[countKey] === 0) {
+      next = removeLegendFilter(next, key);
+    }
+  }
+  return next;
+}
+
 /** Shift day mark with the rotation’s calendar color. */
 export type ShiftDateMark = {
   date: string;

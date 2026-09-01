@@ -20,7 +20,7 @@ import type { CalendarStackParamList } from '../calendar-stack';
 import {
   buildMarkedDates,
   EMPTY_CALENDAR_FILTER,
-  removeLegendFilter,
+  pruneLegendFilterForMonthCounts,
   type CalendarLegendFilterState,
 } from '../build-marked-dates';
 import { buildCalendarDayMarkContext } from '../calendar-day-marker';
@@ -106,6 +106,7 @@ export function CalendarScreen({ navigation }: Props) {
         todayIso,
         null,
         resolvedSecondaryShiftMarks,
+        visibleMonth.slice(0, 7),
       ),
     [
       resolvedShiftMarks,
@@ -114,6 +115,7 @@ export function CalendarScreen({ navigation }: Props) {
       monthInputs.vacationDates,
       filter,
       todayIso,
+      visibleMonth,
     ],
   );
   const DayComponent = useMemo(
@@ -122,19 +124,20 @@ export function CalendarScreen({ navigation }: Props) {
   );
 
   useEffect(() => {
-    if (monthInputs.vacationDayCount === 0 && filter.has('vacation')) {
-      setFilter((prev) => removeLegendFilter(prev, 'vacation'));
-    }
-  }, [filter, monthInputs.vacationDayCount]);
-
-  useEffect(() => {
-    if (
-      monthInputs.secondaryShiftDayCount === 0 &&
-      filter.has('secondaryShifts')
-    ) {
-      setFilter((prev) => removeLegendFilter(prev, 'secondaryShifts'));
-    }
-  }, [filter, monthInputs.secondaryShiftDayCount]);
+    setFilter((prev) =>
+      pruneLegendFilterForMonthCounts(prev, {
+        shiftDayCount: monthInputs.shiftDayCount,
+        secondaryShiftDayCount: monthInputs.secondaryShiftDayCount,
+        freeWeekendCount: monthInputs.freeWeekendCount,
+        vacationDayCount: monthInputs.vacationDayCount,
+      }),
+    );
+  }, [
+    monthInputs.shiftDayCount,
+    monthInputs.secondaryShiftDayCount,
+    monthInputs.freeWeekendCount,
+    monthInputs.vacationDayCount,
+  ]);
 
   const onViewModeChange = (mode: CalendarViewMode) => {
     if (mode === 'scroll') {
