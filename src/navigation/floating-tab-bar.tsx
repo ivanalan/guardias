@@ -67,7 +67,7 @@ function floatingTabBarTheme(colors: ThemeColors): Partial<MagicTabBarTheme> {
     fontSize: 11,
     height: 56,
     radius: 999,
-    bottomInset: Platform.OS === 'ios' ? -12 : 16,
+    bottomInset: Platform.OS === 'ios' ? -8 : 16,
   };
 }
 
