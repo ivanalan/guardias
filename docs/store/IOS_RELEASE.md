@@ -2,6 +2,8 @@
 
 This guide walks you from “I have an Expo app” to “Guardias is live on the App Store.” It explains **what** each step is, **why** it exists, and **where to click**.
 
+**Updates after the first live version:** do not skip to `eas submit --latest`. Use the version-train procedure in [Version trains and later uploads](#version-trains-and-later-uploads). Agents must follow `.agents/skills/ios-store-submit/SKILL.md`.
+
 If you already shipped Android: Apple’s **App Store Connect** is the closest equivalent to **Google Play Console**. You also need a paid **Apple Developer Program** membership (like Play’s one-time developer fee, but Apple bills yearly).
 
 ---
@@ -438,22 +440,46 @@ Common rejection themes for apps like this: incomplete privacy policy URL, broke
 
 ---
 
-## Version bumps later
-
-1. Bump `expo.version` in `app.json` (user-facing, e.g. `1.0.2`).
-2. Rebuild:
-  ```bash
-   npx eas-cli build -p ios --profile production
-  ```
-   iOS **build number** auto-increments remotely (`eas.json`).
-3. Upload:
-  ```bash
-   npx eas-cli submit -p ios --latest
-  ```
-   or use `--auto-submit` on the build.
-4. In Connect: create/select the new version, paste **What’s New**, select the new build, submit for review again.
+## Version trains and later uploads
 
 You do **not** need a new App Store Connect app or new bundle ID for updates.
+
+A **version train** is the marketing version (`expo.version` → `CFBundleShortVersionString`). Apple allows more builds on an **open** train (Prepare for Submission, or a rejection you are replacing). Once that version is **approved**, the train is **closed**. Another IPA with the same `1.0.x` is rejected:
+
+- **ITMS-90186** — Invalid Pre-Release Train (train closed)
+- **ITMS-90062** — `CFBundleShortVersionString` must be higher than the last approved version
+
+Raising only the iOS **build number** does not help. EAS already auto-increments that remotely.
+
+**Source of truth for last approved version:** `docs/store/ios-release-state.json` → `lastApprovedMarketingVersion`. After Apple approves a version, set that field to the approved `X.Y.Z` before the next upload.
+
+### Every later iOS upload (same order every time)
+
+1. Confirm `lastApprovedMarketingVersion` matches App Store Connect.
+2. Gate the repo version:
+   ```bash
+   node scripts/ios-version-gate.mjs check
+   ```
+   If it fails:
+   ```bash
+   node scripts/ios-version-gate.mjs bump-patch
+   node scripts/ios-version-gate.mjs check
+   ```
+   Default bump is patch (`1.0.4` → `1.0.5`). Commit `app.json` on the git ref EAS will build.
+3. Build **without** auto-submit:
+   ```bash
+   npx eas-cli build -p ios --profile production
+   ```
+4. Gate the IPA (`appVersion` from the EAS build page or `eas build:view`), then upload **that** uuid:
+   ```bash
+   node scripts/ios-version-gate.mjs check --ipa 1.0.5
+   npx eas-cli submit -p ios --id <eas-build-uuid>
+   ```
+   Do not `eas submit --latest` unless you have just confirmed that build’s `appVersion` passes the gate.
+5. In Connect: create/select the **new** version (matching `expo.version`), paste What’s New, attach the build, Submit for Review.
+6. After approval: update `lastApprovedMarketingVersion`.
+
+Agents: `.agents/skills/ios-store-submit/SKILL.md`.
 
 ---
 
@@ -464,6 +490,7 @@ Use this once you understand the sections above:
 - [ ] Developer Program active + agreements / tax / banking started  
 - [ ] App record created for `com.alanmatias.guardias`  
 - [ ] Privacy + terms live on HTTPS  
+- [ ] Version gate passed (`ios-version-gate.mjs check` / `check --ipa`)  
 - [ ] `eas build -p ios --profile production` succeeded  
 - [ ] Build processed in TestFlight  
 - [ ] Listing: description, keywords, screenshots, category, URLs (EN + ES)  
@@ -477,7 +504,9 @@ Use this once you understand the sections above:
 ## Notes and pitfalls
 
 - **Expo Go ≠ store build.** Final icon, splash, and native modules behavior belong to TestFlight/production.  
-- **EAS Submit ≠ App Review.** Upload only; you still click Submit for Review.  
+- **EAS Submit ≠ App Review.** Upload only; you still click Submit for Review.
+- **Closed train.** If 1.0.x is already approved, bump `expo.version` and ship a new IPA. Do not re-upload the old marketing version (ITMS-90186 / ITMS-90062).
+- **Finished EAS build ≠ submittable.** Run `node scripts/ios-version-gate.mjs check --ipa <appVersion>` before `eas submit`.
 - **Do not commit** App Store Connect API `.p8` keys or Apple passwords.  
 - Keep **contact email** consistent across Connect, privacy, and terms.  
 - If Connect cannot find your bundle ID, register the App ID under Certificates, Identifiers & Profiles, or complete one EAS credentials session first.  

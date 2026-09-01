@@ -24,6 +24,12 @@
 - Do not hardcode user-visible strings; add keys to both `en.json` and `es.json`
 - Default locale fallback is Spanish (`es`)
 
+## Store releases (iOS)
+
+- Every iOS production build or App Store Connect upload must follow **`ios-store-submit`** (`.agents/skills/ios-store-submit`).
+- Run `node scripts/ios-version-gate.mjs check` (and `check --ipa <appVersion>` before `eas submit`). Never upload a marketing version ≤ `docs/store/ios-release-state.json` `lastApprovedMarketingVersion`.
+- First-time Apple setup: `docs/store/IOS_RELEASE.md`.
+
 ## Before implementing a feature
 
 1. Match existing code style and keep changes surgical
