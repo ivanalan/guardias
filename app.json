@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Mi Guardia",
+    "name": "Guardias",
     "slug": "guardias",
     "version": "1.0.4",
     "orientation": "portrait",
@@ -34,6 +34,7 @@
     "ios": {
       "bundleIdentifier": "com.alanmatias.guardias",
       "infoPlist": {
+        "CFBundleDisplayName": "Mi Guardia",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
