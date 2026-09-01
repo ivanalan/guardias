@@ -5,6 +5,7 @@ import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
 import { weekdayInitials } from '../../dashboard/format-home-copy';
 import {
+  CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT,
   CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM,
   CALENDAR_WEEKDAY_ROW_MARGIN_TOP,
 } from '../calendar-theme';
@@ -28,7 +29,10 @@ export function CalendarWeekdayRow() {
         <Text
           key={`${label}-${index}`}
           className="flex-1 text-center font-mono text-sm"
-          style={{ color: colors.text }}
+          style={{
+            lineHeight: CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT,
+            color: colors.text,
+          }}
         >
           {label}
         </Text>

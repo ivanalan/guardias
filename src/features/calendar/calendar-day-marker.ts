@@ -41,6 +41,8 @@ export type CalendarDayMarkContext = {
   todayIso: string;
   /** When set, non-anchor shift days render at PATTERN_SHIFT_OPACITY (first-shift picker). */
   patternAnchorDate?: string | null;
+  /** `YYYY-MM` of the month the legend describes; extra days skip filter dimming. */
+  visibleMonthKey?: string | null;
 };
 
 /** Day-of-month label from `YYYY-MM-DD`. */
@@ -84,11 +86,33 @@ export function dayMatchesActiveFilter(
   return true;
 }
 
+export type DayFilterDimOptions = {
+  /** Extra / adjacent-month cells in the current grid. */
+  inactive?: boolean;
+  iso?: string;
+  /** `YYYY-MM`; days outside this month are not dimmed by the legend filter. */
+  visibleMonthKey?: string | null;
+};
+
 /** Every mark on a day dims together when the day fails the active filter. */
 export function isDayDimmedByFilter(
   filter: CalendarLegendFilterState,
   input: DayFilterMatchInput,
+  options?: DayFilterDimOptions,
 ): boolean {
+  if (options?.inactive === true) {
+    return false;
+  }
+  const visibleMonthKey = options?.visibleMonthKey;
+  const iso = options?.iso;
+  if (
+    visibleMonthKey != null &&
+    visibleMonthKey !== '' &&
+    iso != null &&
+    iso.slice(0, 7) !== visibleMonthKey
+  ) {
+    return false;
+  }
   return filter.size > 0 && !dayMatchesActiveFilter(filter, input);
 }
 
@@ -148,6 +172,7 @@ export function buildCalendarDayMarkContext(
   todayIso: string,
   patternAnchorDate?: string | null,
   secondaryShiftMarks: readonly { date: string; color: string }[] = [],
+  visibleMonthKey?: string | null,
 ): CalendarDayMarkContext {
   const shiftColorByDate = new Map<string, string>();
   for (const { date, color } of shiftMarks) {
@@ -166,6 +191,7 @@ export function buildCalendarDayMarkContext(
     filter: filter ?? EMPTY_CALENDAR_FILTER,
     todayIso,
     patternAnchorDate,
+    visibleMonthKey,
   };
 }
 

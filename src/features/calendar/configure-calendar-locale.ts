@@ -30,12 +30,13 @@ export function configureCalendarLocale(
   ];
   const dayNames = dayNamesShort;
 
+  // `today` is read at runtime; the published locale_detail type omits it.
   LocaleConfig.locales[language] = {
     monthNames,
     monthNamesShort,
     dayNames,
     dayNamesShort,
     today: todayLabel,
-  };
+  } as (typeof LocaleConfig.locales)[string];
   LocaleConfig.defaultLocale = language;
 }

@@ -287,4 +287,28 @@ describe('legend filter matching', () => {
       }),
     ).toBe(true);
   });
+
+  it('does not dim inactive extra-month cells when a filter is on', () => {
+    const shifts = new Set(['shifts'] as const);
+    const unmarked = {
+      hasPrimary: false,
+      hasSecondary: false,
+      markKind: 'none' as const,
+    };
+    expect(isDayDimmedByFilter(shifts, unmarked, { inactive: true })).toBe(
+      false,
+    );
+    expect(
+      isDayDimmedByFilter(shifts, unmarked, {
+        iso: '2026-11-01',
+        visibleMonthKey: '2026-10',
+      }),
+    ).toBe(false);
+    expect(
+      isDayDimmedByFilter(shifts, unmarked, {
+        iso: '2026-10-15',
+        visibleMonthKey: '2026-10',
+      }),
+    ).toBe(true);
+  });
 });

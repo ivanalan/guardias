@@ -65,9 +65,9 @@ function floatingTabBarTheme(colors: ThemeColors): Partial<MagicTabBarTheme> {
     inactiveColor: colors.tabInactive,
     iconSize: 22,
     fontSize: 11,
-    height: 64,
+    height: 56,
     radius: 999,
-    bottomInset: Platform.OS === 'ios' ? 0 : 16,
+    bottomInset: Platform.OS === 'ios' ? -12 : 16,
   };
 }
 
@@ -102,7 +102,11 @@ function TabBarBlurBackground({
 }) {
   return (
     <View style={StyleSheet.absoluteFill}>
-      <BlurView tint={blurTint} intensity={100} style={StyleSheet.absoluteFill} />
+      <BlurView
+        tint={blurTint}
+        intensity={100}
+        style={StyleSheet.absoluteFill}
+      />
       <View
         pointerEvents="none"
         style={[StyleSheet.absoluteFill, { backgroundColor: overlayColor }]}

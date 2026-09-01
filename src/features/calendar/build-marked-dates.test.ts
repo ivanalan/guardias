@@ -1,4 +1,7 @@
-import { buildMarkedDates } from './build-marked-dates';
+import {
+  buildMarkedDates,
+  pruneLegendFilterForMonthCounts,
+} from './build-marked-dates';
 
 describe('buildMarkedDates', () => {
   const shifts = [{ date: '2026-07-01', color: '#2F69F3' }];
@@ -26,5 +29,36 @@ describe('buildMarkedDates', () => {
       [],
     );
     expect(marked['2026-07-11']?.marked).toBe(true);
+  });
+});
+
+describe('pruneLegendFilterForMonthCounts', () => {
+  const allOn = new Set([
+    'shifts',
+    'secondaryShifts',
+    'freeWeekends',
+    'vacation',
+  ] as const);
+
+  it('drops categories whose visible-month count is 0', () => {
+    const next = pruneLegendFilterForMonthCounts(allOn, {
+      shiftDayCount: 0,
+      secondaryShiftDayCount: 2,
+      freeWeekendCount: 0,
+      vacationDayCount: 1,
+    });
+    expect([...next].sort()).toEqual(['secondaryShifts', 'vacation']);
+  });
+
+  it('keeps the same set when every selected category still has a count', () => {
+    const shiftsOnly = new Set(['shifts'] as const);
+    expect(
+      pruneLegendFilterForMonthCounts(shiftsOnly, {
+        shiftDayCount: 7,
+        secondaryShiftDayCount: 0,
+        freeWeekendCount: 2,
+        vacationDayCount: 0,
+      }),
+    ).toBe(shiftsOnly);
   });
 });
