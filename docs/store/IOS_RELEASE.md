@@ -41,7 +41,7 @@ These are already set in the repo. Treat them as permanent for this app identity
 
 | Field               | Value                     | Where                                                                        |
 | ------------------- | ------------------------- | ---------------------------------------------------------------------------- |
-| App name            | Guardias                  | `app.json` → `expo.name`                                                     |
+| App name            | Mi Guardia                | `app.json` → `expo.name` / iOS `CFBundleDisplayName`                         |
 | Bundle ID           | `com.alanmatias.guardias` | `app.json` → `expo.ios.bundleIdentifier`                                     |
 | User-facing version | e.g. `1.0.1`              | `app.json` → `expo.version`                                                  |
 | iOS build number    | auto-managed remotely     | `eas.json` → `appVersionSource: "remote"` + production `autoIncrement: true` |
@@ -131,7 +131,7 @@ EAS can build an IPA without this, but **upload/submit** needs a matching App St
 3. Click the **+** button → **New App**.
 4. Fill the dialog:
   - **Platforms:** iOS  
-  - **Name:** `Guardias` (this is the App Store display name; must be unique on the store)  
+  - **Name:** `Mi Guardia` (this is the App Store display name; must be unique on the store)  
   - **Primary Language:** English (U.S.) or Spanish — pick your default; you will add the other localization later  
   - **Bundle ID:** select `com.alanmatias.guardias`  
     - If it is missing from the dropdown: go to [developer.apple.com/account/resources/identifiers/list](https://developer.apple.com/account/resources/identifiers/list) → **+** → **App IDs** → **App** → register `com.alanmatias.guardias`, then return and refresh Connect.  
@@ -303,7 +303,7 @@ Create or open the **1.0.0** (or current) iOS version if Connect shows “Prepar
 
 #### App Information (app-level, left sidebar)
 
-1. **Name** — Guardias
+1. **Name** — Mi Guardia
 2. **Subtitle** (optional, ~30 chars) — short value prop from play-listing short description
 3. **Category** — prefer **Productivity**. Avoid **Medical** unless you are comfortable with medical-app scrutiny; Guardias is a schedule tracker, not a clinical device.
 4. **Privacy Policy URL** — `https://alanmatias.com/guardias/privacy.html`

@@ -1,12 +1,12 @@
-# Terms of Service — Guardias
+# Terms of Service — Mi Guardia
 
 **Last updated:** August 11, 2026
 
-These Terms of Service (“Terms”) govern your use of the Guardias mobile application (“the App”). By downloading or using the App, you agree to these Terms.
+These Terms of Service (“Terms”) govern your use of the Mi Guardia mobile application (“the App”). By downloading or using the App, you agree to these Terms.
 
-## What Guardias is
+## What Mi Guardia is
 
-Guardias is a personal tool for tracking on-call medical rotation schedules (guardias), including common Mexican A-C and A-D patterns. It is provided for informational and organizational purposes only.
+Mi Guardia is a personal tool for tracking on-call medical rotation schedules (guardias), including common Mexican A-C and A-D patterns. It is provided for informational and organizational purposes only.
 
 ## Not medical or legal advice
 
@@ -44,8 +44,8 @@ We may update these Terms from time to time. Continued use of the App after chan
 
 ## Contact
 
-Questions about these Terms: use the contact email on the Guardias Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
+Questions about these Terms: use the contact email on the Mi Guardia Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
 
 ## Spanish summary
 
-Guardias es una herramienta personal para organizar guardias. No es consejo médico ni laboral. Tú eres responsable de los datos que capturas. Todo se guarda en el dispositivo. La app se ofrece “tal cual”; la solución principal ante un problema es dejar de usarla y desinstalarla.
+Mi Guardia es una herramienta personal para organizar guardias. No es consejo médico ni laboral. Tú eres responsable de los datos que capturas. Todo se guarda en el dispositivo. La app se ofrece “tal cual”; la solución principal ante un problema es dejar de usarla y desinstalarla.
