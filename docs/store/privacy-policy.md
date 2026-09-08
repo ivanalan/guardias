@@ -1,12 +1,12 @@
-# Privacy Policy — Guardias
+# Privacy Policy — Mi Guardia
 
 **Last updated:** August 11, 2026
 
-Guardias (“the App”) is a mobile application that helps you track on-call medical rotation schedules (guardias). This Privacy Policy explains what information the App handles and how.
+Mi Guardia (“the App”) is a mobile application that helps you track on-call medical rotation schedules (guardias). This Privacy Policy explains what information the App handles and how.
 
 ## Summary
 
-Guardias is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs.
+Mi Guardia is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs.
 
 ## Information stored on your device
 
@@ -25,7 +25,7 @@ The App does not request access to your contacts, camera, microphone, location, 
 
 ## No account or cloud sync
 
-There is no sign-in and no Guardias backend. We do not collect, transmit, or store your rotation data on our servers.
+There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers.
 
 ## Third parties
 
@@ -45,8 +45,8 @@ We may update this Privacy Policy when the App’s behavior changes (for example
 
 ## Contact
 
-Questions about this policy: use the contact email listed on the Guardias Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
+Questions about this policy: use the contact email listed on the Mi Guardia Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
 
 ## Spanish summary
 
-Guardias funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta, no hay servidor propio de Guardias, y no se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.
+Mi Guardia funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta, no hay servidor propio de Mi Guardia, y no se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.

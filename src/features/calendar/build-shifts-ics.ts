@@ -87,7 +87,7 @@ export function buildShiftsIcs(
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Guardias//EN',
+    'PRODID:-//Mi Guardia//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];
