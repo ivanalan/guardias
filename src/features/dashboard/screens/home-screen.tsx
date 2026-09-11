@@ -4,7 +4,7 @@ import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
-import { format } from 'date-fns';
+import { format, differenceInCalendarDays } from 'date-fns';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -18,6 +18,7 @@ import {
   getPeriodDayProgress,
   getPeriodShiftProgress,
   getTimeUntilNextShift,
+  listUpcomingShifts,
   type DurationParts,
   type HomepageShiftStatus,
   type PeriodDayProgress,
@@ -48,6 +49,7 @@ import {
 import { getTwoWeekDates } from '../two-week-dates';
 
 const REFRESH_MS = 60_000;
+const UPCOMING_SHIFTS_LIMIT = 4;
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<DashboardStackParamList, 'HomeHome'>,
@@ -113,6 +115,21 @@ function ActiveHomeContent({
     dayProgress.total - dayProgress.completed,
   );
   const color = resolveRotationColor(status.period.color, colors);
+  const upcomingItems = listUpcomingShifts(
+    status.period,
+    now,
+    UPCOMING_SHIFTS_LIMIT,
+  ).map((shift) => {
+    const daysUntil = differenceInCalendarDays(shift.startDateTime, now);
+    return {
+      dayNumber: format(shift.startDateTime, 'd'),
+      weekday: formatWeekdayLong(shift.startDateTime, language),
+      relativeLabel:
+        daysUntil <= 0
+          ? t('home.inDaysToday')
+          : t('home.inDays', { count: daysUntil }),
+    };
+  });
 
   const durationValue = (duration: DurationParts) =>
     t('home.durationLong', {
@@ -158,6 +175,10 @@ function ActiveHomeContent({
         secondaryShiftColorByDate={secondaryShiftColorByDate}
         freeWeekendDates={freeWeekendDates}
         vacationDates={vacationDates}
+        upcomingCaption={t('home.upcomingShifts')}
+        upcomingEmptyCaption={t('home.stats.noneInPeriod')}
+        upcomingItems={upcomingItems}
+        upcomingAccentColor={color}
       />
 
       <ShiftsLeftCard

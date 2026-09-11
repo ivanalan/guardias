@@ -42,6 +42,38 @@ export function formatDurationParts(from: Date, to: Date): DurationParts {
 }
 
 /**
+ * Upcoming shift starts with `startDateTime > now` in `period` (excludes an
+ * in-progress shift), sorted ascending, capped at `limit`.
+ */
+export function listUpcomingShifts(
+  period: RotationPeriod,
+  now: Date,
+  limit: number,
+): ComputedShift[] {
+  if (limit <= 0) {
+    return [];
+  }
+
+  const todayIso = format(now, 'yyyy-MM-dd');
+  const from = todayIso < period.startDate ? period.startDate : todayIso;
+  if (from > period.endDate) {
+    return [];
+  }
+
+  const results: ComputedShift[] = [];
+  for (const iso of listShiftDatesInRange([period], from, period.endDate)) {
+    const shift = buildShift(period, iso);
+    if (shift !== null && shift.startDateTime > now) {
+      results.push(shift);
+      if (results.length >= limit) {
+        break;
+      }
+    }
+  }
+  return results;
+}
+
+/**
  * Counts shift starts with `startDateTime > now` in `period` (excludes an
  * in-progress shift).
  */
