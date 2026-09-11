@@ -1,4 +1,11 @@
-import type { ReactNode } from 'react';
+import * as Haptics from 'expo-haptics';
+import { useRef, useState, type ReactNode } from 'react';
+import type {
+  LayoutChangeEvent,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView as RNScrollView,
+} from 'react-native';
 
 import {
   CALENDAR_WEEK_ROW_GAP,
@@ -22,7 +29,17 @@ import {
 } from '../../calendar/calendar-day-marker';
 import { calendarMarkColorsFor } from '../../calendar/calendar-mark-colors';
 import { useTheme } from '../../../theme/theme-context';
-import { Text, View } from '../../../tw';
+import { Pressable, ScrollView, Text, View } from '../../../tw';
+
+const PAGER_DOT_SIZE = 6;
+const DAY_RAIL_SIZE = 28;
+const DAY_RAIL_RADIUS = 10;
+
+export type UpcomingShiftRow = {
+  dayNumber: string;
+  weekday: string;
+  relativeLabel: string;
+};
 
 type TwoWeekCalendarProps = {
   dates: readonly string[];
@@ -32,6 +49,11 @@ type TwoWeekCalendarProps = {
   secondaryShiftColorByDate: ReadonlyMap<string, string>;
   freeWeekendDates: ReadonlySet<string>;
   vacationDates: ReadonlySet<string>;
+  /** When set with list props, enables swipe/tap to upcoming shifts. */
+  upcomingCaption?: string;
+  upcomingEmptyCaption?: string;
+  upcomingItems?: readonly UpcomingShiftRow[];
+  upcomingAccentColor?: string;
 };
 
 /** Two-week Monday-start strip with shift / vacation marks and weekend pills. */
@@ -43,7 +65,150 @@ export function TwoWeekCalendar({
   secondaryShiftColorByDate,
   freeWeekendDates,
   vacationDates,
+  upcomingCaption,
+  upcomingEmptyCaption,
+  upcomingItems,
+  upcomingAccentColor,
 }: TwoWeekCalendarProps) {
+  const { colors } = useTheme();
+  const canToggle =
+    upcomingCaption != null &&
+    upcomingEmptyCaption != null &&
+    upcomingItems != null &&
+    upcomingAccentColor != null;
+  const scrollRef = useRef<RNScrollView>(null);
+  const [pageIndex, setPageIndex] = useState(0);
+  const [pageWidth, setPageWidth] = useState(0);
+
+  const calendarPage = (
+    <CalendarGrid
+      dates={dates}
+      weekdayLabels={weekdayLabels}
+      todayIso={todayIso}
+      shiftColorByDate={shiftColorByDate}
+      secondaryShiftColorByDate={secondaryShiftColorByDate}
+      freeWeekendDates={freeWeekendDates}
+      vacationDates={vacationDates}
+    />
+  );
+
+  const cardStyle = {
+    backgroundColor: colors.bg1,
+    borderCurve: 'continuous' as const,
+    borderRadius: 32,
+  };
+
+  if (!canToggle) {
+    return (
+      <View className="w-full px-gutter py-5" style={cardStyle}>
+        {calendarPage}
+      </View>
+    );
+  }
+
+  const onCardLayout = (event: LayoutChangeEvent) => {
+    const nextWidth = Math.round(event.nativeEvent.layout.width);
+    setPageWidth((prev) => (prev === nextWidth ? prev : nextWidth));
+  };
+
+  const goToPage = (nextIndex: number) => {
+    if (pageWidth === 0) {
+      return;
+    }
+    const clamped = nextIndex % 2;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPageIndex(clamped);
+    scrollRef.current?.scrollTo({ x: clamped * pageWidth, animated: true });
+  };
+
+  const onMomentumScrollEnd = (
+    event: NativeSyntheticEvent<NativeScrollEvent>,
+  ) => {
+    if (pageWidth === 0) {
+      return;
+    }
+    const index = Math.round(event.nativeEvent.contentOffset.x / pageWidth);
+    const next = index >= 1 ? 1 : 0;
+    if (next === pageIndex) {
+      return;
+    }
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    setPageIndex(next);
+  };
+
+  return (
+    <View
+      className="w-full gap-4 py-5"
+      style={cardStyle}
+      onLayout={onCardLayout}
+    >
+      {pageWidth > 0 ? (
+        <ScrollView
+          ref={scrollRef}
+          horizontal
+          pagingEnabled
+          nestedScrollEnabled
+          directionalLockEnabled
+          showsHorizontalScrollIndicator={false}
+          decelerationRate="fast"
+          bounces={false}
+          onMomentumScrollEnd={onMomentumScrollEnd}
+        >
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => goToPage(1)}
+            className="px-gutter"
+            style={{ width: pageWidth }}
+          >
+            {calendarPage}
+          </Pressable>
+          <UpcomingListPage
+            caption={upcomingCaption}
+            emptyCaption={upcomingEmptyCaption}
+            color={upcomingAccentColor}
+            items={upcomingItems}
+            width={pageWidth}
+            onPress={() => goToPage(0)}
+          />
+        </ScrollView>
+      ) : null}
+      <View className="flex-row items-center justify-center gap-2">
+        {[0, 1].map((index) => (
+          <View
+            key={index}
+            style={{
+              width: PAGER_DOT_SIZE,
+              height: PAGER_DOT_SIZE,
+              borderRadius: PAGER_DOT_SIZE / 2,
+              backgroundColor:
+                pageIndex === index ? colors.text : colors.bgPillTrack,
+            }}
+          />
+        ))}
+      </View>
+    </View>
+  );
+}
+
+type CalendarGridProps = {
+  dates: readonly string[];
+  weekdayLabels: readonly string[];
+  todayIso: string;
+  shiftColorByDate: ReadonlyMap<string, string>;
+  secondaryShiftColorByDate: ReadonlyMap<string, string>;
+  freeWeekendDates: ReadonlySet<string>;
+  vacationDates: ReadonlySet<string>;
+};
+
+function CalendarGrid({
+  dates,
+  weekdayLabels,
+  todayIso,
+  shiftColorByDate,
+  secondaryShiftColorByDate,
+  freeWeekendDates,
+  vacationDates,
+}: CalendarGridProps) {
   const { colors } = useTheme();
   const markColors = calendarMarkColorsFor(colors);
   const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
@@ -55,15 +220,7 @@ export function TwoWeekCalendar({
   };
 
   return (
-    <View
-      className="w-full px-gutter py-5"
-      style={{
-        backgroundColor: colors.bg1,
-        borderCurve: 'continuous',
-        borderRadius: 32,
-        gap: CALENDAR_WEEK_ROW_GAP,
-      }}
-    >
+    <View style={{ gap: CALENDAR_WEEK_ROW_GAP }}>
       <View className="flex-row">
         {weekdayLabels.map((label, index) => (
           <Text
@@ -86,6 +243,127 @@ export function TwoWeekCalendar({
           markColors={markColors}
         />
       ))}
+    </View>
+  );
+}
+
+type UpcomingListPageProps = {
+  caption: string;
+  emptyCaption: string;
+  color: string;
+  items: readonly UpcomingShiftRow[];
+  width?: number;
+  onPress?: () => void;
+};
+
+function UpcomingListPage({
+  caption,
+  emptyCaption,
+  color,
+  items,
+  width,
+  onPress,
+}: UpcomingListPageProps) {
+  const { colors } = useTheme();
+  const rows: UpcomingShiftRow[][] = [];
+  for (let index = 0; index < items.length; index += 2) {
+    rows.push(items.slice(index, index + 2));
+  }
+
+  const content = (
+    <>
+      <Text className="font-mono text-base" style={{ color: colors.text }}>
+        {caption}
+      </Text>
+      {items.length > 0 ? (
+        <View style={{ gap: CALENDAR_WEEK_ROW_GAP }}>
+          {rows.map((row, rowIndex) => (
+            <View
+              key={`${row[0]!.dayNumber}-${row[0]!.relativeLabel}-${rowIndex}`}
+              className="flex-row items-center"
+              style={{
+                gap: CALENDAR_WEEK_ROW_GAP,
+                minHeight: CELL_SIZE + CALENDAR_WEEK_ROW_GAP,
+              }}
+            >
+              {row.map((item, col) => {
+                const index = rowIndex * 2 + col;
+                const isNext = index === 0;
+                return (
+                  <View
+                    key={`${item.dayNumber}-${item.relativeLabel}-${item.weekday}`}
+                    className="flex-1 flex-row items-center gap-2.5"
+                  >
+                    <View
+                      className="items-center justify-center"
+                      style={{
+                        width: DAY_RAIL_SIZE,
+                        height: DAY_RAIL_SIZE,
+                        backgroundColor: isNext ? color : colors.bgPillTrack,
+                        borderCurve: 'continuous',
+                        borderRadius: DAY_RAIL_RADIUS,
+                      }}
+                    >
+                      <Text
+                        className="font-mono text-sm"
+                        style={{
+                          color: isNext ? colors.onColor : colors.text,
+                        }}
+                      >
+                        {item.dayNumber}
+                      </Text>
+                    </View>
+                    <View className="gap-0">
+                      <Text
+                        className="font-mono text-base"
+                        style={{ color: isNext ? color : colors.text }}
+                      >
+                        {item.weekday}
+                      </Text>
+                      <Text
+                        className="font-mono text-sm"
+                        style={{ color: colors.textMuted }}
+                      >
+                        {item.relativeLabel}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
+              {row.length === 1 ? <View className="flex-1" /> : null}
+            </View>
+          ))}
+        </View>
+      ) : (
+        <Text
+          className="font-mono text-base"
+          style={{ color: colors.textMuted }}
+        >
+          {emptyCaption}
+        </Text>
+      )}
+    </>
+  );
+
+  if (onPress != null) {
+    return (
+      <Pressable
+        accessibilityRole="button"
+        onPress={onPress}
+        className="gap-4 px-gutter"
+        style={width != null ? { width } : undefined}
+      >
+        {content}
+      </Pressable>
+    );
+  }
+
+  return (
+    <View
+      className="gap-4 px-gutter"
+      style={width != null ? { width } : undefined}
+    >
+      {content}
     </View>
   );
 }
@@ -238,8 +516,7 @@ function DayCell({
   const isToday = iso === todayIso;
   const label = dayNumber(iso);
   const isPast = isCalendarDatePast(iso, todayIso);
-  const alpha =
-    markAlpha ?? markColorAlpha(false, isPast);
+  const alpha = markAlpha ?? markColorAlpha(false, isPast);
   const onWeekend = markKind === 'freeWeekend';
   const isShift = markKind === 'shift';
   const isVacation = markKind === 'vacation';
@@ -365,13 +642,7 @@ function DayCell({
   );
 }
 
-function SecondaryDot({
-  color,
-  isPast,
-}: {
-  color: string;
-  isPast: boolean;
-}) {
+function SecondaryDot({ color, isPast }: { color: string; isPast: boolean }) {
   const alpha = markColorAlpha(false, isPast);
   const backgroundColor = alpha < 1 ? withAlpha(color, alpha) : color;
   return (

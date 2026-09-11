@@ -7,6 +7,7 @@ import {
   getPeriodDayProgress,
   getPeriodShiftProgress,
   getPeriodShiftStatus,
+  listUpcomingShifts,
 } from './get-homepage-shift-status';
 
 function period(
@@ -284,6 +285,62 @@ describe('getPeriodShiftStatus', () => {
     expect(getPeriodShiftStatus(past, localDate(2026, 6, 1, 12))).toEqual({
       kind: 'idle',
     });
+  });
+});
+
+describe('listUpcomingShifts', () => {
+  const julyPeriod = period({
+    id: 'p1',
+    startDate: '2026-07-01',
+    endDate: '2026-07-31',
+    pattern: { cycleDays: 4, offset: 'B' },
+  });
+
+  it('returns empty when no future starts remain', () => {
+    expect(
+      listUpcomingShifts(julyPeriod, localDate(2026, 6, 30, 8), 5),
+    ).toEqual([]);
+  });
+
+  it('excludes an in-progress shift', () => {
+    // Jul 1 07:00 – Jul 2 07:00. Mid-shift → next is Jul 5.
+    const upcoming = listUpcomingShifts(
+      julyPeriod,
+      localDate(2026, 6, 1, 15),
+      5,
+    );
+    expect(upcoming.map((s) => s.date)).toEqual([
+      '2026-07-05',
+      '2026-07-09',
+      '2026-07-13',
+      '2026-07-17',
+      '2026-07-21',
+    ]);
+  });
+
+  it('respects the limit', () => {
+    const upcoming = listUpcomingShifts(
+      julyPeriod,
+      localDate(2026, 6, 2, 10),
+      3,
+    );
+    expect(upcoming.map((s) => s.date)).toEqual([
+      '2026-07-05',
+      '2026-07-09',
+      '2026-07-13',
+    ]);
+  });
+
+  it('lists from period start when now is before the period', () => {
+    const upcoming = listUpcomingShifts(
+      julyPeriod,
+      localDate(2026, 5, 15, 12),
+      2,
+    );
+    expect(upcoming.map((s) => s.date)).toEqual([
+      '2026-07-01',
+      '2026-07-05',
+    ]);
   });
 });
 
