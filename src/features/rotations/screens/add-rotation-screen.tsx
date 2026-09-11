@@ -34,6 +34,7 @@ import {
 import { DEFAULT_ROTATION_COLOR } from '../rotation-colors';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
+import type { SharedRotationDraft } from '../share-rotation-link';
 import {
   DEFAULT_PATTERN,
   DEFAULT_SHIFT_START_TIME,
@@ -76,43 +77,67 @@ type ActivePicker =
 const FIELD_BOX_CLASS =
   'h-14 flex-row items-center rounded-xl border border-neutral-200 px-4';
 
-function initialFormState(existing: RotationPeriod | undefined) {
-  if (existing == null) {
-    const start = toISODate(new Date());
-    const end = defaultRotationEndISO(parseISO(start));
+function initialFormState(
+  existing: RotationPeriod | undefined,
+  draft?: SharedRotationDraft,
+) {
+  if (existing != null) {
+    const vacationStart = existing.vacationStartDate ?? existing.startDate;
     return {
-      label: '',
-      startDate: start,
-      endDate: end,
-      cycleDays: DEFAULT_PATTERN.cycleDays,
-      offset: DEFAULT_PATTERN.offset,
-      firstShiftOverride: null as string | null,
-      shiftStartTime: DEFAULT_SHIFT_START_TIME,
-      color: DEFAULT_ROTATION_COLOR,
-      isFriendShift: false,
-      vacationEnabled: false,
-      vacationStartDate: start,
-      vacationEndDate: defaultVacationEndWithinPeriod(start, end),
+      label: existing.label,
+      startDate: existing.startDate,
+      endDate: existing.endDate,
+      cycleDays: existing.pattern.cycleDays,
+      offset: existing.pattern.offset,
+      firstShiftOverride: existing.firstShiftDate,
+      shiftStartTime: existing.shiftStartTime,
+      color: existing.color,
+      isFriendShift: existing.role === 'secondary',
+      vacationEnabled:
+        existing.vacationStartDate != null && existing.vacationEndDate != null,
+      vacationStartDate: vacationStart,
+      vacationEndDate:
+        existing.vacationEndDate ??
+        defaultVacationEndWithinPeriod(vacationStart, existing.endDate),
     };
   }
 
-  const vacationStart = existing.vacationStartDate ?? existing.startDate;
+  if (draft != null) {
+    const vacationStart = draft.vacationStartDate ?? draft.startDate;
+    return {
+      label: draft.label,
+      startDate: draft.startDate,
+      endDate: draft.endDate,
+      cycleDays: draft.pattern.cycleDays,
+      offset: draft.pattern.offset,
+      firstShiftOverride: draft.firstShiftDate,
+      shiftStartTime: draft.shiftStartTime,
+      color: draft.color,
+      isFriendShift: false,
+      vacationEnabled:
+        draft.vacationStartDate != null && draft.vacationEndDate != null,
+      vacationStartDate: vacationStart,
+      vacationEndDate:
+        draft.vacationEndDate ??
+        defaultVacationEndWithinPeriod(vacationStart, draft.endDate),
+    };
+  }
+
+  const start = toISODate(new Date());
+  const end = defaultRotationEndISO(parseISO(start));
   return {
-    label: existing.label,
-    startDate: existing.startDate,
-    endDate: existing.endDate,
-    cycleDays: existing.pattern.cycleDays,
-    offset: existing.pattern.offset,
-    firstShiftOverride: existing.firstShiftDate,
-    shiftStartTime: existing.shiftStartTime,
-    color: existing.color,
-    isFriendShift: existing.role === 'secondary',
-    vacationEnabled:
-      existing.vacationStartDate != null && existing.vacationEndDate != null,
-    vacationStartDate: vacationStart,
-    vacationEndDate:
-      existing.vacationEndDate ??
-      defaultVacationEndWithinPeriod(vacationStart, existing.endDate),
+    label: '',
+    startDate: start,
+    endDate: end,
+    cycleDays: DEFAULT_PATTERN.cycleDays,
+    offset: DEFAULT_PATTERN.offset,
+    firstShiftOverride: null as string | null,
+    shiftStartTime: DEFAULT_SHIFT_START_TIME,
+    color: DEFAULT_ROTATION_COLOR,
+    isFriendShift: false,
+    vacationEnabled: false,
+    vacationStartDate: start,
+    vacationEndDate: defaultVacationEndWithinPeriod(start, end),
   };
 }
 
@@ -175,8 +200,12 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   const routeParams = route.params;
   const editingId =
-    route.name === 'EditRotation' && routeParams
+    route.name === 'EditRotation' && routeParams && 'periodId' in routeParams
       ? routeParams.periodId
+      : undefined;
+  const shareDraft =
+    route.name === 'AddRotation' && routeParams && 'draft' in routeParams
+      ? routeParams.draft
       : undefined;
   const existing =
     editingId != null
@@ -185,7 +214,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
 
   const initialSnapshotRef = useRef<FormSnapshot | null>(null);
   if (initialSnapshotRef.current == null) {
-    initialSnapshotRef.current = initialFormState(existing);
+    initialSnapshotRef.current = initialFormState(existing, shareDraft);
   }
   const initial = initialSnapshotRef.current;
   const [label, setLabel] = useState(initial.label);

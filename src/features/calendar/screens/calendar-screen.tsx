@@ -40,8 +40,15 @@ import { CalendarMonthHeader } from '../components/calendar-month-header';
 import { CalendarMonthTitle } from '../components/calendar-month-title';
 import { CalendarViewToggle } from '../components/calendar-view-toggle';
 import { ExportPeriodPickerModal } from '../components/export-period-picker-modal';
+import {
+  ShareDestinationModal,
+  type ShareDestination,
+} from '../components/share-destination-modal';
+import { buildShiftExportEvent } from '../build-shift-export-event';
 import { configureCalendarLocale } from '../configure-calendar-locale';
 import { getMarkInputsForMonthWindow } from '../month-legend-stats';
+import { openAppleCalendar } from '../open-apple-calendar';
+import { openGoogleCalendar } from '../open-google-calendar';
 import { shareShiftsIcs } from '../share-shifts-ics';
 
 type Props = NativeStackScreenProps<CalendarStackParamList, 'CalendarHome'>;
@@ -49,6 +56,11 @@ type Props = NativeStackScreenProps<CalendarStackParamList, 'CalendarHome'>;
 type ListSize = {
   width: number;
   height: number;
+};
+
+type PendingShare = {
+  period: RotationPeriod;
+  destination: ShareDestination;
 };
 
 /** Calendar home: single-month or scrollable list, with legend filter. */
@@ -66,9 +78,14 @@ export function CalendarScreen({ navigation }: Props) {
     EMPTY_CALENDAR_FILTER,
   );
   const [sharing, setSharing] = useState(false);
-  const [pickerVisible, setPickerVisible] = useState(false);
-  // iOS cannot present the share sheet while the picker Modal is dismissing.
-  const pendingExportRef = useRef<RotationPeriod | null>(null);
+  const [periodPickerVisible, setPeriodPickerVisible] = useState(false);
+  const [destVisible, setDestVisible] = useState(false);
+  // Period chosen for the destination sheet (may outlive the period picker).
+  const selectedPeriodRef = useRef<RotationPeriod | null>(null);
+  // Open destination after the period picker finishes dismissing (iOS).
+  const openDestAfterPeriodPickerRef = useRef(false);
+  // iOS cannot present share / Linking while a Modal is dismissing.
+  const pendingShareRef = useRef<PendingShare | null>(null);
 
   useEffect(() => {
     configureCalendarLocale(language, t('calendar.today'));
@@ -151,12 +168,59 @@ export function CalendarScreen({ navigation }: Props) {
     navigation.navigate('DayDetail', { date: day.dateString });
   };
 
-  const runExport = async (period: RotationPeriod) => {
+  const runShare = async (
+    period: RotationPeriod,
+    destination: ShareDestination,
+  ) => {
     if (sharing) {
       return;
     }
     setSharing(true);
     try {
+      if (destination === 'google') {
+        const event = buildShiftExportEvent(period);
+        const details =
+          event != null && event.vacationExDates.length > 0
+            ? t('calendar.shareGoogleVacationNote', {
+                dates: event.vacationExDates.join(', '),
+              })
+            : undefined;
+        const result = await openGoogleCalendar(period, { details });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareGoogleFailed'));
+          }
+        }
+        return;
+      }
+
+      if (destination === 'apple') {
+        const event = buildShiftExportEvent(period);
+        const notes =
+          event != null && event.vacationExDates.length > 0
+            ? t('calendar.shareAppleVacationNote', {
+                dates: event.vacationExDates.join(', '),
+              })
+            : undefined;
+        const result = await openAppleCalendar(period, { notes });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareAppleFailed'));
+          }
+        }
+        return;
+      }
+
       const result = await shareShiftsIcs(
         period,
         t('calendar.shareDialogTitle'),
@@ -176,22 +240,48 @@ export function CalendarScreen({ navigation }: Props) {
     }
   };
 
-  const flushPendingExport = () => {
-    const period = pendingExportRef.current;
-    if (period == null) {
+  const flushPendingShare = () => {
+    const pending = pendingShareRef.current;
+    if (pending == null) {
       return;
     }
-    pendingExportRef.current = null;
-    void runExport(period);
+    pendingShareRef.current = null;
+    void runShare(pending.period, pending.destination);
   };
 
-  const queueExportAfterPicker = (period: RotationPeriod) => {
-    pendingExportRef.current = period;
-    setPickerVisible(false);
+  const flushOpenDestAfterPeriodPicker = () => {
+    if (!openDestAfterPeriodPickerRef.current) {
+      return;
+    }
+    openDestAfterPeriodPickerRef.current = false;
+    if (selectedPeriodRef.current != null) {
+      setDestVisible(true);
+    }
+  };
+
+  const queueDestAfterPeriodPicker = (period: RotationPeriod) => {
+    selectedPeriodRef.current = period;
+    openDestAfterPeriodPickerRef.current = true;
+    setPeriodPickerVisible(false);
     // Android often skips Modal onDismiss; delay past the dismiss animation.
     if (Platform.OS !== 'ios') {
       setTimeout(() => {
-        flushPendingExport();
+        flushOpenDestAfterPeriodPicker();
+      }, 300);
+    }
+  };
+
+  const queueShareAfterDest = (destination: ShareDestination) => {
+    const period = selectedPeriodRef.current;
+    if (period == null) {
+      setDestVisible(false);
+      return;
+    }
+    pendingShareRef.current = { period, destination };
+    setDestVisible(false);
+    if (Platform.OS !== 'ios') {
+      setTimeout(() => {
+        flushPendingShare();
       }, 300);
     }
   };
@@ -205,10 +295,11 @@ export function CalendarScreen({ navigation }: Props) {
       return;
     }
     if (periods.length === 1) {
-      void runExport(periods[0]!);
+      selectedPeriodRef.current = periods[0]!;
+      setDestVisible(true);
       return;
     }
-    setPickerVisible(true);
+    setPeriodPickerVisible(true);
   };
 
   const onPreviousMonth = () => {
@@ -369,15 +460,26 @@ export function CalendarScreen({ navigation }: Props) {
         </>
       )}
       <ExportPeriodPickerModal
-        visible={pickerVisible}
+        visible={periodPickerVisible}
         periods={periods}
         language={language}
-        onSelect={queueExportAfterPicker}
+        onSelect={queueDestAfterPeriodPicker}
         onCancel={() => {
-          pendingExportRef.current = null;
-          setPickerVisible(false);
+          openDestAfterPeriodPickerRef.current = false;
+          selectedPeriodRef.current = null;
+          setPeriodPickerVisible(false);
         }}
-        onDismiss={flushPendingExport}
+        onDismiss={flushOpenDestAfterPeriodPicker}
+      />
+      <ShareDestinationModal
+        visible={destVisible}
+        onSelect={queueShareAfterDest}
+        onCancel={() => {
+          pendingShareRef.current = null;
+          selectedPeriodRef.current = null;
+          setDestVisible(false);
+        }}
+        onDismiss={flushPendingShare}
       />
     </View>
   );
