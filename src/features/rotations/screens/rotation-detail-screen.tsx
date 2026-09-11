@@ -1,5 +1,5 @@
 import { useCallback, useLayoutEffect, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -24,6 +24,7 @@ import { formatFormDate, formatPeriodRange } from '../format-period-range';
 import { isSecondary } from '../period-role';
 import { resolveRotationColor } from '../rotation-colors';
 import { useRotations } from '../rotations-context';
+import { buildShareUrl } from '../share-rotation-link';
 import type { ShiftsStackParamList } from '../shifts-stack';
 import type { RotationPeriod } from '../types';
 
@@ -137,27 +138,59 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   );
 
   useLayoutEffect(() => {
-    if (periodId == null) {
+    if (periodId == null || period == null) {
       navigation.setOptions({ headerRight: undefined });
       return;
     }
 
+    const sharePeriod = period;
+
+    async function onShare() {
+      const url = buildShareUrl(sharePeriod);
+      try {
+        await Share.share({
+          message: url,
+          url,
+        });
+      } catch {
+        Alert.alert(
+          t('shifts.detail.shareFailedTitle'),
+          t('shifts.detail.shareFailedBody'),
+        );
+      }
+    }
+
     navigation.setOptions({
       headerRight: () => (
-        <Pressable
-          accessibilityRole="button"
-          accessibilityLabel={t('shifts.detail.edit')}
-          onPress={() => {
-            navigation.navigate('EditRotation', { periodId });
-          }}
-          className="px-2 active:opacity-60"
-          hitSlop={8}
+        <View
+          style={{ flexDirection: 'row', alignItems: 'center' }}
         >
-          <Ionicons name="create-outline" size={24} color={colors.brand} />
-        </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('shifts.detail.shareA11y')}
+            onPress={() => {
+              void onShare();
+            }}
+            className="px-2 active:opacity-60"
+            hitSlop={8}
+          >
+            <Ionicons name="share-outline" size={24} color={colors.brand} />
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={t('shifts.detail.edit')}
+            onPress={() => {
+              navigation.navigate('EditRotation', { periodId });
+            }}
+            className="px-2 active:opacity-60"
+            hitSlop={8}
+          >
+            <Ionicons name="create-outline" size={24} color={colors.brand} />
+          </Pressable>
+        </View>
       ),
     });
-  }, [navigation, periodId, t, colors.brand]);
+  }, [navigation, period, periodId, t, colors.brand]);
 
   if (period == null) {
     return (
@@ -254,6 +287,8 @@ export function RotationDetailScreen({ navigation, route }: Props) {
     );
   }
 
+  const deleteBottomInset = Math.max(insets.bottom, 8);
+
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScrollView className="flex-1" contentContainerClassName="gap-4 p-gutter">
@@ -311,11 +346,14 @@ export function RotationDetailScreen({ navigation, route }: Props) {
         />
 
         <RotationDetailCalendar period={period} language={language} />
+
+        <View style={{ height: deleteBottomInset + 56 }} />
       </ScrollView>
 
       <View
-        className="items-center pt-2"
-        style={{ paddingBottom: Math.max(insets.bottom, 8) }}
+        pointerEvents="box-none"
+        className="absolute inset-x-0 bottom-0 items-center"
+        style={{ paddingBottom: deleteBottomInset }}
       >
         <Pressable
           accessibilityRole="button"

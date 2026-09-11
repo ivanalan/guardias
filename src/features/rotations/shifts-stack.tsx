@@ -6,10 +6,11 @@ import { useTheme } from '../../theme/theme-context';
 import { AddRotationScreen } from './screens/add-rotation-screen';
 import { RotationDetailScreen } from './screens/rotation-detail-screen';
 import { ShiftsListScreen } from './screens/shifts-list-screen';
+import type { SharedRotationDraft } from './share-rotation-link';
 
 export type ShiftsStackParamList = {
   ShiftsList: undefined;
-  AddRotation: undefined;
+  AddRotation: { draft?: SharedRotationDraft } | undefined;
   EditRotation: { periodId: string };
   RotationDetail: { periodId: string };
 };

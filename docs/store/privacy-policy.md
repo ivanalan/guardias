@@ -1,6 +1,6 @@
 # Privacy Policy — Mi Guardia
 
-**Last updated:** August 11, 2026
+**Last updated:** September 11, 2026
 
 Mi Guardia (“the App”) is a mobile application that helps you track on-call medical rotation schedules (guardias). This Privacy Policy explains what information the App handles and how.
 
@@ -15,7 +15,13 @@ The App stores the following locally on your device (for example, using on-devic
 - Rotation periods you create (labels, pattern, dates, optional vacation ranges, shift start time)
 - App preferences (such as language override)
 
-This data never leaves your device unless **you** choose to back up or share your device through your own tools (for example, OS backup, screenshots, or future features you explicitly use).
+This data never leaves your device unless **you** choose to back up or share it (for example, OS backup, screenshots, calendar export, or a rotation share link you create).
+
+## Rotation share links
+
+If you use **Share** on a rotation, the App builds a link on `alanmatias.com` that embeds the rotation’s schedule fields in the URL itself (dates, pattern, label, and related options). There is no Mi Guardia server that stores that link.
+
+Anyone who receives or opens the link can see those schedule fields. We do not collect analytics on link opens. If you do not want others to see a schedule, do not share the link.
 
 ## Information accessed on your device
 
@@ -25,7 +31,7 @@ The App does not request access to your contacts, camera, microphone, location, 
 
 ## No account or cloud sync
 
-There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers.
+There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers. Share links encode data in the URL on your device; opening a link only loads a static page on alanmatias.com when the App is not installed.
 
 ## Third parties
 
@@ -37,7 +43,7 @@ The App is intended for adult medical professionals and residents. It is not dir
 
 ## Data deletion
 
-Because data is stored only on your device, you can remove it by clearing the App’s storage or uninstalling the App.
+Because data is stored only on your device, you can remove it by clearing the App’s storage or uninstalling the App. Shared links remain usable by anyone who still has the URL until they discard it.
 
 ## Changes
 
@@ -49,4 +55,4 @@ Questions about this policy: use the contact email listed on the Mi Guardia Goog
 
 ## Spanish summary
 
-Mi Guardia funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta, no hay servidor propio de Mi Guardia, y no se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.
+Mi Guardia funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta ni servidor propio de Mi Guardia. Si compartes un enlace de rotación, los datos del horario van **en la URL**; quien tenga el enlace puede verlos. No se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.

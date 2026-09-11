@@ -1,11 +1,14 @@
 import './src/global.css';
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { InstrumentSerif_400Regular } from '@expo-google-fonts/instrument-serif';
-import { NavigationContainer } from '@react-navigation/native';
+import {
+  NavigationContainer,
+  type NavigationContainerRef,
+} from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { I18nextProvider } from 'react-i18next';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -18,6 +21,7 @@ import { PreferencesProvider } from './src/features/settings/preferences-context
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
 import { FloatingTabBar } from './src/navigation/floating-tab-bar';
 import type { TabParamList } from './src/navigation/types';
+import { useShareLinkNavigation } from './src/navigation/use-share-link-navigation';
 import { useTheme } from './src/theme/theme-context';
 
 void SplashScreen.preventAutoHideAsync();
@@ -26,9 +30,13 @@ const Tab = createBottomTabNavigator<TabParamList>();
 
 function RootNavigator() {
   const { scheme } = useTheme();
+  const navigationRef = useRef<NavigationContainerRef<TabParamList> | null>(
+    null,
+  );
+  useShareLinkNavigation(navigationRef);
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       <Tab.Navigator
         screenOptions={{
           headerShown: false,
