@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mi Guardia",
     "slug": "guardias",
-    "version": "1.0.6",
+    "version": "1.0.7",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -41,7 +41,9 @@
     ],
     "ios": {
       "bundleIdentifier": "com.alanmatias.guardias",
-      "associatedDomains": ["applinks:alanmatias.com"],
+      "associatedDomains": [
+        "applinks:alanmatias.com"
+      ],
       "infoPlist": {
         "CFBundleDisplayName": "Mi Guardia",
         "ITSAppUsesNonExemptEncryption": false
@@ -64,7 +66,10 @@
               "pathPrefix": "/guardias/r"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
