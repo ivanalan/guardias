@@ -1,5 +1,5 @@
-import { useCallback, useLayoutEffect, useState } from 'react';
-import { Alert, Share } from 'react-native';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { Alert, Platform, Share } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useFocusEffect } from '@react-navigation/native';
@@ -16,6 +16,17 @@ import {
 } from '../../../lib/shifts';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
+import { buildShiftExportEvent } from '../../calendar/build-shift-export-event';
+import {
+  RotationImageCaptureHost,
+  type RotationImageShareRequest,
+} from '../../calendar/components/rotation-image-capture-host';
+import {
+  ShareDestinationModal,
+  type ShareDestination,
+} from '../../calendar/components/share-destination-modal';
+import { openAppleCalendar } from '../../calendar/open-apple-calendar';
+import { openGoogleCalendar } from '../../calendar/open-google-calendar';
 import { NextShiftCard } from '../../dashboard/components/next-shift-card';
 import { ShiftsLeftCard } from '../../dashboard/components/shifts-left-card';
 import { formatWeekdayLong } from '../../dashboard/format-home-copy';
@@ -124,6 +135,14 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   const period = periods.find((item) => item.id === route.params.periodId);
   const periodId = period?.id;
   const [now, setNow] = useState(() => new Date());
+  const [shareVisible, setShareVisible] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [imageRequest, setImageRequest] =
+    useState<RotationImageShareRequest | null>(null);
+  const pendingShareRef = useRef<{
+    period: RotationPeriod;
+    destination: ShareDestination;
+  } | null>(null);
 
   useFocusEffect(
     useCallback(() => {
@@ -143,38 +162,23 @@ export function RotationDetailScreen({ navigation, route }: Props) {
       return;
     }
 
-    const sharePeriod = period;
-
-    async function onShare() {
-      const url = buildShareUrl(sharePeriod);
-      try {
-        await Share.share({
-          message: url,
-          url,
-        });
-      } catch {
-        Alert.alert(
-          t('shifts.detail.shareFailedTitle'),
-          t('shifts.detail.shareFailedBody'),
-        );
-      }
-    }
-
     navigation.setOptions({
       headerRight: () => (
-        <View
-          style={{ flexDirection: 'row', alignItems: 'center' }}
-        >
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Pressable
             accessibilityRole="button"
             accessibilityLabel={t('shifts.detail.shareA11y')}
             onPress={() => {
-              void onShare();
+              if (sharing) {
+                return;
+              }
+              setShareVisible(true);
             }}
+            disabled={sharing}
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <Ionicons name="share-outline" size={24} color={colors.brand} />
+            <Ionicons name="share-social-outline" size={24} color={colors.brand} />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -190,7 +194,129 @@ export function RotationDetailScreen({ navigation, route }: Props) {
         </View>
       ),
     });
-  }, [navigation, period, periodId, t, colors.brand]);
+  }, [navigation, period, periodId, t, colors.brand, sharing]);
+
+  async function runShareAction(
+    sharePeriod: RotationPeriod,
+    destination: ShareDestination,
+  ) {
+    setSharing(true);
+    try {
+      if (destination === 'image') {
+        setImageRequest({ period: sharePeriod });
+        return;
+      }
+
+      if (destination === 'link') {
+        const url = buildShareUrl(sharePeriod);
+        try {
+          // iOS: only `url` — passing the same link in both `message` and `url`
+          // makes the sheet show “2 links” (and WhatsApp posts it twice).
+          // Android ignores `url` and needs `message`.
+          await Share.share(
+            Platform.OS === 'ios' ? { url } : { message: url },
+          );
+        } catch {
+          Alert.alert(
+            t('shifts.detail.shareFailedTitle'),
+            t('shifts.detail.shareFailedBody'),
+          );
+        }
+        return;
+      }
+
+      if (destination === 'google') {
+        const event = buildShiftExportEvent(sharePeriod);
+        const details =
+          event != null && event.vacationExDates.length > 0
+            ? t('calendar.shareGoogleVacationNote', {
+                dates: event.vacationExDates.join(', '),
+              })
+            : undefined;
+        const result = await openGoogleCalendar(sharePeriod, { details });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareGoogleFailed'));
+          }
+        }
+        return;
+      }
+
+      if (destination === 'apple') {
+        const event = buildShiftExportEvent(sharePeriod);
+        const notes =
+          event != null && event.vacationExDates.length > 0
+            ? t('calendar.shareAppleVacationNote', {
+                dates: event.vacationExDates.join(', '),
+              })
+            : undefined;
+        const result = await openAppleCalendar(sharePeriod, { notes });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareAppleFailed'));
+          }
+        }
+      }
+    } finally {
+      if (destination !== 'image') {
+        setSharing(false);
+      }
+    }
+  }
+
+  function onImageShareComplete(
+    result: 'ok' | 'empty' | 'unavailable' | 'failed',
+  ) {
+    setImageRequest(null);
+    setSharing(false);
+    if (result === 'empty') {
+      Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
+      return;
+    }
+    if (result === 'unavailable') {
+      Alert.alert(t('calendar.shareUnavailable'));
+      return;
+    }
+    if (result === 'failed') {
+      Alert.alert(
+        t('calendar.shareImageFailedTitle'),
+        t('calendar.shareImageFailedBody'),
+      );
+    }
+  }
+
+  function flushPendingShare() {
+    const pending = pendingShareRef.current;
+    if (pending == null) {
+      return;
+    }
+    pendingShareRef.current = null;
+    void runShareAction(pending.period, pending.destination);
+  }
+
+  function queueShareAfterDest(destination: ShareDestination) {
+    if (period == null) {
+      setShareVisible(false);
+      return;
+    }
+    pendingShareRef.current = { period, destination };
+    setShareVisible(false);
+    if (Platform.OS !== 'ios') {
+      setTimeout(() => {
+        flushPendingShare();
+      }, 300);
+    }
+  }
 
   if (period == null) {
     return (
@@ -376,6 +502,23 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           </Text>
         </Pressable>
       </View>
+
+      <ShareDestinationModal
+        visible={shareVisible}
+        linkPrimary
+        rotationLabel={period.label}
+        onSelect={queueShareAfterDest}
+        onCancel={() => {
+          pendingShareRef.current = null;
+          setShareVisible(false);
+        }}
+        onDismiss={flushPendingShare}
+      />
+      <RotationImageCaptureHost
+        request={imageRequest}
+        language={language}
+        onComplete={onImageShareComplete}
+      />
     </View>
   );
 }

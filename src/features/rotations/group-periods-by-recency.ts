@@ -21,6 +21,7 @@ const SECTION_ORDER: readonly {
 /**
  * Groups periods into Current → Future → Past for a SectionList.
  * Expects periods already sorted ascending by `startDate`.
+ * Past is shown newest-ended first (`endDate` descending).
  * Empty buckets are omitted.
  */
 export function groupPeriodsByRecency(
@@ -42,6 +43,8 @@ export function groupPeriodsByRecency(
       buckets.current.push(period);
     }
   }
+
+  buckets.past.sort((a, b) => (a.endDate < b.endDate ? 1 : a.endDate > b.endDate ? -1 : 0));
 
   return SECTION_ORDER.flatMap(({ key, titleKey }) => {
     const data = buckets[key];

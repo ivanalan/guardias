@@ -1,6 +1,8 @@
 import * as Calendar from 'expo-calendar/legacy';
+import { endOfDay } from 'date-fns';
 
 import type { RotationPeriod } from '../rotations/types';
+import { buildShift } from '../../lib/shifts/build-shift';
 import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 
 import { buildShiftExportEvent } from './build-shift-export-event';
@@ -16,7 +18,7 @@ export type OpenAppleCalendarOptions = {
 
 /**
  * Presents the iOS system "Add Event" UI (EventKit) prefilled with the
- * recurring all-day shift series. No share sheet — user saves into Calendar.
+ * recurring 24h shift series. No share sheet — user saves into Calendar.
  */
 export async function openAppleCalendar(
   period: RotationPeriod,
@@ -27,18 +29,24 @@ export async function openAppleCalendar(
     return { ok: false, reason: 'empty' };
   }
 
+  const firstShift = buildShift(period, event.firstShiftDate);
+  if (firstShift == null) {
+    return { ok: false, reason: 'empty' };
+  }
+
   try {
-    // Omit empty notes. Do not set location — expo-calendar still defaults it to
-    // "" natively (shows a clear X in iOS Calendar); that is an Expo quirk, not us.
+    // Omit empty notes and location. expo-calendar maps a missing location to
+    // "" (shows a clear X); patches/expo-calendar+*.patch sets empty → nil.
     await Calendar.createEventInCalendarAsync({
       title: event.summary,
-      startDate: parseCalendarDate(event.firstShiftDate),
-      endDate: parseCalendarDate(event.firstExclusiveEnd),
-      allDay: true,
+      startDate: firstShift.startDateTime,
+      endDate: firstShift.endDateTime,
+      allDay: false,
       recurrenceRule: {
         frequency: Calendar.Frequency.DAILY,
         interval: event.interval,
-        endDate: parseCalendarDate(event.untilDate),
+        // Inclusive of a last-day morning start (midnight alone can drop it).
+        endDate: endOfDay(parseCalendarDate(event.untilDate)),
       },
       ...(options.notes != null && options.notes.length > 0
         ? { notes: options.notes }

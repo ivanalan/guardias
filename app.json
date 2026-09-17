@@ -37,13 +37,11 @@
           "writeOnlyAccess": true,
           "writeOnlyCalendarPermission": "Mi Guardia necesita permiso para agregar tus guardias al Calendario."
         }
-      ]
+      ],
+      "expo-web-browser"
     ],
     "ios": {
       "bundleIdentifier": "com.alanmatias.guardias",
-      "associatedDomains": [
-        "applinks:alanmatias.com"
-      ],
       "infoPlist": {
         "CFBundleDisplayName": "Mi Guardia",
         "ITSAppUsesNonExemptEncryption": false
@@ -54,24 +52,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#F6F1EC"
-      },
-      "intentFilters": [
-        {
-          "action": "VIEW",
-          "autoVerify": true,
-          "data": [
-            {
-              "scheme": "https",
-              "host": "alanmatias.com",
-              "pathPrefix": "/guardias/r"
-            }
-          ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
-        }
-      ]
+      }
     },
     "extra": {
       "eas": {

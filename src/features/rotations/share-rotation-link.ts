@@ -7,9 +7,9 @@ import {
 } from './types';
 import { isRotationColor, normalizeRotationColor } from './rotation-colors';
 
-/** Hosted share path on alanmatias.com (Universal / App Links). */
+/** Hosted share path on alanmatias.com (website landing; app opens via custom scheme). */
 export const SHARE_LINK_ORIGIN = 'https://alanmatias.com';
-/** Trailing slash avoids Astro’s 301 `/guardias/r` → `/guardias/r/` (breaks UL). */
+/** Trailing slash avoids Astro’s 301 `/guardias/r` → `/guardias/r/`. */
 export const SHARE_LINK_PATH = '/guardias/r/';
 
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
