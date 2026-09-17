@@ -6,9 +6,7 @@ import { useTranslation } from 'react-i18next';
 import type { AppLanguage } from '../../../i18n';
 import { useTheme } from '../../../theme/theme-context';
 import { Text, View } from '../../../tw';
-import {
-  buildCalendarDayMarkContext,
-} from '../../calendar/calendar-day-marker';
+import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { EMPTY_CALENDAR_FILTER } from '../../calendar/build-marked-dates';
 import {
   calendarCardStyle,
@@ -95,12 +93,12 @@ function RotationDetailMonthCard({
         hideArrows
         hideDayNames
         firstDay={1}
-        monthFormat="MMMM"
+        monthFormat="MMMM yyyy"
         markingType="custom"
         markedDates={buildMonthMarkedDates([period], monthDate)}
         dayComponent={DayComponent}
         renderHeader={(date) => (
-          <CalendarMonthTitle date={date} monthFormat="MMMM" />
+          <CalendarMonthTitle date={date} monthFormat="MMMM yyyy" />
         )}
         style={calendarCardStyle(colors)}
         theme={calendarThemeFor(colors)}
@@ -125,15 +123,15 @@ export function RotationDetailCalendar({ period, language }: Props) {
   }
 
   return (
-    <View className="gap-3">
+    <View className="gap-4">
       <Text
-        className="font-serif text-3xl"
+        className="font-mono text-lg"
         style={{ color: colors.text }}
         accessibilityRole="header"
       >
         {t('shifts.detail.calendarSection')}
       </Text>
-      <View className="gap-3">
+      <View className="gap-5">
         {months.map((monthDate) => (
           <RotationDetailMonthCard
             key={monthDate}

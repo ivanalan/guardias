@@ -53,7 +53,7 @@ function MarksPage({
   const { colors } = useTheme();
   const filled = Math.max(0, Math.min(remaining, total));
   const [gridWidth, setGridWidth] = useState<number | null>(null);
-  const titleClass = compact ? 'font-serif text-3xl' : 'font-serif text-5xl';
+  const titleClass = 'font-serif text-3xl';
   const captionClass = compact ? 'font-mono text-sm' : 'font-mono text-base';
 
   const onGridLayout = (event: LayoutChangeEvent) => {

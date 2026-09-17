@@ -70,8 +70,8 @@ export function RotationPeriodRow({
         <Text
           className={
             compact
-              ? 'min-w-0 flex-1 font-serif text-3xl'
-              : 'min-w-0 flex-1 font-serif text-4xl'
+              ? 'min-w-0 flex-1 font-serif text-2xl'
+              : 'min-w-0 flex-1 font-serif text-3xl'
           }
           style={{ color: colors.onColor }}
         >

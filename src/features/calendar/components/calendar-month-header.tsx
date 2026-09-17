@@ -17,7 +17,7 @@ type CalendarMonthHeaderProps = {
 /** Month title with prev/next controls grouped on the right (Calendar mock layout). */
 export function CalendarMonthHeader({
   date,
-  monthFormat = 'MMMM',
+  monthFormat = 'MMMM yyyy',
   onPreviousMonth,
   onNextMonth,
 }: CalendarMonthHeaderProps) {
@@ -28,7 +28,7 @@ export function CalendarMonthHeader({
     <View className="w-full">
       <View className="flex-row items-center justify-between">
         <Text
-          className="font-serif text-4xl"
+          className="font-serif text-3xl"
           style={{
             lineHeight: CALENDAR_MONTH_TITLE_LINE_HEIGHT,
             flexShrink: 0,

@@ -1,4 +1,5 @@
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '../../theme/theme-context';
 import { CalendarScreen } from './screens/calendar-screen';
@@ -13,6 +14,7 @@ const Stack = createNativeStackNavigator<CalendarStackParamList>();
 
 /** Native stack for the Calendar tab. */
 export function CalendarStack() {
+  const { t } = useTranslation();
   const { colors } = useTheme();
 
   return (
@@ -21,6 +23,7 @@ export function CalendarStack() {
         name="CalendarHome"
         component={CalendarScreen}
         options={{
+          title: t('tabs.calendar'),
           headerShown: false,
         }}
       />

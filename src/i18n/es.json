@@ -145,7 +145,8 @@
       "deleteCancel": "Cancelar",
       "deleteConfirmTitle": "¿Eliminar rotación?",
       "deleteConfirmBody": "Se eliminará “{{label}}”. Esta acción no se puede deshacer.",
-      "calendarSection": "Calendario"
+      "calendarSection": "Calendario",
+      "detailsSection": "Detalles"
     },
     "form": {
       "sectionBasics": "Nombre",

@@ -10,32 +10,56 @@ import { useWindowDimensions } from 'react-native';
 import { SCREEN_PAGE_TITLE_ICON_SIZE } from '../components/screen-page-title';
 import type { ThemeColors } from '../theme/colors';
 import { useTheme } from '../theme/theme-context';
-import { Pressable, Text } from '../tw';
+import { Pressable, Text, View } from '../tw';
 
-/** Space reserved per side for back / save (icons + padding). */
-const ANDROID_HEADER_ACTION_RESERVE = 56;
+/**
+ * Space reserved per side so long titles don’t run under back / dual icon
+ * actions. Sized for two 24pt header icons + padding.
+ */
+const ANDROID_HEADER_ACTION_RESERVE = 100;
 
 /**
  * Centered serif title for pushed stack screens (Form mock header).
  *
- * On Android, native-stack + custom headerLeft/Right + headerTitleAlign
- * center often gives the title a too-narrow Yoga box, so text truncates
- * while empty space remains. Force a width based on the window size.
+ * On Android, a fixed `width: screen - reserve` left-anchors the label and
+ * reads off-center once short titles load. Pin a full-window box to the
+ * header’s horizontal center instead.
  */
 export function SecondaryHeaderTitle({ children }: { children: string }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
   const isAndroid = process.env.EXPO_OS === 'android';
-  const titleWidth = Math.max(0, width - ANDROID_HEADER_ACTION_RESERVE * 2);
+
+  if (isAndroid) {
+    return (
+      <View
+        pointerEvents="box-none"
+        style={{
+          position: 'absolute',
+          left: '50%',
+          width,
+          transform: [{ translateX: -width / 2 }],
+          alignItems: 'center',
+          justifyContent: 'center',
+          paddingHorizontal: ANDROID_HEADER_ACTION_RESERVE,
+        }}
+      >
+        <Text
+          className="font-serif text-3xl"
+          numberOfLines={1}
+          style={{ color: colors.text, textAlign: 'center' }}
+        >
+          {children}
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <Text
       className="font-serif text-3xl"
       numberOfLines={1}
-      style={{
-        color: colors.text,
-        ...(isAndroid ? { width: titleWidth, textAlign: 'center' } : undefined),
-      }}
+      style={{ color: colors.text, textAlign: 'center' }}
     >
       {children}
     </Text>

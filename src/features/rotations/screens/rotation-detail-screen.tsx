@@ -163,6 +163,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
     }
 
     navigation.setOptions({
+      title: period.label,
       headerRight: () => (
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <Pressable
@@ -178,7 +179,11 @@ export function RotationDetailScreen({ navigation, route }: Props) {
             className="px-2 active:opacity-60"
             hitSlop={8}
           >
-            <Ionicons name="share-social-outline" size={24} color={colors.brand} />
+            <Ionicons
+              name="share-social-outline"
+              size={24}
+              color={colors.brand}
+            />
           </Pressable>
           <Pressable
             accessibilityRole="button"
@@ -213,9 +218,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           // iOS: only `url` — passing the same link in both `message` and `url`
           // makes the sheet show “2 links” (and WhatsApp posts it twice).
           // Android ignores `url` and needs `message`.
-          await Share.share(
-            Platform.OS === 'ios' ? { url } : { message: url },
-          );
+          await Share.share(Platform.OS === 'ios' ? { url } : { message: url });
         } catch {
           Alert.alert(
             t('shifts.detail.shareFailedTitle'),
@@ -417,59 +420,66 @@ export function RotationDetailScreen({ navigation, route }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
-      <ScrollView className="flex-1" contentContainerClassName="gap-4 p-gutter">
-        <View className="gap-1">
-          <View className="w-full flex-row items-center justify-between gap-3">
-            <Text
-              className="min-w-0 flex-1 font-serif text-5xl tracking-tight"
-              style={{ color: colors.text }}
-            >
-              {period.label}
-            </Text>
-            {isSecondary(period) ? (
-              <Ionicons
-                name="people"
-                size={24}
-                color={colors.text}
-                style={{ marginRight: 16 }}
-              />
-            ) : null}
-          </View>
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="gap-10 p-gutter"
+      >
+        <View className="gap-3">
           <Text
-            className="font-mono text-base opacity-50"
+            className="font-mono text-lg"
             style={{ color: colors.text }}
+            accessibilityRole="header"
           >
-            {subtitle}
+            {t('shifts.detail.detailsSection')}
           </Text>
+
+          <View className="gap-5">
+            <View className="w-full flex-row items-center justify-between gap-3">
+              <Text
+                className="min-w-0 flex-1 font-mono text-base"
+                style={{ color: colors.text }}
+              >
+                {subtitle}
+              </Text>
+              {isSecondary(period) ? (
+                <Ionicons
+                  name="people"
+                  size={24}
+                  color={colors.text}
+                  style={{ marginRight: 16 }}
+                />
+              ) : null}
+            </View>
+
+            <View className="w-full flex-row gap-4">
+              <FactCard
+                className="min-w-0 flex-1 gap-1 px-gutter py-5"
+                value={`${patternTitle} · ${period.pattern.offset}`}
+                caption={patternSubtitle}
+              />
+              <FactCard
+                className="min-w-0 flex-1 gap-1 px-gutter py-5"
+                value={period.shiftStartTime}
+                caption={t('shifts.form.shiftStartTime')}
+              />
+            </View>
+
+            <ShiftsLeftCard
+              compact
+              remaining={remaining}
+              total={periodProgress.total}
+              color={color}
+              caption={t('home.shiftsLeft')}
+            />
+
+            {statusCard}
+
+            <FactCard
+              value={vacationValue}
+              caption={t('shifts.detail.vacationLabel')}
+            />
+          </View>
         </View>
-
-        <View className="w-full flex-row gap-3">
-          <FactCard
-            className="min-w-0 flex-1 gap-1 px-gutter py-5"
-            value={`${patternTitle} · ${period.pattern.offset}`}
-            caption={patternSubtitle}
-          />
-          <FactCard
-            className="min-w-0 flex-1 gap-1 px-gutter py-5"
-            value={period.shiftStartTime}
-            caption={t('shifts.form.shiftStartTime')}
-          />
-        </View>
-
-        <ShiftsLeftCard
-          compact
-          remaining={remaining}
-          total={periodProgress.total}
-          color={color}
-          caption={t('home.shiftsLeft')}
-        />
-
-        {statusCard}
-
-        <FactCard
-          value={vacationValue}
-          caption={t('shifts.detail.vacationLabel')}
-        />
 
         <RotationDetailCalendar period={period} language={language} />
 

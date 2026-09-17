@@ -24,11 +24,10 @@
 - Do not hardcode user-visible strings; add keys to both `en.json` and `es.json`
 - Default locale fallback is Spanish (`es`)
 
-## Store releases (iOS)
+## Store releases
 
-- Every iOS production build or App Store Connect upload must follow **`ios-store-submit`** (`.agents/skills/ios-store-submit`).
-- Run `node scripts/ios-version-gate.mjs check` (and `check --ipa <appVersion>` before `eas submit`). Never upload a marketing version ≤ `docs/store/ios-release-state.json` `lastApprovedMarketingVersion`.
-- First-time Apple setup: `docs/store/IOS_RELEASE.md`.
+- **iOS:** Every production build or App Store Connect upload must follow **`ios-store-submit`** (`.agents/skills/ios-store-submit`). Run `node scripts/ios-version-gate.mjs check` (and `check --ipa <appVersion>` before `eas submit`). Never upload a marketing version ≤ `docs/store/ios-release-state.json` `lastApprovedMarketingVersion`. First-time Apple setup: `docs/store/IOS_RELEASE.md`.
+- **Android:** Follow **`android-store-submit`** (`.agents/skills/android-store-submit`). Owner downloads the EAS `.aab` and uploads in Play Console — do **not** use `eas submit` or set up Play service-account credentials unless explicitly requested. First-time Play setup: `docs/store/ANDROID_RELEASE.md`.
 
 ## Before implementing a feature
 
