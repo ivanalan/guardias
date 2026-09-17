@@ -31,7 +31,7 @@ The App does not request access to your contacts, camera, microphone, location, 
 
 ## No account or cloud sync
 
-There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers. Share links encode data in the URL on your device; opening a link only loads a static page on alanmatias.com when the App is not installed.
+There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers. Share links encode data in the URL on your device; opening a link loads a static page on alanmatias.com with options to open the App or export the schedule.
 
 ## Third parties
 

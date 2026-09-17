@@ -1,14 +1,22 @@
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
+import { useState } from 'react';
 import { SectionList } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
-import { ScreenPageTitle, SCREEN_PAGE_TITLE_ICON_SIZE } from '../../../components/screen-page-title';
-import { SCREEN_GUTTER, FLOATING_TAB_BAR_CLEARANCE } from '../../../theme/layout';
+import {
+  ScreenPageTitle,
+  SCREEN_PAGE_TITLE_ICON_SIZE,
+} from '../../../components/screen-page-title';
+import {
+  SCREEN_GUTTER,
+  FLOATING_TAB_BAR_CLEARANCE,
+} from '../../../theme/layout';
 import type { AppLanguage } from '../../../i18n';
 import { useTheme } from '../../../theme/theme-context';
-import { Pressable, Text, View } from '../../../tw';
+import { Pressable, View } from '../../../tw';
+import { PeriodRecencySectionHeader } from '../components/period-recency-section-header';
 import { RotationPeriodRow } from '../components/rotation-period-row';
 import { ShiftsEmptyState } from '../components/shifts-empty-state';
 import { formatPeriodRange } from '../format-period-range';
@@ -26,14 +34,22 @@ function keyExtractor(item: RotationPeriod) {
   return item.id;
 }
 
+function SectionGap() {
+  return <View className="h-1" />;
+}
+
 /** Shifts tab list of rotation periods. */
 export function ShiftsListScreen({ navigation }: Props) {
   const { t, i18n } = useTranslation();
   const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
+  const [pastExpanded, setPastExpanded] = useState(false);
   const todayIso = format(new Date(), 'yyyy-MM-dd');
-  const sections = groupPeriodsByRecency(periods, todayIso);
+  const sections = groupPeriodsByRecency(periods, todayIso).map((section) => {
+    if (section.key !== 'past' || pastExpanded) return section;
+    return { ...section, data: [] };
+  });
 
   if (periods.length === 0) {
     return (
@@ -74,7 +90,9 @@ export function ShiftsListScreen({ navigation }: Props) {
             }
           />
         }
-        ListHeaderComponentStyle={{ marginHorizontal: -SCREEN_GUTTER }}
+        ListHeaderComponentStyle={{
+          marginHorizontal: -SCREEN_GUTTER,
+        }}
         contentContainerStyle={{
           flexGrow: 1,
           gap: 12,
@@ -82,27 +100,27 @@ export function ShiftsListScreen({ navigation }: Props) {
           paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
         }}
         stickySectionHeadersEnabled={false}
+        SectionSeparatorComponent={SectionGap}
         renderSectionHeader={({
           section,
         }: {
           section: PeriodRecencySection;
         }) => (
-          <Text
-            className="px-1 pt-2 font-mono text-sm"
-            style={{ color: colors.textMuted }}
-          >
-            {t(`shifts.${section.titleKey}`)}
-          </Text>
+          <PeriodRecencySectionHeader
+            sectionKey={section.key}
+            title={t(`shifts.${section.titleKey}`)}
+            color={colors.textMuted}
+            pastExpanded={pastExpanded}
+            expandA11y={t('shifts.sectionPastExpandA11y')}
+            collapseA11y={t('shifts.sectionPastCollapseA11y')}
+            onTogglePast={() => setPastExpanded((prev) => !prev)}
+          />
         )}
         renderItem={({ item }) => (
           <RotationPeriodRow
             label={item.label}
             meta={t('shifts.rowMeta', {
-              range: formatPeriodRange(
-                item.startDate,
-                item.endDate,
-                language,
-              ),
+              range: formatPeriodRange(item.startDate, item.endDate, language),
               letter: item.pattern.offset,
             })}
             color={item.color}

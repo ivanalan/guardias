@@ -1,25 +1,21 @@
-# Universal / App Links setup (rotation share)
+# Rotation share links
 
-Share links use `https://alanmatias.com/guardias/r/?d=…` (trailing slash — Astro 301s the no-slash path, which can break Universal Links).
+Share links use `https://alanmatias.com/guardias/r/?d=…` (trailing slash — Astro 301s the no-slash path).
 
-Association files live in the portfolio site (`ivanalan.github.io`):
+Recipients always land on the website options page. The app is **not** opened automatically via Universal / App Links.
 
-- `public/.well-known/apple-app-site-association`
-- `public/.well-known/assetlinks.json`
+The **Mi Guardia App** button on that page tries the custom scheme first (`miguardia://guardias/r/?d=…`). If the app is not installed, it falls back to the App Store.
 
-Live (after #15): Team ID + Play SHA-256 are set; well-known endpoints return 200.
+Association files on the portfolio site (`ivanalan.github.io`) no longer claim `/guardias/r` (empty AASA details / empty `assetlinks.json`). Keep the files so `/.well-known/*` still returns 200.
 
 ## Ship checklist
 
-1. Confirm site still serves:
-   - `https://alanmatias.com/.well-known/apple-app-site-association`
-   - `https://alanmatias.com/.well-known/assetlinks.json`
-   - `https://alanmatias.com/guardias/r/` (no redirect)
-2. Ship a **new native build** (TestFlight / Play) with current `app.json` `associatedDomains` / `intentFilters`. Expo Go will not open these HTTPS links into the app.
-3. On device: share a rotation → open the link from Messages → Add Rotation should prefill.
+1. Deploy the portfolio site so `https://alanmatias.com/guardias/r/` has the updated open-in-app button and well-known files no longer claim the path.
+2. Ship a **new native build** (TestFlight / Play) without `associatedDomains` / HTTPS `intentFilters` so installed apps stop claiming the HTTPS share URL.
+3. On device: open a share link from Messages → website loads → tap **Mi Guardia App** → Add Rotation prefills (or App Store if not installed).
 
-## Local smoke test without Universal Links
+## Local smoke test (custom scheme)
 
-Open a custom-scheme URL on a dev build:
+Open on a dev / production build:
 
 `miguardia://guardias/r/?d=<payload-from-share>`

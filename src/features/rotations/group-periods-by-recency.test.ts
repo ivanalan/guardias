@@ -67,10 +67,10 @@ describe('groupPeriodsByRecency', () => {
     ).toEqual(['current']);
   });
 
-  it('returns only past when all periods have ended', () => {
+  it('returns only past when all periods have ended, newest-ended first', () => {
     const sections = groupPeriodsByRecency([past, current], '2026-07-01');
     expect(sections.map((s) => s.key)).toEqual(['past']);
-    expect(sections[0]?.data.map((p) => p.id)).toEqual(['past', 'current']);
+    expect(sections[0]?.data.map((p) => p.id)).toEqual(['current', 'past']);
   });
 
   it('returns only future when all periods start after today', () => {

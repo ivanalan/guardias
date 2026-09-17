@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Alert, Platform, type LayoutChangeEvent } from 'react-native';
+import { Alert, Platform, Share, type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ import { useTheme } from '../../../theme/theme-context';
 import { toISODate } from '../../rotations/format-period-range';
 import { useRotations } from '../../rotations/rotations-context';
 import { resolveRotationColor, resolveShiftMarks } from '../../rotations/rotation-colors';
+import { buildShareUrl } from '../../rotations/share-rotation-link';
 import type { RotationPeriod } from '../../rotations/types';
 import type { CalendarStackParamList } from '../calendar-stack';
 import {
@@ -40,6 +41,10 @@ import { CalendarMonthHeader } from '../components/calendar-month-header';
 import { CalendarMonthTitle } from '../components/calendar-month-title';
 import { CalendarViewToggle } from '../components/calendar-view-toggle';
 import { ExportPeriodPickerModal } from '../components/export-period-picker-modal';
+import {
+  RotationImageCaptureHost,
+  type RotationImageShareRequest,
+} from '../components/rotation-image-capture-host';
 import {
   ShareDestinationModal,
   type ShareDestination,
@@ -80,6 +85,8 @@ export function CalendarScreen({ navigation }: Props) {
   const [sharing, setSharing] = useState(false);
   const [periodPickerVisible, setPeriodPickerVisible] = useState(false);
   const [destVisible, setDestVisible] = useState(false);
+  const [imageRequest, setImageRequest] =
+    useState<RotationImageShareRequest | null>(null);
   // Period chosen for the destination sheet (may outlive the period picker).
   const selectedPeriodRef = useRef<RotationPeriod | null>(null);
   // Open destination after the period picker finishes dismissing (iOS).
@@ -177,6 +184,26 @@ export function CalendarScreen({ navigation }: Props) {
     }
     setSharing(true);
     try {
+      if (destination === 'image') {
+        setImageRequest({ period });
+        return;
+      }
+
+      if (destination === 'link') {
+        const url = buildShareUrl(period);
+        try {
+          await Share.share(
+            Platform.OS === 'ios' ? { url } : { message: url },
+          );
+        } catch {
+          Alert.alert(
+            t('shifts.detail.shareFailedTitle'),
+            t('shifts.detail.shareFailedBody'),
+          );
+        }
+        return;
+      }
+
       if (destination === 'google') {
         const event = buildShiftExportEvent(period);
         const details =
@@ -236,7 +263,30 @@ export function CalendarScreen({ navigation }: Props) {
         }
       }
     } finally {
-      setSharing(false);
+      if (destination !== 'image') {
+        setSharing(false);
+      }
+    }
+  };
+
+  const onImageShareComplete = (
+    result: 'ok' | 'empty' | 'unavailable' | 'failed',
+  ) => {
+    setImageRequest(null);
+    setSharing(false);
+    if (result === 'empty') {
+      Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
+      return;
+    }
+    if (result === 'unavailable') {
+      Alert.alert(t('calendar.shareUnavailable'));
+      return;
+    }
+    if (result === 'failed') {
+      Alert.alert(
+        t('calendar.shareImageFailedTitle'),
+        t('calendar.shareImageFailedBody'),
+      );
     }
   };
 
@@ -344,7 +394,7 @@ export function CalendarScreen({ navigation }: Props) {
             hitSlop={8}
           >
             <Ionicons
-              name="share-outline"
+              name="share-social-outline"
               size={SCREEN_PAGE_TITLE_ICON_SIZE}
               color={colors.brand}
             />
@@ -473,6 +523,8 @@ export function CalendarScreen({ navigation }: Props) {
       />
       <ShareDestinationModal
         visible={destVisible}
+        linkPrimary
+        rotationLabel={selectedPeriodRef.current?.label}
         onSelect={queueShareAfterDest}
         onCancel={() => {
           pendingShareRef.current = null;
@@ -480,6 +532,11 @@ export function CalendarScreen({ navigation }: Props) {
           setDestVisible(false);
         }}
         onDismiss={flushPendingShare}
+      />
+      <RotationImageCaptureHost
+        request={imageRequest}
+        language={language}
+        onComplete={onImageShareComplete}
       />
     </View>
   );

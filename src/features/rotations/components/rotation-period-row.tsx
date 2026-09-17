@@ -1,8 +1,25 @@
+import { useState } from 'react';
+import { type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 import { resolveRotationColor } from '../rotation-colors';
+
+/**
+ * Corner radius as a fraction of card height so compact and tall cards keep
+ * the same visual roundness (fixed px radii look “more rounded” when shorter).
+ * Tuned so a ~114px default row ≈ 32px radius.
+ */
+const RADIUS_TO_HEIGHT = 32 / 114;
+const RADIUS_MIN = 18;
+const RADIUS_MAX = 32;
+
+function radiusForHeight(height: number): number {
+  return Math.round(
+    Math.min(RADIUS_MAX, Math.max(RADIUS_MIN, height * RADIUS_TO_HEIGHT)),
+  );
+}
 
 export type RotationPeriodRowProps = {
   label: string;
@@ -10,6 +27,8 @@ export type RotationPeriodRowProps = {
   color: string;
   /** Friend/secondary period — people icon marks it as secondary viz. */
   showPeopleIcon?: boolean;
+  /** Smaller title for dense sheets (e.g. share period picker). */
+  compact?: boolean;
   onPress?: () => void;
 };
 
@@ -19,34 +38,57 @@ export function RotationPeriodRow({
   meta,
   color,
   showPeopleIcon = false,
+  compact = false,
   onPress,
 }: RotationPeriodRowProps) {
   const { colors } = useTheme();
   const backgroundColor = resolveRotationColor(color, colors);
+  const [borderRadius, setBorderRadius] = useState(compact ? 24 : 32);
+
+  const onLayout = (event: LayoutChangeEvent) => {
+    const next = radiusForHeight(event.nativeEvent.layout.height);
+    setBorderRadius((prev) => (prev === next ? prev : next));
+  };
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
-      className="w-full gap-1 px-gutter py-6 active:opacity-70"
+      onLayout={onLayout}
+      className={
+        compact
+          ? 'w-full gap-1 px-gutter py-4 active:opacity-70'
+          : 'w-full gap-1 px-gutter py-6 active:opacity-70'
+      }
       style={{
         backgroundColor,
         borderCurve: 'continuous',
-        borderRadius: 32,
+        borderRadius,
       }}
     >
       <View className="w-full flex-row items-center justify-between gap-3">
         <Text
-          className="min-w-0 flex-1 font-serif text-5xl"
+          className={
+            compact
+              ? 'min-w-0 flex-1 font-serif text-3xl'
+              : 'min-w-0 flex-1 font-serif text-4xl'
+          }
           style={{ color: colors.onColor }}
         >
           {label}
         </Text>
         {showPeopleIcon ? (
-          <Ionicons name="people" size={24} color={colors.onColor} />
+          <Ionicons
+            name="people"
+            size={compact ? 20 : 24}
+            color={colors.onColor}
+          />
         ) : null}
       </View>
-      <Text className="font-mono text-base" style={{ color: colors.onColor }}>
+      <Text
+        className={compact ? 'font-mono text-sm' : 'font-mono text-base'}
+        style={{ color: colors.onColor }}
+      >
         {meta}
       </Text>
     </Pressable>
