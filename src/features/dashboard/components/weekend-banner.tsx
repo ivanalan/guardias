@@ -19,7 +19,7 @@ export function WeekendBanner({ rangeLabel, caption }: WeekendBannerProps) {
         borderRadius: 32,
       }}
     >
-      <Text className="font-serif text-5xl" style={{ color: colors.onColor }}>
+      <Text className="font-serif text-3xl" style={{ color: colors.onColor }}>
         {rangeLabel}
       </Text>
       <Text className="font-mono text-base" style={{ color: colors.onColor }}>

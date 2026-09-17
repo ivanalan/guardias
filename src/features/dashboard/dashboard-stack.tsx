@@ -28,6 +28,7 @@ export function DashboardStack() {
         name="HomeHome"
         component={HomeScreen}
         options={{
+          title: t('tabs.home'),
           headerShown: false,
         }}
       />

@@ -12,7 +12,8 @@ export type ShiftsStackParamList = {
   ShiftsList: undefined;
   AddRotation: { draft?: SharedRotationDraft } | undefined;
   EditRotation: { periodId: string };
-  RotationDetail: { periodId: string };
+  /** `label` avoids flashing the generic “Rotation” title before setOptions. */
+  RotationDetail: { periodId: string; label?: string };
 };
 
 const Stack = createNativeStackNavigator<ShiftsStackParamList>();
@@ -54,9 +55,9 @@ export function ShiftsStack() {
       <Stack.Screen
         name="RotationDetail"
         component={RotationDetailScreen}
-        options={{
-          title: t('shifts.detail.title'),
-        }}
+        options={({ route }) => ({
+          title: route.params.label ?? t('shifts.detail.title'),
+        })}
       />
     </Stack.Navigator>
   );

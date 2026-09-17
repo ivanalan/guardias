@@ -151,20 +151,22 @@ export function calendarCardStyle(colors: ThemeColors) {
 export const CALENDAR_LIST_ITEM_GAP = 12;
 
 /** Month title line height — shared by the month header and the year-list title. */
-export const CALENDAR_MONTH_TITLE_LINE_HEIGHT = 46;
+export const CALENDAR_MONTH_TITLE_LINE_HEIGHT = 38;
 /** Weekday label line height — pinned so the list item pitch stays exact. */
 export const CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT = 20;
+
+/** Monday-first, matching `firstDay={1}` on calendar screens. */
+export const CALENDAR_LIST_FIRST_DAY = 1;
 
 const HEADER_MARGIN_BOTTOM = 8;
 const WEEKDAY_ROW_MARGIN_TOP = 4;
 const DAY_HEADER_MARGIN_TOP = 2;
 const DAY_HEADER_MARGIN_BOTTOM = 7;
-const WEEK_COUNT = 6;
 const WEEK_ROW_HEIGHT = CELL_SIZE + CALENDAR_WEEK_ROW_GAP;
 
 /**
  * Weekday row sits inside our header (`hideDayNames`). marginTop includes the
- * old header-to-week gap so CalendarList item pitch stays unchanged.
+ * old header-to-week gap so year-list item pitch stays exact.
  */
 export const CALENDAR_WEEKDAY_ROW_MARGIN_TOP =
   HEADER_MARGIN_BOTTOM + WEEKDAY_ROW_MARGIN_TOP + DAY_HEADER_MARGIN_TOP;
@@ -176,20 +178,53 @@ const listWeekdayRowHeight =
   CALENDAR_WEEKDAY_ROW_MARGIN_TOP +
   CALENDAR_WEEKDAY_LABEL_LINE_HEIGHT +
   CALENDAR_WEEKDAY_ROW_MARGIN_BOTTOM;
-const listMonthGridHeight =
-  WEEK_COUNT * WEEK_ROW_HEIGHT + (WEEK_COUNT - 1) * CALENDAR_WEEK_ROW_GAP;
-
-/** White card minHeight (6-week grid + padding). List pitch adds the canvas gap. */
-export const CALENDAR_LIST_CARD_HEIGHT =
-  listHeaderHeight +
-  listWeekdayRowHeight +
-  listMonthGridHeight +
-  CALENDAR_CARD_PADDING_VERTICAL * 2;
 
 /**
- * CalendarList getItemLayout pitch. Must match card height + gap or the list
- * opens scrolled past the current month. The title / weekday line heights above
- * are authoritative — change them here, not in the header components.
+ * Week rows for a month with `hideExtraDays` (same grid as react-native-calendars
+ * `page()` when `showSixWeeks` is false). `monthDate` is any day in the month.
  */
-export const CALENDAR_LIST_ITEM_HEIGHT =
-  CALENDAR_LIST_CARD_HEIGHT + CALENDAR_LIST_ITEM_GAP;
+export function weeksInCalendarMonth(
+  monthDate: string,
+  firstDayOfWeek: number = CALENDAR_LIST_FIRST_DAY,
+): number {
+  const year = Number(monthDate.slice(0, 4));
+  const monthIndex = Number(monthDate.slice(5, 7)) - 1;
+  const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
+  const firstWeekday = new Date(year, monthIndex, 1).getDay();
+  const fdow = (7 + firstDayOfWeek) % 7 || 7;
+  const daysBefore = (firstWeekday - fdow + 7) % 7;
+  return Math.ceil((daysBefore + daysInMonth) / 7);
+}
+
+function monthGridHeight(weekCount: number): number {
+  if (weekCount <= 0) {
+    return 0;
+  }
+  return (
+    weekCount * WEEK_ROW_HEIGHT + (weekCount - 1) * CALENDAR_WEEK_ROW_GAP
+  );
+}
+
+/** White card height for a month with the given week-row count. */
+export function calendarListCardHeight(weekCount: number): number {
+  return (
+    listHeaderHeight +
+    listWeekdayRowHeight +
+    monthGridHeight(weekCount) +
+    CALENDAR_CARD_PADDING_VERTICAL * 2
+  );
+}
+
+/** FlatList item pitch: card height + canvas gap below the card. */
+export function calendarListItemHeight(weekCount: number): number {
+  return calendarListCardHeight(weekCount) + CALENDAR_LIST_ITEM_GAP;
+}
+
+/** Max card height (6-week months). Prefer `calendarListCardHeight(weeks)`. */
+export const CALENDAR_LIST_CARD_HEIGHT = calendarListCardHeight(6);
+
+/**
+ * Max list item pitch. Prefer `calendarListItemHeight(weeks)` so 4/5-week
+ * months hug their grid instead of reserving empty 6th-week space.
+ */
+export const CALENDAR_LIST_ITEM_HEIGHT = calendarListItemHeight(6);

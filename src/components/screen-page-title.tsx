@@ -33,7 +33,7 @@ export function ScreenPageTitle({
     >
       <View className="flex-row items-center justify-between gap-3">
         <Text
-          className="min-w-0 flex-1 font-serif text-[48px] leading-none"
+          className="min-w-0 flex-1 font-serif text-4xl leading-none"
           style={{ color: colors.text }}
         >
           {title}
@@ -41,10 +41,7 @@ export function ScreenPageTitle({
         {right ? <View className="shrink-0">{right}</View> : null}
       </View>
       {subtitle ? (
-        <Text
-          className="mt-1 font-mono text-base"
-          style={{ color: colors.text }}
-        >
+        <Text className="mt-4 font-mono text-lg" style={{ color: colors.text }}>
           {subtitle}
         </Text>
       ) : null}

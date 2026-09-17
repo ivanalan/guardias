@@ -8,7 +8,7 @@ import { CalendarWeekdayRow } from './calendar-weekday-row';
 /** Month title for react-native-calendars `renderHeader` (avoids serif clipping). */
 export function CalendarMonthTitle({
   date,
-  monthFormat = 'MMMM',
+  monthFormat = 'MMMM yyyy',
 }: {
   date?: XDate;
   monthFormat?: string;
@@ -18,7 +18,7 @@ export function CalendarMonthTitle({
   return (
     <View className="w-full">
       <Text
-        className="font-serif text-4xl"
+        className="font-serif text-3xl"
         style={{
           lineHeight: CALENDAR_MONTH_TITLE_LINE_HEIGHT,
           paddingRight: 8,

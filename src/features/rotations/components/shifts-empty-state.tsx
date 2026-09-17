@@ -77,7 +77,7 @@ export function ShiftsEmptyState({ onAddPress }: ShiftsEmptyStateProps) {
       <View className="gap-4">
         <CopyBlock title={title} body={body} />
         <View
-          className="w-full gap-4"
+          className="w-full gap-5"
           pointerEvents="none"
           style={{ opacity: GHOST_OPACITY }}
         >

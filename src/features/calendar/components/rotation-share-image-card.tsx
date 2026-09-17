@@ -111,13 +111,13 @@ function ShareImageMonthCard({ period, monthDate, todayIso }: MonthCardProps) {
         hideArrows
         hideDayNames
         firstDay={1}
-        monthFormat="MMMM"
+        monthFormat="MMMM yyyy"
         markingType="custom"
         markedDates={buildMonthMarkedDates([period], monthDate)}
         dayComponent={DayComponent}
         renderHeader={(date) => (
           <View style={{ gap: 8, width: '100%' }}>
-            <CalendarMonthTitle date={date} monthFormat="MMMM" />
+            <CalendarMonthTitle date={date} monthFormat="MMMM yyyy" />
             <View className="flex-row">
               {weekdayLabels.map((label, index) => (
                 <Text

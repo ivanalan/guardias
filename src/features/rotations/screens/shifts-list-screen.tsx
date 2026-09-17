@@ -95,7 +95,7 @@ export function ShiftsListScreen({ navigation }: Props) {
         }}
         contentContainerStyle={{
           flexGrow: 1,
-          gap: 12,
+          gap: 16,
           paddingHorizontal: SCREEN_GUTTER,
           paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
         }}
@@ -109,7 +109,7 @@ export function ShiftsListScreen({ navigation }: Props) {
           <PeriodRecencySectionHeader
             sectionKey={section.key}
             title={t(`shifts.${section.titleKey}`)}
-            color={colors.textMuted}
+            color={colors.text}
             pastExpanded={pastExpanded}
             expandA11y={t('shifts.sectionPastExpandA11y')}
             collapseA11y={t('shifts.sectionPastCollapseA11y')}
@@ -126,7 +126,10 @@ export function ShiftsListScreen({ navigation }: Props) {
             color={item.color}
             showPeopleIcon={item.role === 'secondary'}
             onPress={() => {
-              navigation.navigate('RotationDetail', { periodId: item.id });
+              navigation.navigate('RotationDetail', {
+                periodId: item.id,
+                label: item.label,
+              });
             }}
           />
         )}

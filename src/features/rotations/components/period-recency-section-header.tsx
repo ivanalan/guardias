@@ -10,7 +10,7 @@ import { Pressable, Text, View } from '../../../tw';
 import type { PeriodRecencyKey } from '../group-periods-by-recency';
 
 export const PERIOD_SECTION_HEADER_ROW_CLASS =
-  'min-h-10 flex-row items-center gap-1.5 px-1';
+  'min-h-8 flex-row items-center gap-1.5 px-1';
 
 const CHEVRON_ROTATE_MS = 200;
 
@@ -55,7 +55,7 @@ function PastSectionHeader({
       <Animated.View style={chevronStyle}>
         <Ionicons name="chevron-forward" size={18} color={color} />
       </Animated.View>
-      <Text className="font-mono text-xl" style={{ color }}>
+      <Text className="font-mono text-lg" style={{ color }}>
         {title}
       </Text>
     </Pressable>
@@ -85,7 +85,7 @@ export function PeriodRecencySectionHeader({
   if (sectionKey !== 'past') {
     return (
       <View className={PERIOD_SECTION_HEADER_ROW_CLASS}>
-        <Text className="font-mono text-xl" style={{ color }}>
+        <Text className="font-mono text-lg" style={{ color }}>
           {title}
         </Text>
       </View>

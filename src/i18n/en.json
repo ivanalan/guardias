@@ -145,7 +145,8 @@
       "deleteCancel": "Cancel",
       "deleteConfirmTitle": "Delete rotation?",
       "deleteConfirmBody": "“{{label}}” will be removed. This cannot be undone.",
-      "calendarSection": "Calendar"
+      "calendarSection": "Calendar",
+      "detailsSection": "Details"
     },
     "form": {
       "sectionBasics": "Name",

@@ -19,7 +19,7 @@ export function NextShiftCard({
   compact = false,
 }: NextShiftCardProps) {
   const { colors } = useTheme();
-  const titleClass = compact ? 'font-serif text-3xl' : 'font-serif text-5xl';
+  const titleClass = 'font-serif text-3xl';
   const captionClass = compact ? 'font-mono text-sm' : 'font-mono text-base';
 
   return (

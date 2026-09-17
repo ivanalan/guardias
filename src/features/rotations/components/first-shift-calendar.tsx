@@ -187,14 +187,14 @@ export function FirstShiftCalendar({
             hideArrows
             hideDayNames
             firstDay={1}
-            monthFormat="MMMM"
+            monthFormat="MMMM yyyy"
             markingType="custom"
             markedDates={buildMonthMarkedDates([period], currentMonth)}
             dayComponent={DayComponent}
             renderHeader={(date) => (
               <CalendarMonthHeader
                 date={date}
-                monthFormat="MMMM"
+                monthFormat="MMMM yyyy"
                 onPreviousMonth={onPreviousMonth}
                 onNextMonth={onNextMonth}
               />

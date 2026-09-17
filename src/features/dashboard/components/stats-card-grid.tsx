@@ -8,7 +8,5 @@ type StatsCardGridProps = {
 
 /** Two-column wrap grid for home metric cards. */
 export function StatsCardGrid({ children }: StatsCardGridProps) {
-  return (
-    <View className="w-full flex-row flex-wrap gap-3">{children}</View>
-  );
+  return <View className="w-full flex-row flex-wrap gap-3">{children}</View>;
 }

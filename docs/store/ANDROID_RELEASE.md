@@ -67,6 +67,8 @@ Use copy from [`play-listing.md`](./play-listing.md).
 
 ## Upload and roll out
 
+**Preferred path:** download the production `.aab` from the EAS build page and upload it yourself in Play Console. Do **not** configure a Google Play service account for `eas submit` unless you explicitly decide to automate uploads later. Agents follow `.agents/skills/android-store-submit`.
+
 - [ ] Create release on **Internal testing** track first
 - [ ] Upload AAB; set release name (e.g. `1.0.0 (1)`)
 - [ ] Add yourself (and testers) to the internal track; install via Play

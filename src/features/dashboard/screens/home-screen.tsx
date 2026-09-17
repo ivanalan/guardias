@@ -110,10 +110,7 @@ function ActiveHomeContent({
     0,
     periodProgress.total - periodProgress.completed,
   );
-  const daysRemaining = Math.max(
-    0,
-    dayProgress.total - dayProgress.completed,
-  );
+  const daysRemaining = Math.max(0, dayProgress.total - dayProgress.completed);
   const color = resolveRotationColor(status.period.color, colors);
   const upcomingItems = listUpcomingShifts(
     status.period,
@@ -155,7 +152,7 @@ function ActiveHomeContent({
     ) : null;
 
   return (
-    <View className="w-full gap-4">
+    <View className="w-full gap-5">
       {freeWeekend != null ? (
         <WeekendBanner
           rangeLabel={formatWeekendRange(freeWeekend.saturdayIso, language)}
@@ -236,9 +233,9 @@ export function HomeScreen({ navigation }: Props) {
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-4 px-gutter pb-tab-clearance"
+        contentContainerClassName="flex-grow gap-2 px-gutter pb-tab-clearance"
       >
-        <View className="-mx-gutter mb-2">
+        <View className="-mx-gutter">
           <ScreenPageTitle
             title={formatHomeDateTitle(now, language)}
             subtitle={subtitle}
