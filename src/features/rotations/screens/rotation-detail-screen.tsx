@@ -25,7 +25,7 @@ import {
   ShareDestinationModal,
   type ShareDestination,
 } from '../../calendar/components/share-destination-modal';
-import { openAppleCalendar } from '../../calendar/open-apple-calendar';
+import { openDeviceCalendar } from '../../calendar/open-device-calendar';
 import { openGoogleCalendar } from '../../calendar/open-google-calendar';
 import { NextShiftCard } from '../../dashboard/components/next-shift-card';
 import { ShiftsLeftCard } from '../../dashboard/components/shifts-left-card';
@@ -250,15 +250,15 @@ export function RotationDetailScreen({ navigation, route }: Props) {
         return;
       }
 
-      if (destination === 'apple') {
+      if (destination === 'device') {
         const event = buildShiftExportEvent(sharePeriod);
         const notes =
           event != null && event.vacationExDates.length > 0
-            ? t('calendar.shareAppleVacationNote', {
+            ? t('calendar.shareDeviceVacationNote', {
                 dates: event.vacationExDates.join(', '),
               })
             : undefined;
-        const result = await openAppleCalendar(sharePeriod, { notes });
+        const result = await openDeviceCalendar(sharePeriod, { notes });
         if (!result.ok) {
           if (result.reason === 'empty') {
             Alert.alert(
@@ -266,9 +266,10 @@ export function RotationDetailScreen({ navigation, route }: Props) {
               t('calendar.shareEmptyBody'),
             );
           } else {
-            Alert.alert(t('calendar.shareAppleFailed'));
+            Alert.alert(t('calendar.shareDeviceFailed'));
           }
         }
+        return;
       }
     } finally {
       if (destination !== 'image') {
@@ -278,10 +279,17 @@ export function RotationDetailScreen({ navigation, route }: Props) {
   }
 
   function onImageShareComplete(
-    result: 'ok' | 'empty' | 'unavailable' | 'failed',
+    result: 'saved' | 'shared' | 'empty' | 'unavailable' | 'failed',
   ) {
     setImageRequest(null);
     setSharing(false);
+    if (result === 'saved') {
+      Alert.alert(
+        t('calendar.shareImageSavedTitle'),
+        t('calendar.shareImageSavedBody'),
+      );
+      return;
+    }
     if (result === 'empty') {
       Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
       return;
@@ -426,7 +434,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
       >
         <View className="gap-3">
           <Text
-            className="font-mono text-lg"
+            className="font-serif text-3xl"
             style={{ color: colors.text }}
             accessibilityRole="header"
           >

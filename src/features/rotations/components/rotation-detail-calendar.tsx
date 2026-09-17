@@ -125,7 +125,7 @@ export function RotationDetailCalendar({ period, language }: Props) {
   return (
     <View className="gap-4">
       <Text
-        className="font-mono text-lg"
+        className="font-serif text-3xl"
         style={{ color: colors.text }}
         accessibilityRole="header"
       >

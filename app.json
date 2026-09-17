@@ -38,6 +38,14 @@
           "writeOnlyCalendarPermission": "Mi Guardia necesita permiso para agregar tus guardias al Calendario."
         }
       ],
+      [
+        "expo-media-library",
+        {
+          "photosPermission": false,
+          "savePhotosPermission": "Mi Guardia necesita permiso para guardar la imagen del calendario en Fotos.",
+          "granularPermissions": ["photo"]
+        }
+      ],
       "expo-web-browser"
     ],
     "ios": {

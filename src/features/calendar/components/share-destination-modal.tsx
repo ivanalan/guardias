@@ -5,7 +5,12 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 
-export type ShareDestination = 'link' | 'image' | 'google' | 'apple' | 'ics';
+export type ShareDestination =
+  | 'link'
+  | 'image'
+  | 'device'
+  | 'google'
+  | 'ics';
 
 type Props = {
   visible: boolean;
@@ -26,50 +31,51 @@ type DestRow = {
   id: Exclude<ShareDestination, 'link'>;
   icon: keyof typeof Ionicons.glyphMap;
   labelKey:
+    | 'calendar.shareDestDevice'
     | 'calendar.shareDestGoogle'
-    | 'calendar.shareDestApple'
     | 'calendar.shareDestIcs'
     | 'shifts.detail.shareImage';
 };
 
-const EXPORT_ROWS: readonly DestRow[] = [
-  {
-    id: 'google',
-    icon: 'logo-google',
-    labelKey: 'calendar.shareDestGoogle',
-  },
-  {
-    id: 'apple',
-    icon: 'logo-apple',
-    labelKey: 'calendar.shareDestApple',
-  },
-  {
-    id: 'ics',
-    icon: 'document-outline',
-    labelKey: 'calendar.shareDestIcs',
-  },
-  {
-    id: 'image',
-    icon: 'image-outline',
-    labelKey: 'shifts.detail.shareImage',
-  },
-];
-
 const PILL_RADIUS = 32;
 
 function platformExportRows(includeIcs: boolean): DestRow[] {
-  return EXPORT_ROWS.filter((row) => {
-    if (row.id === 'apple' && Platform.OS !== 'ios') {
-      return false;
-    }
-    if (row.id === 'ics' && !includeIcs) {
-      return false;
-    }
-    return true;
+  const rows: DestRow[] = [];
+
+  // iOS: one EventKit "Add Event" path (user picks Apple / Google / etc.).
+  // Android: Google TEMPLATE URL in an in-app browser.
+  if (Platform.OS === 'ios') {
+    rows.push({
+      id: 'device',
+      icon: 'calendar-outline',
+      labelKey: 'calendar.shareDestDevice',
+    });
+  } else if (Platform.OS === 'android' || Platform.OS === 'web') {
+    rows.push({
+      id: 'google',
+      icon: 'logo-google',
+      labelKey: 'calendar.shareDestGoogle',
+    });
+  }
+
+  if (includeIcs) {
+    rows.push({
+      id: 'ics',
+      icon: 'document-outline',
+      labelKey: 'calendar.shareDestIcs',
+    });
+  }
+
+  rows.push({
+    id: 'image',
+    icon: 'image-outline',
+    labelKey: 'shifts.detail.shareImage',
   });
+
+  return rows;
 }
 
-/** Bottom sheet: share link and/or Google / Apple Calendar / .ics. */
+/** Bottom sheet: share link and/or device / Google Calendar / .ics. */
 export function ShareDestinationModal({
   visible,
   linkPrimary = false,
