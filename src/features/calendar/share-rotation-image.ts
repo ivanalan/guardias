@@ -1,4 +1,5 @@
-import { File, Paths } from 'expo-file-system';
+import { Directory, File, Paths } from 'expo-file-system';
+import { Asset, requestPermissionsAsync } from 'expo-media-library';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import type { RefObject } from 'react';
@@ -7,14 +8,21 @@ import type { View } from 'react-native';
 import { guardiasImageFilename } from './guardias-ics-basename';
 
 export type ShareRotationImageResult =
-  | { ok: true }
+  | { ok: true; method: 'saved' | 'shared' }
   | { ok: false; reason: 'empty' | 'unavailable' | 'failed' };
+
+export type ShareRotationImageOutcome =
+  | 'saved'
+  | 'shared'
+  | 'empty'
+  | 'unavailable'
+  | 'failed';
 
 type CaptureTarget = RefObject<View | null>;
 
 /**
- * Captures a mounted share card and opens the system share sheet (Save Image /
- * Messages / WhatsApp / etc.).
+ * Captures a mounted share card, saves it to Photos when allowed, otherwise
+ * opens the system share sheet.
  */
 export async function shareRotationImage(
   viewRef: CaptureTarget,
@@ -23,10 +31,6 @@ export async function shareRotationImage(
 ): Promise<ShareRotationImageResult> {
   if (viewRef.current == null) {
     return { ok: false, reason: 'failed' };
-  }
-
-  if (!(await Sharing.isAvailableAsync())) {
-    return { ok: false, reason: 'unavailable' };
   }
 
   try {
@@ -39,18 +43,29 @@ export async function shareRotationImage(
       ? capturedUri
       : `file://${capturedUri}`;
     const source = new File(sourceUri);
-    const named = new File(Paths.cache, guardiasImageFilename(label));
-    if (named.exists) {
-      named.delete();
-    }
+
+    // Unique dir per attempt avoids locked-file failures after a prior share.
+    const dir = new Directory(Paths.cache, `share-img-${Date.now()}`);
+    dir.create();
+    const named = new File(dir, guardiasImageFilename(label));
     source.copy(named);
+
+    const permission = await requestPermissionsAsync(true);
+    if (permission.status === 'granted') {
+      await Asset.create(named.uri);
+      return { ok: true, method: 'saved' };
+    }
+
+    if (!(await Sharing.isAvailableAsync())) {
+      return { ok: false, reason: 'unavailable' };
+    }
 
     await Sharing.shareAsync(named.uri, {
       mimeType: 'image/png',
       UTI: 'public.png',
       dialogTitle,
     });
-    return { ok: true };
+    return { ok: true, method: 'shared' };
   } catch {
     return { ok: false, reason: 'failed' };
   }

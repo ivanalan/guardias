@@ -7,23 +7,24 @@ import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 
 import { buildShiftExportEvent } from './build-shift-export-event';
 
-export type OpenAppleCalendarResult =
+export type OpenDeviceCalendarResult =
   | { ok: true }
   | { ok: false; reason: 'empty' | 'failed' };
 
-export type OpenAppleCalendarOptions = {
+export type OpenDeviceCalendarOptions = {
   /** Pre-translated vacation exception note for the event notes field. */
   notes?: string;
 };
 
 /**
  * Presents the iOS system "Add Event" UI (EventKit) prefilled with the
- * recurring 24h shift series. No share sheet — user saves into Calendar.
+ * recurring shift series. The user saves into whichever calendar is selected
+ * (Apple, Google, Outlook, … — whatever is configured on the device).
  */
-export async function openAppleCalendar(
+export async function openDeviceCalendar(
   period: RotationPeriod,
-  options: OpenAppleCalendarOptions = {},
-): Promise<OpenAppleCalendarResult> {
+  options: OpenDeviceCalendarOptions = {},
+): Promise<OpenDeviceCalendarResult> {
   const event = buildShiftExportEvent(period);
   if (event == null) {
     return { ok: false, reason: 'empty' };

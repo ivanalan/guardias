@@ -10,8 +10,8 @@ export function guardiasIcsBasename(label: string): string {
 }
 
 /**
- * Human-readable PNG name for the share sheet, e.g. "Quirófano" →
- * "Mi Guardia — Quirófano.png".
+ * PNG name for Photos / share sheet from the rotation label only,
+ * e.g. "Quirófano" → "Quirófano.png".
  */
 export function guardiasImageFilename(label: string): string {
   const cleaned = label
@@ -21,5 +21,5 @@ export function guardiasImageFilename(label: string): string {
     .trim()
     .slice(0, 48);
   const name = cleaned.length > 0 ? cleaned : 'Rotación';
-  return `Mi Guardia — ${name}.png`;
+  return `${name}.png`;
 }

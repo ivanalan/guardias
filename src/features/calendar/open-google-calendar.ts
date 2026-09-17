@@ -10,16 +10,18 @@ export type OpenGoogleCalendarResult =
   | { ok: false; reason: 'empty' | 'failed' };
 
 export type OpenGoogleCalendarOptions = {
-  /** Pre-translated vacation exception note for the event details field. */
+  /** Pre-translated vacation exception note for the web TEMPLATE details field. */
   details?: string;
 };
 
 /**
  * Opens Google Calendar with a prefilled recurring all-day shift series.
  *
- * On iOS the Google Calendar app intercepts TEMPLATE Universal Links and drops
- * the `recur` RRULE (single event only). Opening the web create form in
- * SFSafariViewController / Chrome Custom Tabs keeps recurrence.
+ * Used on Android / web. (iOS uses `openDeviceCalendar` instead — the Google
+ * Calendar app drops TEMPLATE Universal Links / recurrence.)
+ *
+ * Opens the web create form in SFSafariViewController / Chrome Custom Tabs so
+ * the `recur` RRULE is preserved.
  */
 export async function openGoogleCalendar(
   period: RotationPeriod,

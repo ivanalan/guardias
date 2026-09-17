@@ -82,7 +82,7 @@ export function ExportPeriodPickerModal({
                     <PeriodRecencySectionHeader
                       sectionKey={section.key}
                       title={t(`shifts.${section.titleKey}`)}
-                      color={colors.textMuted}
+                      color={colors.text}
                       pastExpanded={pastExpanded}
                       expandA11y={t('shifts.sectionPastExpandA11y')}
                       collapseA11y={t('shifts.sectionPastCollapseA11y')}

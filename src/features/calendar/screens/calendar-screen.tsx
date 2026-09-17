@@ -61,7 +61,7 @@ import {
 import { buildShiftExportEvent } from '../build-shift-export-event';
 import { configureCalendarLocale } from '../configure-calendar-locale';
 import { getMarkInputsForMonthWindow } from '../month-legend-stats';
-import { openAppleCalendar } from '../open-apple-calendar';
+import { openDeviceCalendar } from '../open-device-calendar';
 import { openGoogleCalendar } from '../open-google-calendar';
 import { shareShiftsIcs } from '../share-shifts-ics';
 
@@ -245,15 +245,15 @@ export function CalendarScreen({ navigation }: Props) {
         return;
       }
 
-      if (destination === 'apple') {
+      if (destination === 'device') {
         const event = buildShiftExportEvent(period);
         const notes =
           event != null && event.vacationExDates.length > 0
-            ? t('calendar.shareAppleVacationNote', {
+            ? t('calendar.shareDeviceVacationNote', {
                 dates: event.vacationExDates.join(', '),
               })
             : undefined;
-        const result = await openAppleCalendar(period, { notes });
+        const result = await openDeviceCalendar(period, { notes });
         if (!result.ok) {
           if (result.reason === 'empty') {
             Alert.alert(
@@ -261,7 +261,7 @@ export function CalendarScreen({ navigation }: Props) {
               t('calendar.shareEmptyBody'),
             );
           } else {
-            Alert.alert(t('calendar.shareAppleFailed'));
+            Alert.alert(t('calendar.shareDeviceFailed'));
           }
         }
         return;
@@ -289,10 +289,17 @@ export function CalendarScreen({ navigation }: Props) {
   };
 
   const onImageShareComplete = (
-    result: 'ok' | 'empty' | 'unavailable' | 'failed',
+    result: 'saved' | 'shared' | 'empty' | 'unavailable' | 'failed',
   ) => {
     setImageRequest(null);
     setSharing(false);
+    if (result === 'saved') {
+      Alert.alert(
+        t('calendar.shareImageSavedTitle'),
+        t('calendar.shareImageSavedBody'),
+      );
+      return;
+    }
     if (result === 'empty') {
       Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
       return;

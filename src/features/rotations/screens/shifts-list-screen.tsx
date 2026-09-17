@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import { useState } from 'react';
-import { SectionList } from 'react-native';
+import { FlatList } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useTranslation } from 'react-i18next';
 
@@ -30,12 +30,75 @@ import type { RotationPeriod } from '../types';
 
 type Props = NativeStackScreenProps<ShiftsStackParamList, 'ShiftsList'>;
 
-function keyExtractor(item: RotationPeriod) {
-  return item.id;
+/** Space between the page title and the first section. */
+const PAGE_TITLE_TO_CONTENT_GAP = 16;
+/** Space between a section title and its rotation cards. */
+const SECTION_TITLE_TO_CARDS_GAP = 12;
+/** Space between rotation cards inside a section. */
+const ROTATION_CARD_GAP = 16;
+/** Space between section containers. */
+const SECTION_CONTAINER_GAP = 32;
+
+function sectionKeyExtractor(section: PeriodRecencySection) {
+  return section.key;
 }
 
-function SectionGap() {
-  return <View className="h-1" />;
+function SectionContainerGap() {
+  return <View style={{ height: SECTION_CONTAINER_GAP }} />;
+}
+
+type RecencySectionContainerProps = {
+  section: PeriodRecencySection;
+  colors: { text: string };
+  pastExpanded: boolean;
+  expandA11y: string;
+  collapseA11y: string;
+  rowMeta: (period: RotationPeriod) => string;
+  onTogglePast: () => void;
+  onPressPeriod: (period: RotationPeriod) => void;
+  sectionTitle: string;
+};
+
+function RecencySectionContainer({
+  section,
+  colors,
+  pastExpanded,
+  expandA11y,
+  collapseA11y,
+  rowMeta,
+  onTogglePast,
+  onPressPeriod,
+  sectionTitle,
+}: RecencySectionContainerProps) {
+  return (
+    <View style={{ gap: SECTION_TITLE_TO_CARDS_GAP }}>
+      <PeriodRecencySectionHeader
+        sectionKey={section.key}
+        title={sectionTitle}
+        color={colors.text}
+        pastExpanded={pastExpanded}
+        expandA11y={expandA11y}
+        collapseA11y={collapseA11y}
+        onTogglePast={onTogglePast}
+      />
+      {section.data.length > 0 ? (
+        <View style={{ gap: ROTATION_CARD_GAP }}>
+          {section.data.map((item) => (
+            <RotationPeriodRow
+              key={item.id}
+              label={item.label}
+              meta={rowMeta(item)}
+              color={item.color}
+              showPeopleIcon={item.role === 'secondary'}
+              onPress={() => {
+                onPressPeriod(item);
+              }}
+            />
+          ))}
+        </View>
+      ) : null}
+    </View>
+  );
 }
 
 /** Shifts tab list of rotation periods. */
@@ -65,9 +128,9 @@ export function ShiftsListScreen({ navigation }: Props) {
 
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
-      <SectionList
-        sections={sections}
-        keyExtractor={keyExtractor}
+      <FlatList
+        data={sections}
+        keyExtractor={sectionKeyExtractor}
         ListHeaderComponent={
           <ScreenPageTitle
             title={t('tabs.shifts')}
@@ -92,43 +155,37 @@ export function ShiftsListScreen({ navigation }: Props) {
         }
         ListHeaderComponentStyle={{
           marginHorizontal: -SCREEN_GUTTER,
+          marginBottom: PAGE_TITLE_TO_CONTENT_GAP,
         }}
         contentContainerStyle={{
           flexGrow: 1,
-          gap: 16,
           paddingHorizontal: SCREEN_GUTTER,
           paddingBottom: FLOATING_TAB_BAR_CLEARANCE,
         }}
-        stickySectionHeadersEnabled={false}
-        SectionSeparatorComponent={SectionGap}
-        renderSectionHeader={({
-          section,
-        }: {
-          section: PeriodRecencySection;
-        }) => (
-          <PeriodRecencySectionHeader
-            sectionKey={section.key}
-            title={t(`shifts.${section.titleKey}`)}
-            color={colors.text}
+        ItemSeparatorComponent={SectionContainerGap}
+        renderItem={({ item: section }) => (
+          <RecencySectionContainer
+            section={section}
+            colors={colors}
             pastExpanded={pastExpanded}
             expandA11y={t('shifts.sectionPastExpandA11y')}
             collapseA11y={t('shifts.sectionPastCollapseA11y')}
+            sectionTitle={t(`shifts.${section.titleKey}`)}
+            rowMeta={(period) =>
+              t('shifts.rowMeta', {
+                range: formatPeriodRange(
+                  period.startDate,
+                  period.endDate,
+                  language,
+                ),
+                letter: period.pattern.offset,
+              })
+            }
             onTogglePast={() => setPastExpanded((prev) => !prev)}
-          />
-        )}
-        renderItem={({ item }) => (
-          <RotationPeriodRow
-            label={item.label}
-            meta={t('shifts.rowMeta', {
-              range: formatPeriodRange(item.startDate, item.endDate, language),
-              letter: item.pattern.offset,
-            })}
-            color={item.color}
-            showPeopleIcon={item.role === 'secondary'}
-            onPress={() => {
+            onPressPeriod={(period) => {
               navigation.navigate('RotationDetail', {
-                periodId: item.id,
-                label: item.label,
+                periodId: period.id,
+                label: period.label,
               });
             }}
           />
