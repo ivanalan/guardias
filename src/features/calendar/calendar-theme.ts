@@ -2,7 +2,10 @@ import type { CalendarProps } from 'react-native-calendars';
 import { Platform } from 'react-native';
 
 import type { ThemeColors } from '../../theme/colors';
-import { SCREEN_GUTTER } from '../../theme/layout';
+import { WIDGET_CARD_PADDING_X, WIDGET_CARD_PADDING_Y } from '../../theme/layout';
+import {
+  WIDGET_RADIUS,
+} from '../../theme/widget-radius';
 import { CALENDAR_WEEK_ROW_GAP, CELL_SIZE } from './calendar-day-marker';
 
 const MONO_FONT = Platform.select({
@@ -124,27 +127,22 @@ export function calendarListThemeFor(
   } as NonNullable<CalendarProps['theme']>;
 }
 
-/** White card wrapper for month calendar blocks. */
-export const CALENDAR_CARD_STYLE = {
-  borderCurve: 'continuous' as const,
-  borderRadius: 32,
-  overflow: 'visible' as const,
-};
-
-/** Inner horizontal padding of month cards in month + year views. */
-export const CALENDAR_CARD_PADDING_HORIZONTAL = SCREEN_GUTTER;
-/** Inner vertical padding of month cards in month + year views. */
-export const CALENDAR_CARD_PADDING_VERTICAL = 20;
+/** Inner horizontal padding of month cards — same as home widget cards. */
+export const CALENDAR_CARD_PADDING_HORIZONTAL = WIDGET_CARD_PADDING_X;
+/** Inner vertical padding of month cards — same as home widget cards. */
+export const CALENDAR_CARD_PADDING_VERTICAL = WIDGET_CARD_PADDING_Y;
 
 /** Shared card chrome for single-month and list month blocks. */
-export function calendarCardStyle(colors: ThemeColors) {
+export function calendarCardStyle(colors: ThemeColors, _height?: number) {
   return {
     backgroundColor: colors.bg1,
     paddingLeft: CALENDAR_CARD_PADDING_HORIZONTAL,
     paddingRight: CALENDAR_CARD_PADDING_HORIZONTAL,
     paddingTop: CALENDAR_CARD_PADDING_VERTICAL,
     paddingBottom: CALENDAR_CARD_PADDING_VERTICAL,
-    ...CALENDAR_CARD_STYLE,
+    borderCurve: 'continuous' as const,
+    borderRadius: WIDGET_RADIUS,
+    overflow: 'visible' as const,
   };
 }
 /** Canvas gap between year-view month cards. */

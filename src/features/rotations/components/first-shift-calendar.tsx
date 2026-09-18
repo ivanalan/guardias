@@ -8,6 +8,7 @@ import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { useTheme } from '../../../theme/theme-context';
+import { WIDGET_RADIUS } from '../../../theme/widget-radius';
 import { Pressable, Text, View } from '../../../tw';
 import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { calendarThemeFor } from '../../calendar/calendar-theme';
@@ -49,7 +50,7 @@ export function FirstShiftCalendar({
   const { t } = useTranslation();
   const { colors } = useTheme();
   const datesValid = period.startDate < period.endDate;
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
   const [currentMonth, setCurrentMonth] = useState(selectedFirstShift);
 
   useEffect(() => {
@@ -167,11 +168,13 @@ export function FirstShiftCalendar({
 
       {expanded && datesValid ? (
         <View
-          className="overflow-hidden rounded-xl px-3 py-5"
+          className="overflow-hidden px-gutter py-widget"
           style={{
             borderWidth: 1,
             borderColor: colors.border,
             backgroundColor: colors.bg1,
+            borderCurve: 'continuous',
+            borderRadius: WIDGET_RADIUS,
           }}
         >
           <Calendar

@@ -41,7 +41,6 @@ import { TwoWeekCalendar } from '../components/two-week-calendar';
 import { WeekendBanner } from '../components/weekend-banner';
 import type { DashboardStackParamList } from '../dashboard-stack';
 import {
-  formatHomeDateTitle,
   formatWeekendRange,
   formatWeekdayLong,
   weekdayInitials,
@@ -227,18 +226,15 @@ export function HomeScreen({ navigation }: Props) {
     );
   }
 
-  const subtitle = status.period.label;
-
   return (
     <View className="flex-1" style={{ backgroundColor: colors.bg }}>
       <ScrollView
         className="flex-1"
-        contentContainerClassName="flex-grow gap-2 px-gutter pb-tab-clearance"
+        contentContainerClassName="flex-grow gap-5 px-gutter pb-tab-clearance"
       >
         <View className="-mx-gutter">
           <ScreenPageTitle
-            title={formatHomeDateTitle(now, language)}
-            subtitle={subtitle}
+            title={status.period.label}
             right={
               <Pressable
                 accessibilityRole="button"

@@ -3,9 +3,9 @@
     "back": "Back"
   },
   "tabs": {
-    "home": "Today",
+    "home": "Home",
     "calendar": "Calendar",
-    "shifts": "Shifts"
+    "shifts": "Rotations"
   },
   "home": {
     "nextShift": "Next shift",
@@ -188,6 +188,11 @@
       "dateOverlap": "This date range overlaps another rotation. If this is someone else’s schedule, mark it as a friend’s shift.",
       "firstShiftOutOfBounds": "First shift must fall within the rotation dates.",
       "secondaryLimit": "You can only add one friend’s shift for now. Edit or delete the existing one first."
+    }
+  },
+  "widget": {
+    "twoWeek": {
+      "noRotation": "Mi Guardia"
     }
   }
 }

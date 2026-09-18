@@ -8,6 +8,7 @@ import type {
 } from 'react-native';
 
 import { useTheme } from '../../../theme/theme-context';
+import { useWidgetBorderRadius } from '../../../theme/widget-radius';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { GRID_SLOT_HEIGHT, layoutMarks } from './layout-marks';
 
@@ -155,6 +156,7 @@ export function ShiftsLeftCard({
   compact = false,
 }: ShiftsLeftCardProps) {
   const { colors } = useTheme();
+  const { borderRadius, onLayout: onRadiusLayout } = useWidgetBorderRadius();
   const canToggle =
     daysRemaining != null && daysTotal != null && daysCaption != null;
   const scrollRef = useRef<RNScrollView>(null);
@@ -176,6 +178,7 @@ export function ShiftsLeftCard({
   ];
 
   const onCardLayout = (event: LayoutChangeEvent) => {
+    onRadiusLayout(event);
     const nextWidth = Math.round(event.nativeEvent.layout.width);
     setPageWidth((prev) => (prev === nextWidth ? prev : nextWidth));
   };
@@ -208,19 +211,23 @@ export function ShiftsLeftCard({
   const cardStyle = {
     backgroundColor: colors.bg1,
     borderCurve: 'continuous' as const,
-    borderRadius: 32,
+    borderRadius,
   };
 
   if (!canToggle) {
     return (
-      <View className="w-full gap-4 py-5" style={cardStyle}>
+      <View
+        className="w-full gap-4 py-widget"
+        style={cardStyle}
+        onLayout={onRadiusLayout}
+      >
         <MarksPage {...pages[0]!} compact={compact} />
       </View>
     );
   }
 
   return (
-    <View className="w-full gap-4 py-5" style={cardStyle} onLayout={onCardLayout}>
+    <View className="w-full gap-4 py-widget" style={cardStyle} onLayout={onCardLayout}>
       {pageWidth > 0 ? (
         <ScrollView
           ref={scrollRef}

@@ -28,7 +28,7 @@ type TabKey = keyof TabParamList;
 type IconName = ComponentProps<typeof Ionicons>['name'];
 
 const TAB_ICONS: Record<TabKey, { focused: IconName; unfocused: IconName }> = {
-  Home: { focused: 'home', unfocused: 'home-outline' },
+  Home: { focused: 'medical', unfocused: 'medical-outline' },
   Calendar: { focused: 'calendar', unfocused: 'calendar-outline' },
   Shifts: { focused: 'albums', unfocused: 'albums-outline' },
 };

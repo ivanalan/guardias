@@ -8,6 +8,8 @@
   @theme {
     --font-serif: InstrumentSerif_400Regular;
     --spacing-gutter: 24px;
+    /* Shared vertical padding for widget / calendar cards (`WIDGET_CARD_PADDING_Y`). */
+    --spacing-widget: 20px;
     --spacing-tab-clearance: 128px;
     /* Match calendar day markers / form controls (`BORDER_RADIUS` in layout.ts). */
     --radius-xl: 14px;

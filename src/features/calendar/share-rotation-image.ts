@@ -1,5 +1,9 @@
 import { Directory, File, Paths } from 'expo-file-system';
-import { Asset, requestPermissionsAsync } from 'expo-media-library';
+// Use legacy — default import needs ExpoMediaLibraryNext (not in Expo Go).
+import {
+  requestPermissionsAsync,
+  saveToLibraryAsync,
+} from 'expo-media-library/legacy';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import type { RefObject } from 'react';
@@ -52,7 +56,7 @@ export async function shareRotationImage(
 
     const permission = await requestPermissionsAsync(true);
     if (permission.status === 'granted') {
-      await Asset.create(named.uri);
+      await saveToLibraryAsync(named.uri);
       return { ok: true, method: 'saved' };
     }
 

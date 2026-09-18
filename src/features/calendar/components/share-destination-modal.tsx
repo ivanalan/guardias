@@ -5,12 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, View } from '../../../tw';
 
-export type ShareDestination =
-  | 'link'
-  | 'image'
-  | 'device'
-  | 'google'
-  | 'ics';
+export type ShareDestination = 'link' | 'image' | 'device' | 'google' | 'ics';
 
 type Props = {
   visible: boolean;
@@ -115,14 +110,9 @@ export function ShareDestinationModal({
               rotationLabel={rotationLabel}
               exportRows={exportRows}
               onSelect={onSelect}
-              onCancel={onCancel}
             />
           ) : (
-            <ExportOnlyBody
-              exportRows={exportRows}
-              onSelect={onSelect}
-              onCancel={onCancel}
-            />
+            <ExportOnlyBody exportRows={exportRows} onSelect={onSelect} />
           )}
         </View>
       </View>
@@ -134,12 +124,10 @@ function CombinedShareBody({
   rotationLabel,
   exportRows,
   onSelect,
-  onCancel,
 }: {
   rotationLabel?: string;
   exportRows: DestRow[];
   onSelect: (destination: ShareDestination) => void;
-  onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -193,8 +181,6 @@ function CombinedShareBody({
           }}
         />
       </View>
-
-      <CancelButton onPress={onCancel} />
     </View>
   );
 }
@@ -202,11 +188,9 @@ function CombinedShareBody({
 function ExportOnlyBody({
   exportRows,
   onSelect,
-  onCancel,
 }: {
   exportRows: DestRow[];
   onSelect: (destination: ShareDestination) => void;
-  onCancel: () => void;
 }) {
   const { t } = useTranslation();
   const { colors } = useTheme();
@@ -231,7 +215,6 @@ function ExportOnlyBody({
           />
         ))}
       </View>
-      <CancelButton onPress={onCancel} />
     </>
   );
 }
@@ -302,26 +285,6 @@ function SecondaryPillButton({
         style={{ color: colors.text }}
       >
         {label}
-      </Text>
-    </Pressable>
-  );
-}
-
-function CancelButton({ onPress }: { onPress: () => void }) {
-  const { t } = useTranslation();
-  const { colors } = useTheme();
-
-  return (
-    <Pressable
-      accessibilityRole="button"
-      onPress={onPress}
-      className="items-center py-3 active:opacity-60"
-    >
-      <Text
-        className="text-base font-medium opacity-60"
-        style={{ color: colors.text }}
-      >
-        {t('calendar.sharePickCancel')}
       </Text>
     </Pressable>
   );

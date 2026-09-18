@@ -10,7 +10,9 @@ import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker'
 import { EMPTY_CALENDAR_FILTER } from '../../calendar/build-marked-dates';
 import {
   calendarCardStyle,
+  calendarListCardHeight,
   calendarThemeFor,
+  weeksInCalendarMonth,
 } from '../../calendar/calendar-theme';
 import { createCalendarDayComponent } from '../../calendar/components/calendar-day';
 import { CalendarMonthTitle } from '../../calendar/components/calendar-month-title';
@@ -100,7 +102,10 @@ function RotationDetailMonthCard({
         renderHeader={(date) => (
           <CalendarMonthTitle date={date} monthFormat="MMMM yyyy" />
         )}
-        style={calendarCardStyle(colors)}
+        style={calendarCardStyle(
+          colors,
+          calendarListCardHeight(weeksInCalendarMonth(monthDate)),
+        )}
         theme={calendarThemeFor(colors)}
       />
     </View>

@@ -1,0 +1,673 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Two-week widget layout playground</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #1a1918;
+        --panel: #242220;
+        --stroke: #3a3835;
+        --text: #e8dfdf;
+        --muted: #a8a29e;
+        --widget: #2a2927;
+        --shift: #c11e1e;
+        --accent: #7dd3c0;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        min-height: 100vh;
+      }
+
+      .layout {
+        display: grid;
+        grid-template-columns: minmax(280px, 340px) 1fr;
+        min-height: 100vh;
+      }
+
+      @media (max-width: 860px) {
+        .layout {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      aside {
+        padding: 20px 18px 28px;
+        border-right: 1px solid var(--stroke);
+        background: var(--panel);
+        overflow: auto;
+      }
+
+      h1 {
+        font-size: 15px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+
+      .sub {
+        color: var(--muted);
+        font-size: 12px;
+        margin: 0 0 18px;
+        line-height: 1.4;
+      }
+
+      .group {
+        margin-bottom: 16px;
+      }
+
+      .group h2 {
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+
+      label.control {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 4px 10px;
+        align-items: center;
+        margin-bottom: 8px;
+        font-size: 13px;
+      }
+
+      label.control span.name {
+        grid-column: 1;
+      }
+
+      label.control span.val {
+        grid-column: 2;
+        color: var(--accent);
+        font-variant-numeric: tabular-nums;
+        font-size: 12px;
+      }
+
+      label.control input[type='range'] {
+        grid-column: 1 / -1;
+        width: 100%;
+      }
+
+      select {
+        width: 100%;
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--stroke);
+        border-radius: 8px;
+        padding: 8px 10px;
+        font-size: 13px;
+      }
+
+      .presets {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      .presets button {
+        background: var(--bg);
+        color: var(--text);
+        border: 1px solid var(--stroke);
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 12px;
+        cursor: pointer;
+      }
+
+      .presets button:hover {
+        border-color: var(--muted);
+      }
+
+      main {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 16px;
+        padding: 28px 20px;
+        background:
+          radial-gradient(circle at 1px 1px, #2e2c2a 1px, transparent 0) 0 0 /
+          16px 16px;
+      }
+
+      .stats {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px 16px;
+        font-size: 12px;
+        color: var(--muted);
+        justify-content: center;
+      }
+
+      .stats strong {
+        color: var(--text);
+        font-weight: 600;
+      }
+
+      .stage {
+        position: relative;
+      }
+
+      .widget {
+        background: var(--widget);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        position: relative;
+      }
+
+      .widget .title {
+        font-weight: 600;
+        color: var(--text);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        flex-shrink: 0;
+      }
+
+      .weekdays,
+      .week {
+        display: flex;
+        width: 100%;
+        flex-shrink: 0;
+      }
+
+      .weekdays > span,
+      .day-col {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+      }
+
+      .weekdays > span {
+        font-weight: 500;
+        color: var(--muted);
+        text-align: center;
+      }
+
+      .mark {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-sizing: border-box;
+        flex-shrink: 0;
+      }
+
+      .mark-inner {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .mark.shift .mark-inner {
+        background: var(--shift);
+        color: #fff;
+      }
+
+      .mark.today {
+        border-style: solid;
+        border-color: var(--text);
+      }
+
+      .guide-top,
+      .guide-bottom {
+        position: absolute;
+        left: 0;
+        right: 0;
+        background: rgba(193, 30, 30, 0.28);
+        pointer-events: none;
+        z-index: 2;
+      }
+
+      .guide-top {
+        top: 0;
+      }
+
+      .guide-bottom {
+        bottom: 0;
+      }
+
+      .hint {
+        font-size: 11px;
+        color: var(--muted);
+        max-width: 520px;
+        text-align: center;
+        line-height: 1.4;
+      }
+
+      .toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        margin-top: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="layout">
+      <aside>
+        <h1>Widget layout playground</h1>
+        <p class="sub">
+          Frame matches the screenshot measure (~487×256dp). Drag controls —
+          preview updates live. Red bands = unused vertical space.
+        </p>
+
+        <div class="presets" id="presets"></div>
+
+        <div class="group">
+          <h2>Frame</h2>
+          <label class="control">
+            <span class="name">Slot width</span>
+            <span class="val" data-for="slotW"></span>
+            <input id="slotW" type="range" min="280" max="560" step="1" value="487" />
+          </label>
+          <label class="control">
+            <span class="name">Slot height</span>
+            <span class="val" data-for="slotH"></span>
+            <input id="slotH" type="range" min="140" max="360" step="1" value="256" />
+          </label>
+          <label class="control">
+            <span class="name">Corner radius</span>
+            <span class="val" data-for="radius"></span>
+            <input id="radius" type="range" min="12" max="40" step="1" value="24" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h2>Padding</h2>
+          <label class="control">
+            <span class="name">Left / right</span>
+            <span class="val" data-for="padX"></span>
+            <input id="padX" type="range" min="0" max="32" step="1" value="16" />
+          </label>
+          <label class="control">
+            <span class="name">Top</span>
+            <span class="val" data-for="padTop"></span>
+            <input id="padTop" type="range" min="0" max="32" step="1" value="14" />
+          </label>
+          <label class="control">
+            <span class="name">Bottom</span>
+            <span class="val" data-for="padBottom"></span>
+            <input id="padBottom" type="range" min="0" max="32" step="1" value="14" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h2>Title</h2>
+          <label class="control">
+            <span class="name">Font size</span>
+            <span class="val" data-for="titleSize"></span>
+            <input id="titleSize" type="range" min="12" max="24" step="1" value="16" />
+          </label>
+          <label class="control">
+            <span class="name">Gap below title</span>
+            <span class="val" data-for="titleMb"></span>
+            <input id="titleMb" type="range" min="0" max="28" step="1" value="12" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h2>Weekdays</h2>
+          <label class="control">
+            <span class="name">Font size</span>
+            <span class="val" data-for="weekdaySize"></span>
+            <input id="weekdaySize" type="range" min="10" max="18" step="1" value="13" />
+          </label>
+          <label class="control">
+            <span class="name">Gap below weekdays</span>
+            <span class="val" data-for="weekdayMb"></span>
+            <input id="weekdayMb" type="range" min="0" max="20" step="1" value="6" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h2>Day squares</h2>
+          <label class="control">
+            <span class="name">Square size</span>
+            <span class="val" data-for="cell"></span>
+            <input id="cell" type="range" min="24" max="64" step="1" value="46" />
+          </label>
+          <label class="control">
+            <span class="name">Day number size</span>
+            <span class="val" data-for="daySize"></span>
+            <input id="daySize" type="range" min="10" max="24" step="1" value="17" />
+          </label>
+          <label class="control">
+            <span class="name">Gap between weeks</span>
+            <span class="val" data-for="weekGap"></span>
+            <input id="weekGap" type="range" min="0" max="28" step="1" value="12" />
+          </label>
+        </div>
+
+        <div class="group">
+          <h2>Vertical layout</h2>
+          <label class="control" style="display: block">
+            <span class="name" style="display: block; margin-bottom: 6px"
+              >Justify content</span
+            >
+            <select id="justify">
+              <option value="flex-start">Top (flex-start)</option>
+              <option value="center" selected>Center</option>
+              <option value="space-between">Space between</option>
+              <option value="flex-end">Bottom</option>
+            </select>
+          </label>
+          <label class="toggle">
+            <input id="showGuides" type="checkbox" checked />
+            Show dead-space bands
+          </label>
+        </div>
+      </aside>
+
+      <main>
+        <div class="stats" id="stats"></div>
+        <div class="stage">
+          <div class="widget" id="widget">
+            <div class="guide-top" id="guideTop" hidden></div>
+            <div class="guide-bottom" id="guideBottom" hidden></div>
+            <div class="title" id="title">Medicina interna</div>
+            <div class="weekdays" id="weekdays"></div>
+            <div class="weeks" id="weeks"></div>
+          </div>
+        </div>
+        <p class="hint">
+          Open this file in a browser. Values are in dp (1:1 px here). Copy
+          numbers you like back into
+          <code>two-week-calendar-widget.tsx</code>.
+        </p>
+      </main>
+    </div>
+
+    <script>
+      const WEEKDAYS = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+      const WEEK1 = [
+        { n: 14, shift: true, today: false },
+        { n: 15, shift: false, today: false },
+        { n: 16, shift: false, today: false },
+        { n: 17, shift: false, today: false },
+        { n: 18, shift: true, today: true },
+        { n: 19, shift: false, today: false },
+        { n: 20, shift: false, today: false },
+      ];
+      const WEEK2 = [
+        { n: 21, shift: false, today: false },
+        { n: 22, shift: true, today: false },
+        { n: 23, shift: false, today: false },
+        { n: 24, shift: false, today: false },
+        { n: 25, shift: false, today: false },
+        { n: 26, shift: true, today: false },
+        { n: 27, shift: false, today: false },
+      ];
+
+      const IDS = [
+        'slotW',
+        'slotH',
+        'radius',
+        'padX',
+        'padTop',
+        'padBottom',
+        'titleSize',
+        'titleMb',
+        'weekdaySize',
+        'weekdayMb',
+        'cell',
+        'daySize',
+        'weekGap',
+      ];
+
+      const PRESETS = {
+        Current: {
+          slotW: 487,
+          slotH: 256,
+          radius: 24,
+          padX: 12,
+          padTop: 8,
+          padBottom: 8,
+          titleSize: 15,
+          titleMb: 6,
+          weekdaySize: 12,
+          weekdayMb: 4,
+          cell: 36,
+          daySize: 14,
+          weekGap: 6,
+          justify: 'center',
+        },
+        'Big marks': {
+          slotW: 487,
+          slotH: 256,
+          radius: 24,
+          padX: 16,
+          padTop: 14,
+          padBottom: 14,
+          titleSize: 16,
+          titleMb: 12,
+          weekdaySize: 13,
+          weekdayMb: 6,
+          cell: 46,
+          daySize: 17,
+          weekGap: 12,
+          justify: 'flex-start',
+        },
+        'Fill denser': {
+          slotW: 487,
+          slotH: 256,
+          radius: 24,
+          padX: 14,
+          padTop: 12,
+          padBottom: 12,
+          titleSize: 17,
+          titleMb: 10,
+          weekdaySize: 13,
+          weekdayMb: 6,
+          cell: 52,
+          daySize: 18,
+          weekGap: 10,
+          justify: 'flex-start',
+        },
+        Editorial: {
+          slotW: 487,
+          slotH: 256,
+          radius: 24,
+          padX: 16,
+          padTop: 16,
+          padBottom: 16,
+          titleSize: 18,
+          titleMb: 10,
+          weekdaySize: 13,
+          weekdayMb: 8,
+          cell: 44,
+          daySize: 16,
+          weekGap: 12,
+          justify: 'space-between',
+        },
+      };
+
+      const $ = (id) => document.getElementById(id);
+
+      function num(id) {
+        return Number($(id).value);
+      }
+
+      function contentHeight(v) {
+        const titleLine = Math.round(v.titleSize * 1.2);
+        const weekdayLine = Math.round(v.weekdaySize * 1.15);
+        return (
+          v.padTop +
+          titleLine +
+          v.titleMb +
+          weekdayLine +
+          v.weekdayMb +
+          v.cell +
+          v.weekGap +
+          v.cell +
+          v.padBottom
+        );
+      }
+
+      function read() {
+        const v = {};
+        for (const id of IDS) v[id] = num(id);
+        v.justify = $('justify').value;
+        v.showGuides = $('showGuides').checked;
+        return v;
+      }
+
+      function applyPreset(name) {
+        const p = PRESETS[name];
+        for (const id of IDS) $(id).value = String(p[id]);
+        $('justify').value = p.justify;
+        render();
+      }
+
+      function markEl(day, cell, daySize) {
+        const radius = Math.max(4, Math.round(cell * (14 / 36)));
+        const today = day.today;
+        const border = today ? 1.5 : 0;
+        const inset = today ? 2 : 0;
+        const inner = today ? cell - 2 * (border + inset) : cell;
+        const col = document.createElement('div');
+        col.className = 'day-col';
+        const mark = document.createElement('div');
+        mark.className =
+          'mark' + (day.shift ? ' shift' : '') + (today ? ' today' : '');
+        mark.style.width = cell + 'px';
+        mark.style.height = cell + 'px';
+        mark.style.borderRadius = radius + 'px';
+        mark.style.borderWidth = border + 'px';
+        mark.style.padding = inset + 'px';
+        const innerEl = document.createElement('div');
+        innerEl.className = 'mark-inner';
+        innerEl.style.width = inner + 'px';
+        innerEl.style.height = inner + 'px';
+        innerEl.style.borderRadius =
+          Math.max(4, radius - border - inset) + 'px';
+        innerEl.style.fontSize = daySize + 'px';
+        innerEl.style.fontWeight = today ? '700' : '500';
+        innerEl.style.color = day.shift ? '#fff' : 'var(--text)';
+        innerEl.textContent = String(day.n);
+        mark.appendChild(innerEl);
+        col.appendChild(mark);
+        return col;
+      }
+
+      function weekRow(days, cell, daySize) {
+        const row = document.createElement('div');
+        row.className = 'week';
+        row.style.height = cell + 'px';
+        for (const d of days) row.appendChild(markEl(d, cell, daySize));
+        return row;
+      }
+
+      function render() {
+        const v = read();
+        for (const id of IDS) {
+          const el = document.querySelector(`[data-for="${id}"]`);
+          if (el) el.textContent = v[id] + 'dp';
+        }
+
+        const titleLine = Math.round(v.titleSize * 1.2);
+        const weekdayLine = Math.round(v.weekdaySize * 1.15);
+        const contentH = contentHeight(v);
+        const slack = Math.max(0, v.slotH - contentH);
+        const fill = Math.min(100, Math.round((contentH / v.slotH) * 100));
+        const dead = Math.round((slack / v.slotH) * 100);
+
+        $('stats').innerHTML =
+          `<span>Content <strong>${contentH}dp</strong></span>` +
+          `<span>Fill <strong>${fill}%</strong></span>` +
+          `<span>Dead <strong>${dead}%</strong> (${slack}dp)</span>` +
+          `<span>Cell <strong>${v.cell}×${v.cell}</strong></span>`;
+
+        const widget = $('widget');
+        widget.style.width = v.slotW + 'px';
+        widget.style.height = v.slotH + 'px';
+        widget.style.borderRadius = v.radius + 'px';
+        widget.style.paddingLeft = v.padX + 'px';
+        widget.style.paddingRight = v.padX + 'px';
+        widget.style.paddingTop = v.padTop + 'px';
+        widget.style.paddingBottom = v.padBottom + 'px';
+        widget.style.justifyContent = v.justify;
+
+        const title = $('title');
+        title.style.fontSize = v.titleSize + 'px';
+        title.style.lineHeight = titleLine + 'px';
+        title.style.marginBottom = v.titleMb + 'px';
+
+        const weekdays = $('weekdays');
+        weekdays.innerHTML = '';
+        weekdays.style.marginBottom = v.weekdayMb + 'px';
+        for (const label of WEEKDAYS) {
+          const span = document.createElement('span');
+          span.textContent = label;
+          span.style.fontSize = v.weekdaySize + 'px';
+          span.style.lineHeight = weekdayLine + 'px';
+          weekdays.appendChild(span);
+        }
+
+        const weeks = $('weeks');
+        weeks.innerHTML = '';
+        weeks.style.display = 'flex';
+        weeks.style.flexDirection = 'column';
+        weeks.style.width = '100%';
+        weeks.appendChild(weekRow(WEEK1, v.cell, v.daySize));
+        const gap = document.createElement('div');
+        gap.style.height = v.weekGap + 'px';
+        weeks.appendChild(gap);
+        weeks.appendChild(weekRow(WEEK2, v.cell, v.daySize));
+
+        const guideTop = $('guideTop');
+        const guideBottom = $('guideBottom');
+        if (!v.showGuides || slack <= 0) {
+          guideTop.hidden = true;
+          guideBottom.hidden = true;
+        } else if (v.justify === 'center') {
+          guideTop.hidden = false;
+          guideBottom.hidden = false;
+          guideTop.style.height = Math.floor(slack / 2) + 'px';
+          guideBottom.style.height = Math.ceil(slack / 2) + 'px';
+        } else if (v.justify === 'flex-start') {
+          guideTop.hidden = true;
+          guideBottom.hidden = false;
+          guideBottom.style.height = slack + 'px';
+        } else if (v.justify === 'flex-end') {
+          guideTop.hidden = false;
+          guideBottom.hidden = true;
+          guideTop.style.height = slack + 'px';
+        } else {
+          guideTop.hidden = true;
+          guideBottom.hidden = true;
+        }
+      }
+
+      const presetBar = $('presets');
+      for (const name of Object.keys(PRESETS)) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = name;
+        btn.addEventListener('click', () => applyPreset(name));
+        presetBar.appendChild(btn);
+      }
+
+      for (const id of IDS) $(id).addEventListener('input', render);
+      $('justify').addEventListener('change', render);
+      $('showGuides').addEventListener('change', render);
+
+      render();
+    </script>
+  </body>
+</html>

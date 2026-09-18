@@ -29,6 +29,7 @@ import {
 } from '../../calendar/calendar-day-marker';
 import { calendarMarkColorsFor } from '../../calendar/calendar-mark-colors';
 import { useTheme } from '../../../theme/theme-context';
+import { useWidgetBorderRadius } from '../../../theme/widget-radius';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 
 const PAGER_DOT_SIZE = 6;
@@ -71,6 +72,7 @@ export function TwoWeekCalendar({
   upcomingAccentColor,
 }: TwoWeekCalendarProps) {
   const { colors } = useTheme();
+  const { borderRadius, onLayout: onRadiusLayout } = useWidgetBorderRadius();
   const canToggle =
     upcomingCaption != null &&
     upcomingEmptyCaption != null &&
@@ -95,18 +97,23 @@ export function TwoWeekCalendar({
   const cardStyle = {
     backgroundColor: colors.bg1,
     borderCurve: 'continuous' as const,
-    borderRadius: 32,
+    borderRadius,
   };
 
   if (!canToggle) {
     return (
-      <View className="w-full px-gutter py-5" style={cardStyle}>
+      <View
+        className="w-full px-gutter py-widget"
+        style={cardStyle}
+        onLayout={onRadiusLayout}
+      >
         {calendarPage}
       </View>
     );
   }
 
   const onCardLayout = (event: LayoutChangeEvent) => {
+    onRadiusLayout(event);
     const nextWidth = Math.round(event.nativeEvent.layout.width);
     setPageWidth((prev) => (prev === nextWidth ? prev : nextWidth));
   };
@@ -138,7 +145,7 @@ export function TwoWeekCalendar({
 
   return (
     <View
-      className="w-full gap-4 py-5"
+      className="w-full gap-4 py-widget"
       style={cardStyle}
       onLayout={onCardLayout}
     >
