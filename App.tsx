@@ -19,6 +19,7 @@ import { DashboardStack } from './src/features/dashboard/dashboard-stack';
 import { RotationsProvider } from './src/features/rotations/rotations-context';
 import { PreferencesProvider } from './src/features/settings/preferences-context';
 import { ShiftsStack } from './src/features/rotations/shifts-stack';
+import { useTwoWeekWidgetForegroundRefresh } from './src/features/widget-android/use-two-week-widget-foreground-refresh';
 import { FloatingTabBar } from './src/navigation/floating-tab-bar';
 import type { TabParamList } from './src/navigation/types';
 import { useShareLinkNavigation } from './src/navigation/use-share-link-navigation';
@@ -34,6 +35,7 @@ function RootNavigator() {
     null,
   );
   useShareLinkNavigation(navigationRef);
+  useTwoWeekWidgetForegroundRefresh();
 
   return (
     <NavigationContainer ref={navigationRef}>

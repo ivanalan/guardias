@@ -465,7 +465,7 @@ export function CalendarScreen({ navigation }: Props) {
           <CalendarMonthTitle date={date} monthFormat="MMMM yyyy" />
         )}
         style={{
-          ...calendarCardStyle(colors),
+          ...calendarCardStyle(colors, calendarListCardHeight(item.weeks)),
           width: listSize?.width,
           height: calendarListCardHeight(item.weeks),
           marginBottom: CALENDAR_LIST_ITEM_GAP,
@@ -514,7 +514,12 @@ export function CalendarScreen({ navigation }: Props) {
           <View className="px-gutter">
             <Calendar
               key={`month-${language}-${CALENDAR_WEEK_ROW_GAP}`}
-              style={calendarCardStyle(colors)}
+              style={calendarCardStyle(
+                colors,
+                calendarListCardHeight(
+                  weeksInCalendarMonth(visibleMonth, CALENDAR_LIST_FIRST_DAY),
+                ),
+              )}
               initialDate={visibleMonth}
               onMonthChange={(month: DateData) => {
                 setVisibleMonth(month.dateString);

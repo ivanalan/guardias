@@ -1,25 +1,9 @@
-import { useState } from 'react';
-import { type LayoutChangeEvent } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTheme } from '../../../theme/theme-context';
+import { useWidgetBorderRadius } from '../../../theme/widget-radius';
 import { Pressable, Text, View } from '../../../tw';
 import { resolveRotationColor } from '../rotation-colors';
-
-/**
- * Corner radius as a fraction of card height so compact and tall cards keep
- * the same visual roundness (fixed px radii look “more rounded” when shorter).
- * Tuned so a ~114px default row ≈ 32px radius.
- */
-const RADIUS_TO_HEIGHT = 32 / 114;
-const RADIUS_MIN = 18;
-const RADIUS_MAX = 32;
-
-function radiusForHeight(height: number): number {
-  return Math.round(
-    Math.min(RADIUS_MAX, Math.max(RADIUS_MIN, height * RADIUS_TO_HEIGHT)),
-  );
-}
 
 export type RotationPeriodRowProps = {
   label: string;
@@ -43,23 +27,14 @@ export function RotationPeriodRow({
 }: RotationPeriodRowProps) {
   const { colors } = useTheme();
   const backgroundColor = resolveRotationColor(color, colors);
-  const [borderRadius, setBorderRadius] = useState(compact ? 24 : 32);
-
-  const onLayout = (event: LayoutChangeEvent) => {
-    const next = radiusForHeight(event.nativeEvent.layout.height);
-    setBorderRadius((prev) => (prev === next ? prev : next));
-  };
+  const { borderRadius, onLayout } = useWidgetBorderRadius();
 
   return (
     <Pressable
       accessibilityRole="button"
       onPress={onPress}
       onLayout={onLayout}
-      className={
-        compact
-          ? 'w-full gap-1 px-gutter py-4 active:opacity-70'
-          : 'w-full gap-1 px-gutter py-6 active:opacity-70'
-      }
+      className="w-full gap-1 px-gutter py-widget active:opacity-70"
       style={{
         backgroundColor,
         borderCurve: 'continuous',

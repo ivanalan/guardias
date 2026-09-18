@@ -6,7 +6,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
+import { Platform } from 'react-native';
 
+import { refreshTwoWeekWidget } from '../widget-android/refresh-two-week-widget';
 import { loadRotationPeriods, saveRotationPeriods } from './storage';
 import type { RotationPeriod } from './types';
 
@@ -26,6 +28,15 @@ function sortPeriodsByStartDate(
   return [...periods].sort((a, b) =>
     a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0,
   );
+}
+
+function persistAndRefresh(next: RotationPeriod[]): void {
+  void (async () => {
+    await saveRotationPeriods(next);
+    if (Platform.OS === 'android') {
+      await refreshTwoWeekWidget(next);
+    }
+  })();
 }
 
 /** Rotation periods hydrated from AsyncStorage (offline-first). */
@@ -63,7 +74,7 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
   const addPeriod = useCallback((period: RotationPeriod) => {
     setPeriods((prev) => {
       const next = sortPeriodsByStartDate([...prev, period]);
-      void saveRotationPeriods(next);
+      persistAndRefresh(next);
       return next;
     });
   }, []);
@@ -73,7 +84,7 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
       const next = sortPeriodsByStartDate(
         prev.map((item) => (item.id === period.id ? period : item)),
       );
-      void saveRotationPeriods(next);
+      persistAndRefresh(next);
       return next;
     });
   }, []);
@@ -81,7 +92,7 @@ export function RotationsProvider({ children }: { children: ReactNode }) {
   const deletePeriod = useCallback((id: string) => {
     setPeriods((prev) => {
       const next = prev.filter((item) => item.id !== id);
-      void saveRotationPeriods(next);
+      persistAndRefresh(next);
       return next;
     });
   }, []);

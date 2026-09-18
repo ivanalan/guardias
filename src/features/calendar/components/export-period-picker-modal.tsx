@@ -113,18 +113,6 @@ export function ExportPeriodPickerModal({
               })}
             </View>
           </ScrollView>
-          <Pressable
-            accessibilityRole="button"
-            onPress={onCancel}
-            className="mt-2 items-center py-3 active:opacity-60"
-          >
-            <Text
-              className="text-base font-medium opacity-60"
-              style={{ color: colors.text }}
-            >
-              {t('calendar.sharePickCancel')}
-            </Text>
-          </Pressable>
         </View>
       </View>
     </Modal>

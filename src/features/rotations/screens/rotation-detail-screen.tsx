@@ -15,6 +15,7 @@ import {
   type HomepageShiftStatus,
 } from '../../../lib/shifts';
 import { useTheme } from '../../../theme/theme-context';
+import { useWidgetBorderRadius } from '../../../theme/widget-radius';
 import { Pressable, ScrollView, Text, View } from '../../../tw';
 import { buildShiftExportEvent } from '../../calendar/build-shift-export-event';
 import {
@@ -65,13 +66,15 @@ function FactCard({
   className?: string;
 }) {
   const { colors } = useTheme();
+  const { borderRadius, onLayout } = useWidgetBorderRadius();
   return (
     <View
-      className={className ?? 'w-full gap-1 px-gutter py-5'}
+      className={className ?? 'w-full gap-1 px-gutter py-widget'}
+      onLayout={onLayout}
       style={{
         backgroundColor: colors.bg1,
         borderCurve: 'continuous',
-        borderRadius: 32,
+        borderRadius,
       }}
     >
       <Text
@@ -461,12 +464,12 @@ export function RotationDetailScreen({ navigation, route }: Props) {
 
             <View className="w-full flex-row gap-4">
               <FactCard
-                className="min-w-0 flex-1 gap-1 px-gutter py-5"
+                className="min-w-0 flex-1 gap-1 px-gutter py-widget"
                 value={`${patternTitle} · ${period.pattern.offset}`}
                 caption={patternSubtitle}
               />
               <FactCard
-                className="min-w-0 flex-1 gap-1 px-gutter py-5"
+                className="min-w-0 flex-1 gap-1 px-gutter py-widget"
                 value={period.shiftStartTime}
                 caption={t('shifts.form.shiftStartTime')}
               />
