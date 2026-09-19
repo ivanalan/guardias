@@ -16,7 +16,7 @@
     "durationLong": "{{days}}d {{hours}} hours",
     "shiftsLeft": "shifts left",
     "daysLeft": "days left",
-    "upcomingShifts": "upcoming shifts",
+    "upcomingShifts": "Upcoming shifts",
     "inDaysToday": "today",
     "inDays_one": "in {{count}} day",
     "inDays_other": "in {{count}} days",

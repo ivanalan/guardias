@@ -16,7 +16,7 @@
     "durationLong": "{{days}}d {{hours}} horas",
     "shiftsLeft": "guardias restantes",
     "daysLeft": "días restantes",
-    "upcomingShifts": "próximas guardias",
+    "upcomingShifts": "Próximas guardias",
     "inDaysToday": "hoy",
     "inDays_one": "en {{count}} día",
     "inDays_other": "en {{count}} días",

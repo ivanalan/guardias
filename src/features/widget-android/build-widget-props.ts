@@ -1,4 +1,4 @@
-import { format } from 'date-fns';
+import { differenceInCalendarDays, format } from 'date-fns';
 
 import { calendarMarkColorsFor } from '../calendar/calendar-mark-colors';
 import {
@@ -11,13 +11,22 @@ import {
   resolveWeekendBackground,
 } from '../calendar/calendar-day-marker';
 import { getRangeMarkInputs } from '../calendar/month-legend-stats';
-import { weekdayInitials } from '../dashboard/format-home-copy';
+import {
+  formatWeekdayLong,
+  weekdayInitials,
+} from '../dashboard/format-home-copy';
 import { getTwoWeekDates } from '../dashboard/two-week-dates';
 import i18n, { resolveDeviceLanguage, type AppLanguage } from '../../i18n';
-import { getHomepageShiftStatus } from '../../lib/shifts/get-homepage-shift-status';
+import {
+  getHomepageShiftStatus,
+  listUpcomingShifts,
+} from '../../lib/shifts/get-homepage-shift-status';
 import { primaryPeriods } from '../rotations/period-role';
 import { loadRotationPeriods } from '../rotations/storage';
-import { resolveShiftMarks } from '../rotations/rotation-colors';
+import {
+  resolveRotationColor,
+  resolveShiftMarks,
+} from '../rotations/rotation-colors';
 import type { RotationPeriod } from '../rotations/types';
 import { loadAppPreferences } from '../settings/storage';
 import {
@@ -27,7 +36,14 @@ import {
   type ThemeScheme,
 } from '../../theme/colors';
 
-import type { HexColor, TwoWeekWidgetProps, WidgetDayCellProps } from './types';
+import type {
+  HexColor,
+  UpcomingShiftItemProps,
+  UpcomingShiftsWidgetProps,
+  TwoWeekWidgetProps,
+  WidgetDayCellProps,
+} from './types';
+import { UPCOMING_SHIFTS_WIDGET_LIMIT } from './types';
 
 function asHex(value: string): HexColor {
   return value as HexColor;
@@ -173,11 +189,15 @@ export type TwoWeekWidgetThemeBundle = {
   forcedScheme: ThemeScheme | null;
 };
 
-/** Load storage and build light + dark widget props. */
-export async function loadTwoWeekWidgetThemeBundle(
+type WidgetStorageSnapshot = {
+  periods: RotationPeriod[];
+  language: AppLanguage;
+  forcedScheme: ThemeScheme | null;
+};
+
+async function loadWidgetStorageSnapshot(
   periodsOverride?: readonly RotationPeriod[],
-  now: Date = new Date(),
-): Promise<TwoWeekWidgetThemeBundle> {
+): Promise<WidgetStorageSnapshot> {
   const [storedPeriods, prefs] = await Promise.all([
     periodsOverride != null
       ? Promise.resolve([...periodsOverride])
@@ -186,24 +206,128 @@ export async function loadTwoWeekWidgetThemeBundle(
   ]);
   const periods = storedPeriods ?? [];
   const language = resolveLanguage(prefs?.locale);
-  const forced =
+  const forcedScheme =
     prefs?.colorScheme === 'light' || prefs?.colorScheme === 'dark'
       ? prefs.colorScheme
       : null;
+  return { periods, language, forcedScheme };
+}
 
-  if (forced != null) {
+/** Load storage and build light + dark widget props. */
+export async function loadTwoWeekWidgetThemeBundle(
+  periodsOverride?: readonly RotationPeriod[],
+  now: Date = new Date(),
+): Promise<TwoWeekWidgetThemeBundle> {
+  const { periods, language, forcedScheme } =
+    await loadWidgetStorageSnapshot(periodsOverride);
+
+  if (forcedScheme != null) {
     const props = buildTwoWeekWidgetPropsForScheme(
       periods,
       language,
-      forced,
+      forcedScheme,
       now,
     );
-    return { light: props, dark: props, forcedScheme: forced };
+    return { light: props, dark: props, forcedScheme };
   }
 
   return {
     light: buildTwoWeekWidgetPropsForScheme(periods, language, 'light', now),
     dark: buildTwoWeekWidgetPropsForScheme(periods, language, 'dark', now),
+    forcedScheme: null,
+  };
+}
+
+function relativeShiftLabel(
+  startDateTime: Date,
+  now: Date,
+  language: AppLanguage,
+): string {
+  const daysUntil = differenceInCalendarDays(startDateTime, now);
+  if (daysUntil <= 0) {
+    return i18n.t('home.inDaysToday', { lng: language });
+  }
+  return i18n.t('home.inDays', { count: daysUntil, lng: language });
+}
+
+/** Build upcoming-shifts widget props for one color scheme. */
+export function buildUpcomingShiftsWidgetPropsForScheme(
+  periods: readonly RotationPeriod[],
+  language: AppLanguage,
+  scheme: ThemeScheme,
+  now: Date = new Date(),
+): UpcomingShiftsWidgetProps {
+  const colors = colorsForScheme(scheme);
+  const status = getHomepageShiftStatus(periods, now);
+  const items: UpcomingShiftItemProps[] =
+    status.kind === 'idle'
+      ? []
+      : listUpcomingShifts(
+          status.period,
+          now,
+          UPCOMING_SHIFTS_WIDGET_LIMIT,
+        ).map((shift, index) => ({
+          dayNumber: format(shift.startDateTime, 'd'),
+          weekday: formatWeekdayLong(shift.startDateTime, language),
+          relativeLabel: relativeShiftLabel(shift.startDateTime, now, language),
+          isNext: index === 0,
+        }));
+
+  const accentSource =
+    status.kind === 'idle' ? colors.accentRed : status.period.color;
+
+  return {
+    backgroundColor: asHex(colors.bg1),
+    title: i18n.t('home.upcomingShifts', { lng: language }),
+    titleColor: asHex(colors.text),
+    emptyCaption: i18n.t('home.stats.noneInPeriod', { lng: language }),
+    emptyCaptionColor: asHex(colors.textMuted),
+    items,
+    accentColor: asHex(resolveRotationColor(accentSource, colors)),
+    railMutedColor: asHex(colors.bgPillTrack),
+    onAccentColor: asHex(colors.onColor),
+    weekdayColor: asHex(colors.text),
+    relativeColor: asHex(colors.textMuted),
+  };
+}
+
+export type UpcomingShiftsWidgetThemeBundle = {
+  light: UpcomingShiftsWidgetProps;
+  dark: UpcomingShiftsWidgetProps;
+  forcedScheme: ThemeScheme | null;
+};
+
+/** Load storage and build light + dark upcoming-shifts widget props. */
+export async function loadUpcomingShiftsWidgetThemeBundle(
+  periodsOverride?: readonly RotationPeriod[],
+  now: Date = new Date(),
+): Promise<UpcomingShiftsWidgetThemeBundle> {
+  const { periods, language, forcedScheme } =
+    await loadWidgetStorageSnapshot(periodsOverride);
+
+  if (forcedScheme != null) {
+    const props = buildUpcomingShiftsWidgetPropsForScheme(
+      periods,
+      language,
+      forcedScheme,
+      now,
+    );
+    return { light: props, dark: props, forcedScheme };
+  }
+
+  return {
+    light: buildUpcomingShiftsWidgetPropsForScheme(
+      periods,
+      language,
+      'light',
+      now,
+    ),
+    dark: buildUpcomingShiftsWidgetPropsForScheme(
+      periods,
+      language,
+      'dark',
+      now,
+    ),
     forcedScheme: null,
   };
 }

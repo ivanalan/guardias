@@ -6,7 +6,10 @@ jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'es' }],
 }));
 
-import { buildTwoWeekWidgetPropsForScheme } from './build-widget-props';
+import {
+  buildTwoWeekWidgetPropsForScheme,
+  buildUpcomingShiftsWidgetPropsForScheme,
+} from './build-widget-props';
 import type { RotationPeriod } from '../rotations/types';
 
 function period(
@@ -65,5 +68,33 @@ describe('buildTwoWeekWidgetPropsForScheme', () => {
   it('falls back when there are no periods', () => {
     const props = buildTwoWeekWidgetPropsForScheme([], 'en', 'light');
     expect(props.title).toBe('Mi Guardia');
+  });
+});
+
+describe('buildUpcomingShiftsWidgetPropsForScheme', () => {
+  it('lists up to four upcoming shifts with the next highlighted', () => {
+    const now = new Date(2026, 8, 14, 8); // Mon Sep 14 08:00 — after 07:00 start
+    const props = buildUpcomingShiftsWidgetPropsForScheme(
+      [period({ id: '1', firstShiftDate: '2026-09-14', label: 'Urgencias' })],
+      'en',
+      'light',
+      now,
+    );
+
+    expect(props.title).toBe('Upcoming shifts');
+    expect(props.items.length).toBeGreaterThan(0);
+    expect(props.items.length).toBeLessThanOrEqual(4);
+    expect(props.items[0]!.isNext).toBe(true);
+    expect(props.items.slice(1).every((item) => !item.isNext)).toBe(true);
+    expect(props.items[0]!.weekday.length).toBeGreaterThan(0);
+    expect(props.items[0]!.relativeLabel.length).toBeGreaterThan(0);
+    expect(props.accentColor).toBe('#DC211E');
+  });
+
+  it('returns empty items when there are no periods', () => {
+    const props = buildUpcomingShiftsWidgetPropsForScheme([], 'es', 'dark');
+    expect(props.title).toBe('Próximas guardias');
+    expect(props.items).toEqual([]);
+    expect(props.emptyCaption.length).toBeGreaterThan(0);
   });
 });
