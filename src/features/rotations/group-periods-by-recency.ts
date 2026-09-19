@@ -21,6 +21,7 @@ const SECTION_ORDER: readonly {
 /**
  * Groups periods into Current → Future → Past for a SectionList.
  * Expects periods already sorted ascending by `startDate`.
+ * Current lists own (primary) rotations before friend (secondary) shifts.
  * Past is shown newest-ended first (`endDate` descending).
  * Empty buckets are omitted.
  */
@@ -43,6 +44,13 @@ export function groupPeriodsByRecency(
       buckets.current.push(period);
     }
   }
+
+  // Own rotations before friend shifts; keep startDate order within each role.
+  buckets.current.sort((a, b) => {
+    const roleRank = (a.role === 'primary' ? 0 : 1) - (b.role === 'primary' ? 0 : 1);
+    if (roleRank !== 0) return roleRank;
+    return a.startDate < b.startDate ? -1 : a.startDate > b.startDate ? 1 : 0;
+  });
 
   buckets.past.sort((a, b) => (a.endDate < b.endDate ? 1 : a.endDate > b.endDate ? -1 : 0));
 
