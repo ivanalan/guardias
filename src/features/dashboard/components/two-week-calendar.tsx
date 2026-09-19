@@ -323,7 +323,7 @@ function UpcomingListPage({
                     <View className="gap-0">
                       <Text
                         className="font-mono text-base"
-                        style={{ color: isNext ? color : colors.text }}
+                        style={{ color: colors.text }}
                       >
                         {item.weekday}
                       </Text>

@@ -94,12 +94,10 @@ function FactCard({
 
 function ActiveNextShiftCard({
   status,
-  color,
   language,
   durationValue,
 }: {
   status: Exclude<HomepageShiftStatus, { kind: 'idle' }>;
-  color: string;
   language: AppLanguage;
   durationValue: (duration: DurationParts) => string;
 }) {
@@ -112,7 +110,6 @@ function ActiveNextShiftCard({
         duration={durationValue(status.remainingInShift)}
         caption={t('home.stats.timeLeft')}
         weekday=""
-        weekdayColor={color}
       />
     );
   }
@@ -123,7 +120,6 @@ function ActiveNextShiftCard({
       duration={durationValue(status.untilStart)}
       caption={`${t('home.nextShift')}: `}
       weekday={formatWeekdayLong(status.nextShift.startDateTime, language)}
-      weekdayColor={color}
     />
   );
 }
@@ -420,7 +416,6 @@ export function RotationDetailScreen({ navigation, route }: Props) {
     statusCard = (
       <ActiveNextShiftCard
         status={status}
-        color={color}
         language={language}
         durationValue={durationValue}
       />
