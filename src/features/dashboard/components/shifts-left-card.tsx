@@ -71,9 +71,7 @@ function MarksPage({
     <>
       <View className="gap-1">
         <Text className={titleClass} style={{ color: colors.text }}>
-          <Text className={titleClass} style={{ color }}>
-            {remaining}
-          </Text>
+          {remaining}
           {' / '}
           {total}
         </Text>

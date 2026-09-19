@@ -139,14 +139,12 @@ function ActiveHomeContent({
         duration={durationValue(status.remainingInShift)}
         caption={t('home.stats.timeLeft')}
         weekday=""
-        weekdayColor={color}
       />
     ) : untilNext != null && status.kind === 'between_shifts' ? (
       <NextShiftCard
         duration={durationValue(untilNext)}
         caption={`${t('home.nextShift')}: `}
         weekday={formatWeekdayLong(status.nextShift.startDateTime, language)}
-        weekdayColor={color}
       />
     ) : null;
 

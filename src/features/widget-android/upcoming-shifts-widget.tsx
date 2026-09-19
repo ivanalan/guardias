@@ -14,7 +14,8 @@ const RAIL_RADIUS = 14;
 const RAIL_GAP = 16;
 const TITLE_FONT = 32;
 const WEEKDAY_FONT = 21;
-const RELATIVE_FONT = 16;
+const RELATIVE_FONT = 18;
+const WEEKDAY_MB = 4;
 const TITLE_MB = 28;
 const ROW_GAP = 32;
 const PAD_X = 24;
@@ -96,7 +97,8 @@ function ShiftEntry({
           style={{
             fontSize: WEEKDAY_FONT,
             fontWeight: '500',
-            color: item.isNext ? props.accentColor : props.weekdayColor,
+            color: props.weekdayColor,
+            marginBottom: WEEKDAY_MB,
           }}
         />
         <TextWidget
