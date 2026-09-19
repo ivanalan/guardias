@@ -3,8 +3,7 @@ import { FlexWidget, TextWidget } from 'react-native-android-widget';
 import type { TwoWeekWidgetProps, WidgetDayCellProps } from './types';
 
 /**
- * Density tuned in tools/widget-layout-playground.html (Fill denser inspo):
- * cell 50, title 24, day 20, pad 31/24/28, titleMb 28, weekdayMb 20, weekGap 23.
+ * Dense type/marks; vertical chrome trimmed for a 3-row (~200dp) launcher slot.
  * Fixed squares — never stretch with the launcher slot.
  */
 const CELL = 40;
@@ -16,12 +15,12 @@ const TODAY_BORDER = 1.5;
 const TODAY_INSET = 2;
 const DAY_FONT = 18;
 const WEEKDAY_FONT = 18;
-const TITLE_FONT = 22;
-const TITLE_MB = 24;
-const WEEKDAY_MB = 18;
+const TITLE_FONT = 32;
+const TITLE_MB = 20;
+const WEEKDAY_MB = 16;
 const PAD_X = 24;
-const PAD_TOP = 20;
-const PAD_BOTTOM = 20;
+const PAD_TOP = 12;
+const PAD_BOTTOM = 12;
 const WIDGET_RADIUS = 32;
 
 function DayMark({ cell }: { cell: WidgetDayCellProps }) {
@@ -173,7 +172,7 @@ export function TwoWeekCalendarWidget(props: TwoWeekWidgetProps) {
         maxLines={1}
         style={{
           fontSize: TITLE_FONT,
-          fontWeight: '600',
+          fontFamily: 'InstrumentSerif_400Regular',
           color: props.titleColor,
           marginBottom: TITLE_MB,
         }}

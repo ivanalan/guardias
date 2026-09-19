@@ -82,4 +82,26 @@ describe('groupPeriodsByRecency', () => {
   it('returns an empty array when there are no periods', () => {
     expect(groupPeriodsByRecency([], '2026-05-15')).toEqual([]);
   });
+
+  it('lists primary current rotations before secondary friend shifts', () => {
+    const friend = period({
+      id: 'friend',
+      label: 'Maria',
+      startDate: '2026-08-01',
+      endDate: '2026-09-30',
+      role: 'secondary',
+    });
+    const mine = period({
+      id: 'mine',
+      label: 'Internal Medicine',
+      startDate: '2026-09-01',
+      endDate: '2026-10-31',
+      role: 'primary',
+    });
+
+    const sections = groupPeriodsByRecency([friend, mine], '2026-09-15');
+
+    expect(sections.map((s) => s.key)).toEqual(['current']);
+    expect(sections[0]?.data.map((p) => p.id)).toEqual(['mine', 'friend']);
+  });
 });
