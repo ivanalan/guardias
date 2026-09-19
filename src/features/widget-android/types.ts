@@ -1,10 +1,14 @@
 /**
- * Android home-screen widget (two-week calendar).
+ * Android home-screen widgets.
  *
  * Requires a custom native binary (dev client / store build / `expo run:android`).
  * Not available in Expo Go.
  */
 export const TWO_WEEK_WIDGET_NAME = 'TwoWeekCalendar';
+export const UPCOMING_SHIFTS_WIDGET_NAME = 'UpcomingShifts';
+
+/** Max shifts shown in the upcoming-shifts home-screen widget (2×2). */
+export const UPCOMING_SHIFTS_WIDGET_LIMIT = 4;
 
 export type HexColor = `#${string}`;
 
@@ -34,4 +38,27 @@ export type TwoWeekWidgetProps = {
     readonly WidgetDayCellProps[],
     readonly WidgetDayCellProps[],
   ];
+};
+
+export type UpcomingShiftItemProps = {
+  dayNumber: string;
+  weekday: string;
+  relativeLabel: string;
+  /** Highlight the soonest upcoming shift (rail + weekday). */
+  isNext: boolean;
+};
+
+export type UpcomingShiftsWidgetProps = {
+  backgroundColor: HexColor;
+  title: string;
+  titleColor: HexColor;
+  emptyCaption: string;
+  emptyCaptionColor: HexColor;
+  /** Up to four upcoming shifts for the 2×2 grid. */
+  items: readonly UpcomingShiftItemProps[];
+  accentColor: HexColor;
+  railMutedColor: HexColor;
+  onAccentColor: HexColor;
+  weekdayColor: HexColor;
+  relativeColor: HexColor;
 };

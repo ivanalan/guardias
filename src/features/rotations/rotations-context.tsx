@@ -9,6 +9,7 @@ import {
 import { Platform } from 'react-native';
 
 import { refreshTwoWeekWidget } from '../widget-android/refresh-two-week-widget';
+import { refreshUpcomingShiftsWidget } from '../widget-android/refresh-upcoming-widget';
 import { loadRotationPeriods, saveRotationPeriods } from './storage';
 import type { RotationPeriod } from './types';
 
@@ -34,7 +35,10 @@ function persistAndRefresh(next: RotationPeriod[]): void {
   void (async () => {
     await saveRotationPeriods(next);
     if (Platform.OS === 'android') {
-      await refreshTwoWeekWidget(next);
+      await Promise.all([
+        refreshTwoWeekWidget(next),
+        refreshUpcomingShiftsWidget(next),
+      ]);
     }
   })();
 }

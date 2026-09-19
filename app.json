@@ -64,6 +64,17 @@
               "targetCellHeight": 3,
               "updatePeriodMillis": 1800000,
               "resizeMode": "horizontal|vertical"
+            },
+            {
+              "name": "UpcomingShifts",
+              "label": "Próximas guardias",
+              "description": "Tus próximas cuatro guardias",
+              "minWidth": "400dp",
+              "minHeight": "140dp",
+              "targetCellWidth": 5,
+              "targetCellHeight": 2,
+              "updatePeriodMillis": 1800000,
+              "resizeMode": "horizontal|vertical"
             }
           ]
         }
