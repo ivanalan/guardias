@@ -25,8 +25,9 @@ export type ShareRotationImageOutcome =
 type CaptureTarget = RefObject<View | null>;
 
 /**
- * Captures a mounted share card, saves it to Photos when allowed, otherwise
- * opens the system share sheet.
+ * Captures a mounted share card, saves it to Photos when write-only access is
+ * available (no Android READ_MEDIA_* / library browse), otherwise opens the
+ * system share sheet.
  */
 export async function shareRotationImage(
   viewRef: CaptureTarget,
@@ -54,10 +55,15 @@ export async function shareRotationImage(
     const named = new File(dir, guardiasImageFilename(label));
     source.copy(named);
 
+    // writeOnly: true — insert into MediaStore/Photos without reading the library.
     const permission = await requestPermissionsAsync(true);
     if (permission.status === 'granted') {
-      await saveToLibraryAsync(named.uri);
-      return { ok: true, method: 'saved' };
+      try {
+        await saveToLibraryAsync(named.uri);
+        return { ok: true, method: 'saved' };
+      } catch {
+        // Fall through to the share sheet if save is unavailable.
+      }
     }
 
     if (!(await Sharing.isAvailableAsync())) {
