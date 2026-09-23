@@ -6,10 +6,7 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Platform } from 'react-native';
-
-import { refreshTwoWeekWidget } from '../widget-android/refresh-two-week-widget';
-import { refreshUpcomingShiftsWidget } from '../widget-android/refresh-upcoming-widget';
+import { refreshHomeWidgets } from '../widgets/refresh-home-widgets';
 import { loadRotationPeriods, saveRotationPeriods } from './storage';
 import type { RotationPeriod } from './types';
 
@@ -34,12 +31,7 @@ function sortPeriodsByStartDate(
 function persistAndRefresh(next: RotationPeriod[]): void {
   void (async () => {
     await saveRotationPeriods(next);
-    if (Platform.OS === 'android') {
-      await Promise.all([
-        refreshTwoWeekWidget(next),
-        refreshUpcomingShiftsWidget(next),
-      ]);
-    }
+    await refreshHomeWidgets(next);
   })();
 }
 

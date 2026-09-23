@@ -11,10 +11,11 @@
 - TypeScript, react-native-calendars, AsyncStorage, date-fns
 - Localization: expo-localization + i18n string catalogs (`src/i18n/en.json`, `src/i18n/es.json`)
 - **Styling: [NativeWind](https://www.nativewind.dev/v5) v5** (Tailwind CSS v4 `className` via `react-native-css`). Prefer utility classes and CSS-wrapped components from `src/tw` over large `StyleSheet` blocks. Setup skill: `expo-tailwind-setup` (`.agents/skills/expo-tailwind-setup`).
-- **UI controls: shared RN primitives.** One component tree for all platforms — no `.ios` / `.android` UI files, no `@expo/ui`. See `.cursor/rules/native-ui.mdc`.
-- Develop in **Expo Go** (`expo start`). Do not introduce packages that require a custom native binary unless explicitly requested.
+- **UI controls: shared RN primitives.** One component tree for all platforms — no `.ios` / `.android` UI files, no `@expo/ui` in app screens. See `.cursor/rules/native-ui.mdc`.
+- Develop in **Expo Go** (`expo start`) for day-to-day app UI. Home-screen widgets require a **custom native binary** (`expo run:ios` / `expo run:android` / EAS).
 - Do **not** use Material Design 3 or `react-native-paper` as the design system.
-- **Android home-screen widgets:** Default picker size lives in `app.json` (`react-native-android-widget` plugin) but is baked into sticky local `android/.../widgetprovider_*.xml`. After changing `targetCell*` / `minWidth` / `minHeight`, run `node scripts/sync-android-widget-providers.mjs` (or `npm run android`, which syncs first). See `.cursor/rules/android-widget-providers.mdc`.
+- **Android home-screen widgets:** `react-native-android-widget` under `src/features/widget-android/`. Default picker size lives in `app.json` but is baked into sticky local `android/.../widgetprovider_*.xml`. After changing `targetCell*` / `minWidth` / `minHeight`, run `node scripts/sync-android-widget-providers.mjs`. See `.cursor/rules/android-widget-providers.mdc`.
+- **iOS home-screen widgets:** `expo-widgets` + `@expo/ui` SwiftUI under `src/features/widget-ios/` only (widget-directive components). Shared props live in `src/features/widgets/`. Not available in Expo Go.
 
 ## Conventions
 

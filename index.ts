@@ -16,3 +16,7 @@ registerRootComponent(App);
 if (Platform.OS === 'android') {
   registerWidgetTaskHandler(widgetTaskHandler);
 }
+
+// iOS widget layouts are registered lazily from refresh-ios-widgets.ts when
+// ExpoWidgets is linked — never at startup, so a createWidget failure cannot
+// block AppRegistry / the main UI.

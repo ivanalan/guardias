@@ -27,9 +27,13 @@ alwaysApply: false
 
 ## Do not
 
-- Do **not** add `.ios.tsx` / `.android.tsx` (or `.ios.ts` / `.android.ts`) UI modules
-- Do **not** use [`@expo/ui`](https://docs.expo.dev/versions/latest/sdk/ui/) (SwiftUI / Jetpack Compose)
-- Do **not** branch UI on `process.env.EXPO_OS` or `Platform.OS` except for rare unavoidable native APIs
+- Do **not** add `.ios.tsx` / `.android.tsx` (or `.ios.ts` / `.android.ts`) UI modules for **app screens**
+- Do **not** use [`@expo/ui`](https://docs.expo.dev/versions/latest/sdk/ui/) (SwiftUI / Jetpack Compose) in app screens
+- Do **not** branch app UI on `process.env.EXPO_OS` or `Platform.OS` except for rare unavoidable native APIs
 - Do **not** implement Material Design 3 as a design system
 - Do **not** use the `material-3` agent skill for Guardias UI
 - Do **not** add `react-native-paper` components or themes
+
+## Exception — home-screen widgets only
+
+iOS WidgetKit layouts **must** use `expo-widgets` + `@expo/ui/swift-ui` with the `'widget'` directive under `src/features/widget-ios/`. That is the only allowed `@expo/ui` usage. Shared prop builders stay in `src/features/widgets/` (no SwiftUI). Android widgets stay on `react-native-android-widget` under `src/features/widget-android/`.

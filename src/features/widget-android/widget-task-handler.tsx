@@ -3,12 +3,15 @@ import type { WidgetTaskHandlerProps } from 'react-native-android-widget';
 import {
   loadTwoWeekWidgetThemeBundle,
   loadUpcomingShiftsWidgetThemeBundle,
-} from './build-widget-props';
-import { resolveTwoWeekLayout } from './two-week-layout';
-import { resolveUpcomingShiftsLayout } from './upcoming-shifts-layout';
+} from '../widgets/build-widget-props';
+import { resolveTwoWeekLayout } from '../widgets/two-week-layout';
+import { resolveUpcomingShiftsLayout } from '../widgets/upcoming-shifts-layout';
+import {
+  TWO_WEEK_WIDGET_NAME,
+  UPCOMING_SHIFTS_WIDGET_NAME,
+} from '../widgets/types';
 import { TwoWeekCalendarWidget } from './two-week-calendar-widget';
 import { UpcomingShiftsWidget } from './upcoming-shifts-widget';
-import { TWO_WEEK_WIDGET_NAME, UPCOMING_SHIFTS_WIDGET_NAME } from './types';
 
 /**
  * Headless task handler for Android App Widget lifecycle events.

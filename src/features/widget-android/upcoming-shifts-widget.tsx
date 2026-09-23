@@ -3,7 +3,7 @@ import { FlexWidget, TextWidget } from 'react-native-android-widget';
 import type {
   UpcomingShiftItemProps,
   UpcomingShiftsWidgetProps,
-} from './types';
+} from '../widgets/types';
 
 /**
  * 1-column timeline rail for a default 2×2 slot.

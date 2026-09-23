@@ -80,6 +80,33 @@
             }
           ]
         }
+      ],
+      [
+        "expo-widgets",
+        {
+          "bundleIdentifier": "com.alanmatias.guardias.widgets",
+          "groupIdentifier": "group.com.alanmatias.guardias",
+          "widgets": [
+            {
+              "name": "TwoWeekCalendar",
+              "displayName": "Calendario 2 semanas",
+              "description": "Tus guardias de esta semana y la siguiente",
+              "ios": {
+                "contentMarginsDisabled": true,
+                "supportedFamilies": ["systemMedium", "systemLarge"]
+              }
+            },
+            {
+              "name": "UpcomingShifts",
+              "displayName": "Próximas guardias",
+              "description": "Tus próximas guardias",
+              "ios": {
+                "contentMarginsDisabled": true,
+                "supportedFamilies": ["systemSmall", "systemMedium"]
+              }
+            }
+          ]
+        }
       ]
     ],
     "ios": {

@@ -3,10 +3,10 @@ import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import type { RotationPeriod } from '../rotations/types';
 
-import { loadUpcomingShiftsWidgetThemeBundle } from './build-widget-props';
-import { resolveUpcomingShiftsLayout } from './upcoming-shifts-layout';
+import { loadUpcomingShiftsWidgetThemeBundle } from '../widgets/build-widget-props';
+import { resolveUpcomingShiftsLayout } from '../widgets/upcoming-shifts-layout';
+import { UPCOMING_SHIFTS_WIDGET_NAME } from '../widgets/types';
 import { UpcomingShiftsWidget } from './upcoming-shifts-widget';
-import { UPCOMING_SHIFTS_WIDGET_NAME } from './types';
 
 function isAndroidWidgetLinked(): boolean {
   return Platform.OS === 'android' && NativeModules.AndroidWidget != null;

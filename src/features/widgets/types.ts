@@ -1,7 +1,7 @@
 /**
- * Android home-screen widgets.
+ * Shared home-screen widget contract (Android + iOS).
  *
- * Requires a custom native binary (dev client / store build / `expo run:android`).
+ * Requires a custom native binary (dev client / store build).
  * Not available in Expo Go.
  */
 export const TWO_WEEK_WIDGET_NAME = 'TwoWeekCalendar';
