@@ -14,6 +14,7 @@
 - **UI controls: shared RN primitives.** One component tree for all platforms — no `.ios` / `.android` UI files, no `@expo/ui`. See `.cursor/rules/native-ui.mdc`.
 - Develop in **Expo Go** (`expo start`). Do not introduce packages that require a custom native binary unless explicitly requested.
 - Do **not** use Material Design 3 or `react-native-paper` as the design system.
+- **Android home-screen widgets:** Default picker size lives in `app.json` (`react-native-android-widget` plugin) but is baked into sticky local `android/.../widgetprovider_*.xml`. After changing `targetCell*` / `minWidth` / `minHeight`, run `node scripts/sync-android-widget-providers.mjs` (or `npm run android`, which syncs first). See `.cursor/rules/android-widget-providers.mdc`.
 
 ## Conventions
 

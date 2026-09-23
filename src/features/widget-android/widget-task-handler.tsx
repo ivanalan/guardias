@@ -4,6 +4,8 @@ import {
   loadTwoWeekWidgetThemeBundle,
   loadUpcomingShiftsWidgetThemeBundle,
 } from './build-widget-props';
+import { resolveTwoWeekLayout } from './two-week-layout';
+import { resolveUpcomingShiftsLayout } from './upcoming-shifts-layout';
 import { TwoWeekCalendarWidget } from './two-week-calendar-widget';
 import { UpcomingShiftsWidget } from './upcoming-shifts-widget';
 import { TWO_WEEK_WIDGET_NAME, UPCOMING_SHIFTS_WIDGET_NAME } from './types';
@@ -31,7 +33,12 @@ export async function widgetTaskHandler({
   }
 
   if (widgetName === UPCOMING_SHIFTS_WIDGET_NAME) {
-    const bundle = await loadUpcomingShiftsWidgetThemeBundle();
+    const layout = resolveUpcomingShiftsLayout(widgetInfo.height);
+    const bundle = await loadUpcomingShiftsWidgetThemeBundle(
+      undefined,
+      new Date(),
+      layout,
+    );
     renderWidget({
       light: <UpcomingShiftsWidget {...bundle.light} />,
       dark: <UpcomingShiftsWidget {...bundle.dark} />,
@@ -39,7 +46,12 @@ export async function widgetTaskHandler({
     return;
   }
 
-  const bundle = await loadTwoWeekWidgetThemeBundle();
+  const layout = resolveTwoWeekLayout(widgetInfo.height, widgetInfo.width);
+  const bundle = await loadTwoWeekWidgetThemeBundle(
+    undefined,
+    new Date(),
+    layout,
+  );
   renderWidget({
     light: <TwoWeekCalendarWidget {...bundle.light} />,
     dark: <TwoWeekCalendarWidget {...bundle.dark} />,

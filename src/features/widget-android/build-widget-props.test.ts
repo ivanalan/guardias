@@ -10,6 +10,7 @@ import {
   buildTwoWeekWidgetPropsForScheme,
   buildUpcomingShiftsWidgetPropsForScheme,
 } from './build-widget-props';
+import { resolveTwoWeekLayout } from './two-week-layout';
 import type { RotationPeriod } from '../rotations/types';
 
 function period(
@@ -41,12 +42,26 @@ describe('buildTwoWeekWidgetPropsForScheme', () => {
       now,
     );
 
-    expect(props.title).toBe('Urgencias');
     expect(props.weekdayLabels).toEqual(['L', 'M', 'M', 'J', 'V', 'S', 'D']);
     expect(props.weeks).toHaveLength(2);
     expect(props.weeks[0]).toHaveLength(7);
     expect(props.weeks[1]).toHaveLength(7);
     expect(props.weeks.flat()).toHaveLength(14);
+    expect(props.showWeekdayLetters).toBe(true);
+    expect(props.cellSize).toBeGreaterThan(0);
+  });
+
+  it('builds three weeks when layout asks for 3', () => {
+    const now = new Date(2026, 8, 17);
+    const props = buildTwoWeekWidgetPropsForScheme(
+      [],
+      'en',
+      'light',
+      now,
+      resolveTwoWeekLayout(236),
+    );
+    expect(props.weeks).toHaveLength(3);
+    expect(props.weeks.flat()).toHaveLength(21);
   });
 
   it('marks today and primary shift days', () => {
@@ -58,16 +73,15 @@ describe('buildTwoWeekWidgetPropsForScheme', () => {
       now,
     );
 
-    expect(props.title).toBe('Pediatría');
     const today = props.weeks[0]![0]!;
     expect(today.isToday).toBe(true);
     expect(today.borderColor).toBeTruthy();
     expect(today.backgroundColor).toBe('#DC211E');
   });
 
-  it('falls back when there are no periods', () => {
+  it('still builds weeks when there are no periods', () => {
     const props = buildTwoWeekWidgetPropsForScheme([], 'en', 'light');
-    expect(props.title).toBe('Mi Guardia');
+    expect(props.weeks.flat()).toHaveLength(14);
   });
 });
 
@@ -83,7 +97,9 @@ describe('buildUpcomingShiftsWidgetPropsForScheme', () => {
 
     expect(props.title).toBe('Upcoming shifts');
     expect(props.items.length).toBeGreaterThan(0);
-    expect(props.items.length).toBeLessThanOrEqual(4);
+    expect(props.items.length).toBeLessThanOrEqual(6);
+    expect(props.maxItems).toBe(4);
+    expect(props.showRelative).toBe(true);
     expect(props.items[0]!.isNext).toBe(true);
     expect(props.items.slice(1).every((item) => !item.isNext)).toBe(true);
     expect(props.items[0]!.weekday.length).toBeGreaterThan(0);

@@ -4,6 +4,7 @@ import { requestWidgetUpdate } from 'react-native-android-widget';
 import type { RotationPeriod } from '../rotations/types';
 
 import { loadTwoWeekWidgetThemeBundle } from './build-widget-props';
+import { resolveTwoWeekLayout } from './two-week-layout';
 import { TwoWeekCalendarWidget } from './two-week-calendar-widget';
 import { TWO_WEEK_WIDGET_NAME } from './types';
 
@@ -23,13 +24,23 @@ export async function refreshTwoWeekWidget(
   }
 
   try {
-    const bundle = await loadTwoWeekWidgetThemeBundle(periodsOverride);
     await requestWidgetUpdate({
       widgetName: TWO_WEEK_WIDGET_NAME,
-      renderWidget: () => ({
-        light: <TwoWeekCalendarWidget {...bundle.light} />,
-        dark: <TwoWeekCalendarWidget {...bundle.dark} />,
-      }),
+      renderWidget: async (widgetInfo) => {
+        const layout = resolveTwoWeekLayout(
+          widgetInfo.height,
+          widgetInfo.width,
+        );
+        const bundle = await loadTwoWeekWidgetThemeBundle(
+          periodsOverride,
+          new Date(),
+          layout,
+        );
+        return {
+          light: <TwoWeekCalendarWidget {...bundle.light} />,
+          dark: <TwoWeekCalendarWidget {...bundle.dark} />,
+        };
+      },
     });
   } catch (error) {
     if (__DEV__) {

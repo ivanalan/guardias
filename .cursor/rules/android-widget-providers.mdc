@@ -1,0 +1,43 @@
+---
+description: Android home-screen widget size/config must sync sticky android/ XML
+globs: app.json,**/widget-android/**,**/widgetprovider*.xml,scripts/sync-android-widget-providers.mjs
+alwaysApply: false
+---
+
+# Android widget provider sizes
+
+Picker / default cell size (`4×2`, etc.) is **not** controlled by React Native JS.
+It is baked into native App Widget provider XML.
+
+## Source of truth
+
+1. Edit sizes only in `app.json` → `plugins` → `react-native-android-widget` → `widgets[]`
+   (`targetCellWidth` / `targetCellHeight`, `minWidth` / `minHeight`).
+2. Local `android/` is **gitignored but sticky**. `expo run:android` does **not**
+   re-run the config plugin, so XML can stay on old sizes after an `app.json` change.
+
+## Required after any widget size change
+
+```bash
+node scripts/sync-android-widget-providers.mjs
+# or: npm run android   (syncs automatically before expo run:android)
+```
+
+Verify:
+
+```bash
+node scripts/sync-android-widget-providers.mjs check
+grep targetCellHeight android/app/src/main/res/xml/widgetprovider_*.xml
+```
+
+## Do not
+
+- Hand-edit `android/app/src/main/res/xml/widgetprovider_*.xml` as the only change
+- Tell the user “rebuild” after only changing `app.json` without syncing/prebuild
+- Assume EAS and local `expo run:android` behave the same (EAS prebuilds; local often does not)
+
+## JS layout vs picker size
+
+- `resolveTwoWeekLayout` / `resolveUpcomingShiftsLayout` adapt **content** to the
+  widget’s current dp size after it is placed.
+- They do **not** change what the widget list shows as the default grid size.
