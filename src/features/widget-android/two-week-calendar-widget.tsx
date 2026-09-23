@@ -1,6 +1,9 @@
 import { FlexWidget, TextWidget } from 'react-native-android-widget';
 
-import type { TwoWeekWidgetProps, WidgetDayCellProps } from './types';
+import type {
+  TwoWeekWidgetProps,
+  WidgetDayCellProps,
+} from '../widgets/types';
 
 /**
  * Fluid-fill calendar — marks stretch with height; week count grows with

@@ -27,7 +27,7 @@ export function ScreenPageTitle({
     <View
       className="px-gutter pb-2"
       style={{
-        paddingTop: 64,
+        paddingTop: 72,
         paddingLeft: insets.left + SCREEN_GUTTER,
       }}
     >

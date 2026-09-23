@@ -3,10 +3,10 @@ import { requestWidgetUpdate } from 'react-native-android-widget';
 
 import type { RotationPeriod } from '../rotations/types';
 
-import { loadTwoWeekWidgetThemeBundle } from './build-widget-props';
-import { resolveTwoWeekLayout } from './two-week-layout';
+import { loadTwoWeekWidgetThemeBundle } from '../widgets/build-widget-props';
+import { resolveTwoWeekLayout } from '../widgets/two-week-layout';
+import { TWO_WEEK_WIDGET_NAME } from '../widgets/types';
 import { TwoWeekCalendarWidget } from './two-week-calendar-widget';
-import { TWO_WEEK_WIDGET_NAME } from './types';
 
 function isAndroidWidgetLinked(): boolean {
   return Platform.OS === 'android' && NativeModules.AndroidWidget != null;

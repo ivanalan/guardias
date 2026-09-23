@@ -1,0 +1,14 @@
+---
+description: iOS home-screen widgets via expo-widgets
+globs: "**/widget-ios/**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# iOS home-screen widgets
+
+- Layouts live under `src/features/widget-ios/` and use `createWidget` + the `'widget'` directive.
+- Inside a `'widget'` component: only `@expo/ui/swift-ui` (+ modifiers) and `expo-widgets`. **No** React Native views, hooks, AsyncStorage, or app-module value imports.
+- Declare constants/helpers **inside** the widget function body (module-scope values are not in the widget bundle).
+- Push data from the main app with `updateTimeline` / `updateSnapshot` via `refresh-ios-widgets.ts` (WidgetKit cannot read AsyncStorage).
+- Register layouts with `registerWidget()` (not raw `createWidget`) so layout is always a string and props are JSON-sanitized before crossing the native bridge.
+- App code must gate with `isExpoWidgetsLinked()` before importing layout modules — never statically import `@expo/ui` widget files from the Expo Go path.

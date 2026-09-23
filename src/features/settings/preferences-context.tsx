@@ -12,6 +12,7 @@ import {
   ThemeProvider,
   type ColorSchemePreference,
 } from '../../theme/theme-context';
+import { refreshHomeWidgets } from '../widgets/refresh-home-widgets';
 import {
   DEFAULT_APP_PREFERENCES,
   loadAppPreferences,
@@ -77,13 +78,19 @@ export function PreferencesProvider({ children }: { children: ReactNode }) {
 
   const setLocale = useCallback((next: AppPreferences['locale']) => {
     setLocaleState(next);
-    void saveAppPreferences({ locale: next });
-    void i18n.changeLanguage(resolveEffectiveLanguage(next));
+    void (async () => {
+      await saveAppPreferences({ locale: next });
+      await i18n.changeLanguage(resolveEffectiveLanguage(next));
+      await refreshHomeWidgets();
+    })();
   }, []);
 
   const setColorScheme = useCallback((next: ColorSchemePreference) => {
     setColorSchemeState(next);
-    void saveAppPreferences({ colorScheme: next });
+    void (async () => {
+      await saveAppPreferences({ colorScheme: next });
+      await refreshHomeWidgets();
+    })();
   }, []);
 
   if (!ready) {
