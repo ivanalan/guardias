@@ -189,10 +189,5 @@
       "firstShiftOutOfBounds": "La primera guardia debe estar dentro de las fechas de la rotación.",
       "secondaryLimit": "Por ahora solo puedes agregar una guardia de amigo. Edita o elimina la existente primero."
     }
-  },
-  "widget": {
-    "twoWeek": {
-      "noRotation": "Mi Guardia"
-    }
   }
 }

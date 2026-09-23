@@ -7,8 +7,8 @@
 export const TWO_WEEK_WIDGET_NAME = 'TwoWeekCalendar';
 export const UPCOMING_SHIFTS_WIDGET_NAME = 'UpcomingShifts';
 
-/** Max shifts shown in the upcoming-shifts home-screen widget (2×2). */
-export const UPCOMING_SHIFTS_WIDGET_LIMIT = 4;
+/** Max shifts fetched for the upcoming-shifts widget (tall layout). */
+export const UPCOMING_SHIFTS_WIDGET_LIMIT = 6;
 
 export type HexColor = `#${string}`;
 
@@ -28,16 +28,15 @@ export type WidgetDayCellProps = {
 
 export type TwoWeekWidgetProps = {
   backgroundColor: HexColor;
-  /** Active primary rotation name (Home page title). */
-  title: string;
-  titleColor: HexColor;
   weekdayLabels: readonly string[];
   weekdayColor: HexColor;
-  /** Two weeks of seven day cells (Mon–Sun). */
-  weeks: readonly [
-    readonly WidgetDayCellProps[],
-    readonly WidgetDayCellProps[],
-  ];
+  /** 2–5 weeks of seven day cells (Mon–Sun), from height-driven layout. */
+  weeks: readonly (readonly WidgetDayCellProps[])[];
+  /** Fluid mark size (dp) — stretches with widget height. */
+  cellSize: number;
+  dayFontSize: number;
+  weekdayFontSize: number;
+  showWeekdayLetters: boolean;
 };
 
 export type UpcomingShiftItemProps = {
@@ -54,8 +53,12 @@ export type UpcomingShiftsWidgetProps = {
   titleColor: HexColor;
   emptyCaption: string;
   emptyCaptionColor: HexColor;
-  /** Up to four upcoming shifts for the 2×2 grid. */
+  /** Upcoming shifts (sliced by maxItems in the widget). */
   items: readonly UpcomingShiftItemProps[];
+  /** Height-driven visible count (from resolveUpcomingShiftsLayout). */
+  maxItems: number;
+  /** When false, hide relative captions (compact height). */
+  showRelative: boolean;
   accentColor: HexColor;
   railMutedColor: HexColor;
   onAccentColor: HexColor;

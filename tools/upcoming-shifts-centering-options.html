@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Upcoming shifts — centering options</title>
+    <style>
+      :root {
+        color-scheme: light;
+        --page: #e8e4dc;
+        --widget: #ffffff;
+        --text: #1c1b1a;
+        --muted: #79716b;
+        --rail-muted: #ebe6df;
+        --accent: #c11e1e;
+        --on-accent: #ffffff;
+        --guide: rgba(180, 80, 40, 0.35);
+        --guide-fill: rgba(180, 80, 40, 0.06);
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: system-ui, -apple-system, 'Roboto', sans-serif;
+        background: var(--page);
+        color: var(--text);
+        padding: 28px 24px 48px;
+      }
+
+      h1 {
+        font-size: 18px;
+        font-weight: 600;
+        margin: 0 0 6px;
+      }
+
+      .lede {
+        margin: 0 0 24px;
+        font-size: 13px;
+        color: var(--muted);
+        max-width: 62ch;
+        line-height: 1.45;
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 28px;
+        align-items: start;
+      }
+
+      .option h2 {
+        font-size: 13px;
+        font-weight: 600;
+        margin: 0 0 4px;
+      }
+
+      .option p {
+        margin: 0 0 12px;
+        font-size: 12px;
+        color: var(--muted);
+        line-height: 1.4;
+        min-height: 2.8em;
+      }
+
+      /* Mimic a 3×1 ~ wide short widget slot */
+      .widget {
+        width: min(100%, 360px);
+        height: 168px;
+        background: var(--widget);
+        border-radius: 28px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      .widget.show-guides .cell {
+        outline: 1px dashed var(--guide);
+        background: var(--guide-fill);
+      }
+
+      .rows {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        width: 100%;
+        height: 100%;
+      }
+
+      .row {
+        display: flex;
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+      }
+
+      .cell {
+        flex: 1;
+        width: 0;
+        min-width: 0;
+        display: flex;
+      }
+
+      /* Shared horizontal entry: rail | labels */
+      .entry {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        max-width: 100%;
+      }
+
+      .rail {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-size: 12px;
+        font-weight: 500;
+        background: var(--rail-muted);
+        color: var(--text);
+      }
+
+      .rail.next {
+        background: var(--accent);
+        color: var(--on-accent);
+        font-weight: 700;
+      }
+
+      .labels {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        gap: 1px;
+      }
+
+      .weekday {
+        font-size: 13px;
+        font-weight: 500;
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .weekday.next {
+        font-weight: 600;
+      }
+
+      .relative {
+        font-size: 11px;
+        font-weight: 400;
+        color: var(--muted);
+        line-height: 1.15;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* A — top-left (previous default) */
+      .opt-a .cell {
+        align-items: flex-start;
+        justify-content: flex-start;
+      }
+
+      /* B — centered X+Y in cell */
+      .opt-b .cell {
+        align-items: center;
+        justify-content: center;
+      }
+
+      /* C — vertical center, left-aligned */
+      .opt-c .cell {
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      /* D — vertical center; content packs left but columns share mid height */
+      .opt-d .cell {
+        align-items: center;
+        justify-content: flex-start;
+        padding-left: 8px;
+      }
+
+      .toolbar {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 20px;
+        font-size: 13px;
+      }
+
+      .toolbar label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        user-select: none;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Upcoming shifts — cell centering options</h1>
+    <p class="lede">
+      Same horizontal entry (rail + labels) in every option. Only how that group
+      sits inside each 2×2 cell changes. Toggle guides to see cell bounds.
+    </p>
+
+    <div class="toolbar">
+      <label>
+        <input type="checkbox" id="guides" checked />
+        Show cell guides
+      </label>
+    </div>
+
+    <div class="grid" id="options"></div>
+
+    <script>
+      const ITEMS = [
+        { day: '24', weekday: 'Thursday', relative: 'in 2 days', next: true },
+        { day: '28', weekday: 'Monday', relative: 'in 6 days', next: false },
+        { day: '2', weekday: 'Friday', relative: 'in 10 days', next: false },
+        { day: '6', weekday: 'Tuesday', relative: 'in 14 days', next: false },
+      ];
+
+      const OPTIONS = [
+        {
+          id: 'a',
+          className: 'opt-a',
+          title: 'A · Top-left',
+          blurb: 'Group hugs the top-left of each cell (previous default).',
+        },
+        {
+          id: 'b',
+          className: 'opt-b',
+          title: 'B · Centered in cell',
+          blurb: 'Horizontal group centered on both axes inside the cell.',
+        },
+        {
+          id: 'c',
+          className: 'opt-c',
+          title: 'C · Vertical center, left',
+          blurb: 'Mid-height, left-aligned — closest to “keep layout, center vertically”.',
+        },
+        {
+          id: 'd',
+          className: 'opt-d',
+          title: 'D · Vertical center + inset',
+          blurb: 'Same as C with a small left inset so columns feel less edge-hugging.',
+        },
+      ];
+
+      function entryHtml(item) {
+        return `
+          <div class="entry">
+            <div class="rail${item.next ? ' next' : ''}">${item.day}</div>
+            <div class="labels">
+              <div class="weekday${item.next ? ' next' : ''}">${item.weekday}</div>
+              <div class="relative">${item.relative}</div>
+            </div>
+          </div>
+        `;
+      }
+
+      function widgetHtml(opt) {
+        const [a, b, c, d] = ITEMS;
+        return `
+          <article class="option">
+            <h2>${opt.title}</h2>
+            <p>${opt.blurb}</p>
+            <div class="widget ${opt.className} show-guides" data-widget>
+              <div class="rows">
+                <div class="row">
+                  <div class="cell">${entryHtml(a)}</div>
+                  <div class="cell">${entryHtml(b)}</div>
+                </div>
+                <div class="row">
+                  <div class="cell">${entryHtml(c)}</div>
+                  <div class="cell">${entryHtml(d)}</div>
+                </div>
+              </div>
+            </div>
+          </article>
+        `;
+      }
+
+      const root = document.getElementById('options');
+      root.innerHTML = OPTIONS.map(widgetHtml).join('');
+
+      const guides = document.getElementById('guides');
+      function syncGuides() {
+        document.querySelectorAll('[data-widget]').forEach((el) => {
+          el.classList.toggle('show-guides', guides.checked);
+        });
+      }
+      guides.addEventListener('change', syncGuides);
+    </script>
+  </body>
+</html>

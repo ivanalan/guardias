@@ -189,10 +189,5 @@
       "firstShiftOutOfBounds": "First shift must fall within the rotation dates.",
       "secondaryLimit": "You can only add one friend’s shift for now. Edit or delete the existing one first."
     }
-  },
-  "widget": {
-    "twoWeek": {
-      "noRotation": "Mi Guardia"
-    }
   }
 }

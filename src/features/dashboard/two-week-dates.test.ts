@@ -1,6 +1,6 @@
 import { addDays, format } from 'date-fns';
 
-import { getTwoWeekDates } from './two-week-dates';
+import { getTwoWeekDates, getWeekDates } from './two-week-dates';
 
 describe('getTwoWeekDates', () => {
   it('returns 14 days starting Monday of the current week', () => {
@@ -14,6 +14,15 @@ describe('getTwoWeekDates', () => {
   it('starts on the same Monday when today is Monday', () => {
     const dates = getTwoWeekDates(new Date(2026, 7, 3, 8));
     expect(dates[0]).toBe('2026-08-03');
+  });
+});
+
+describe('getWeekDates', () => {
+  it('returns N weeks of Monday-start dates', () => {
+    const dates = getWeekDates(new Date(2026, 7, 5, 12), 3);
+    expect(dates).toHaveLength(21);
+    expect(dates[0]).toBe('2026-08-03');
+    expect(dates[20]).toBe('2026-08-23');
   });
 });
 

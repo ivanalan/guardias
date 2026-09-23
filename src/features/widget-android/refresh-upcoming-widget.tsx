@@ -4,6 +4,7 @@ import { requestWidgetUpdate } from 'react-native-android-widget';
 import type { RotationPeriod } from '../rotations/types';
 
 import { loadUpcomingShiftsWidgetThemeBundle } from './build-widget-props';
+import { resolveUpcomingShiftsLayout } from './upcoming-shifts-layout';
 import { UpcomingShiftsWidget } from './upcoming-shifts-widget';
 import { UPCOMING_SHIFTS_WIDGET_NAME } from './types';
 
@@ -23,13 +24,20 @@ export async function refreshUpcomingShiftsWidget(
   }
 
   try {
-    const bundle = await loadUpcomingShiftsWidgetThemeBundle(periodsOverride);
     await requestWidgetUpdate({
       widgetName: UPCOMING_SHIFTS_WIDGET_NAME,
-      renderWidget: () => ({
-        light: <UpcomingShiftsWidget {...bundle.light} />,
-        dark: <UpcomingShiftsWidget {...bundle.dark} />,
-      }),
+      renderWidget: async (widgetInfo) => {
+        const layout = resolveUpcomingShiftsLayout(widgetInfo.height);
+        const bundle = await loadUpcomingShiftsWidgetThemeBundle(
+          periodsOverride,
+          new Date(),
+          layout,
+        );
+        return {
+          light: <UpcomingShiftsWidget {...bundle.light} />,
+          dark: <UpcomingShiftsWidget {...bundle.dark} />,
+        };
+      },
     });
   } catch (error) {
     if (__DEV__) {
