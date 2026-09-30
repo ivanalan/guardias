@@ -4,6 +4,7 @@ Mobile app for tracking on-call medical rotation shifts (guardias) in the Mexica
 
 ## Documentation
 
+- [Architecture guide](docs/ARCHITECTURE.md) — beginner-friendly tour of how the app works (offline “backend”, UI, shifts math, widgets)
 - [AGENTS.md](AGENTS.md) — stack and conventions (Expo, NativeWind, i18n, feature folders)
 - [Android release](docs/store/ANDROID_RELEASE.md) — Play Store checklist, legal URLs, EAS build
 - [iOS release](docs/store/IOS_RELEASE.md) — App Store checklist and EAS build
