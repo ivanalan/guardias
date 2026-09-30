@@ -2,7 +2,7 @@
   "expo": {
     "name": "Mi Guardia",
     "slug": "guardias",
-    "version": "1.0.7",
+    "version": "1.0.8",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "automatic",
@@ -93,7 +93,10 @@
               "description": "Tus guardias de esta semana y la siguiente",
               "ios": {
                 "contentMarginsDisabled": true,
-                "supportedFamilies": ["systemMedium", "systemLarge"]
+                "supportedFamilies": [
+                  "systemMedium",
+                  "systemLarge"
+                ]
               }
             },
             {
@@ -102,7 +105,10 @@
               "description": "Tus próximas guardias",
               "ios": {
                 "contentMarginsDisabled": true,
-                "supportedFamilies": ["systemSmall", "systemMedium"]
+                "supportedFamilies": [
+                  "systemSmall",
+                  "systemMedium"
+                ]
               }
             }
           ]
