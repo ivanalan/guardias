@@ -1,12 +1,12 @@
-# Privacy Policy — Mi Guardia
+# Privacy Policy — Interdía
 
 **Last updated:** September 11, 2026
 
-Mi Guardia (“the App”) is a mobile application that helps you track on-call medical rotation schedules (guardias). This Privacy Policy explains what information the App handles and how.
+Interdía (“the App”) is a mobile application that helps you track on-call medical rotation schedules (guardias). This Privacy Policy explains what information the App handles and how.
 
 ## Summary
 
-Mi Guardia is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs.
+Interdía is **offline-first**. Your schedule data stays on your device. The App does **not** require an account, does **not** sync to a server we operate, and does **not** include advertising or analytics SDKs.
 
 ## Information stored on your device
 
@@ -19,7 +19,7 @@ This data never leaves your device unless **you** choose to back up or share it 
 
 ## Rotation share links
 
-If you use **Share** on a rotation, the App builds a link on `alanmatias.com` that embeds the rotation’s schedule fields in the URL itself (dates, pattern, label, and related options). There is no Mi Guardia server that stores that link.
+If you use **Share** on a rotation, the App builds a link on `alanmatias.com` that embeds the rotation’s schedule fields in the URL itself (dates, pattern, label, and related options). There is no Interdía server that stores that link.
 
 Anyone who receives or opens the link can see those schedule fields. We do not collect analytics on link opens. If you do not want others to see a schedule, do not share the link.
 
@@ -31,7 +31,7 @@ The App does not request access to your contacts, camera, microphone, location, 
 
 ## No account or cloud sync
 
-There is no sign-in and no Mi Guardia backend. We do not collect, transmit, or store your rotation data on our servers. Share links encode data in the URL on your device; opening a link loads a static page on alanmatias.com with options to open the App or export the schedule.
+There is no sign-in and no Interdía backend. We do not collect, transmit, or store your rotation data on our servers. Share links encode data in the URL on your device; opening a link loads a static page on alanmatias.com with options to open the App or export the schedule.
 
 ## Third parties
 
@@ -51,8 +51,8 @@ We may update this Privacy Policy when the App’s behavior changes (for example
 
 ## Contact
 
-Questions about this policy: use the contact email listed on the Mi Guardia Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
+Questions about this policy: use the contact email listed on the Interdía Google Play listing, or visit [alanmatias.com](https://alanmatias.com).
 
 ## Spanish summary
 
-Mi Guardia funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta ni servidor propio de Mi Guardia. Si compartes un enlace de rotación, los datos del horario van **en la URL**; quien tenga el enlace puede verlos. No se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.
+Interdía funciona **sin conexión**. Tus rotaciones y preferencias se guardan **solo en tu dispositivo**. No hay cuenta ni servidor propio de Interdía. Si compartes un enlace de rotación, los datos del horario van **en la URL**; quien tenga el enlace puede verlos. No se usan SDKs de publicidad ni analítica. La app puede leer el idioma del dispositivo para elegir inglés o español.

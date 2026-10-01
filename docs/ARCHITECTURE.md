@@ -1,4 +1,4 @@
-# Mi Guardia — Architecture & Codebase Guide
+# Interdía — Architecture & Codebase Guide
 
 **A beginner-friendly tour of how this repository works, why it is built this way, and what each major piece does.**
 
@@ -59,7 +59,7 @@ Estimated reading length: about **30–50 pages** if printed (or a focused half-
 
 ## 1. What this app is
 
-**Mi Guardia** (`guardias` in the repo) is a mobile app for **Mexican medical residents** who work on-call shifts called **guardias**.
+**Interdía** (`guardias` in the repo) is a mobile app for **Mexican medical residents** who work on-call shifts called **guardias**.
 
 In many Mexican hospitals, residents are assigned a letter in an **A / B / C / D** (or A / B / C) rotation. That letter decides which days of the year you work a long shift (typically ~24 hours). The app helps you:
 
@@ -92,7 +92,7 @@ From `AGENTS.md`:
 
 That means:
 
-| Traditional web app | Mi Guardia |
+| Traditional web app | Interdía |
 |---|---|
 | User accounts / login | None |
 | Server API | None |
@@ -1228,7 +1228,7 @@ Folder pieces under `src/features/calendar/`:
 
 ### ICS in plain language
 
-An `.ics` file is a text format calendars understand. Mi Guardia builds one with:
+An `.ics` file is a text format calendars understand. Interdía builds one with:
 
 - A recurring rule: every 3 or 4 days
 - `EXDATE` lines for vacation days that would otherwise match the pattern
@@ -1360,7 +1360,7 @@ That loop is how this repo stays trustworthy without a backend QA environment.
 
 ### 28.2 What `app.json` controls
 
-- App display name **Mi Guardia**
+- App display name **Interdía**
 - Bundle IDs (`com.alanmatias.guardias`)
 - URL scheme `miguardia`
 - Plugins (localization, calendar, media library, Android/iOS widgets, splash, fonts, …)
@@ -1436,7 +1436,7 @@ Opening a share link:
 User taps https://alanmatias.com/guardias/r/?d=…
         │
         ▼
-OS opens Mi Guardia (scheme / universal link path)
+OS opens Interdía (scheme / universal link path)
         │
         ▼
 useShareLinkNavigation → parseShareUrl
@@ -1742,7 +1742,7 @@ If you contribute to this repo (or build something similar), these principles ex
 
 ## Appendix D — Metaphor map (for absolute beginners)
 
-| Real-world metaphor | In Mi Guardia |
+| Real-world metaphor | In Interdía |
 |---|---|
 | Recipe card for a cake | `RotationPeriod` (ingredients = dates, letter, cycle) |
 | Baking the cake each time you want a slice | `isShiftDay` / `buildShift` |
@@ -1799,7 +1799,7 @@ Total: roughly **4–5 hours** of deliberate study — comfortably in the 30–5
 
 ## Closing
 
-Mi Guardia is a **client-only** Expo app whose “backend” is really:
+Interdía is a **client-only** Expo app whose “backend” is really:
 
 - a careful **domain model** for Mexican guardia rotations, and
 - **device-local persistence**,

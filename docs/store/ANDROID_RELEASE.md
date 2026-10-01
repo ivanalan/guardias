@@ -1,4 +1,4 @@
-# Android release checklist — Mi Guardia
+# Android release checklist — Interdía
 
 ## Before the first production build
 

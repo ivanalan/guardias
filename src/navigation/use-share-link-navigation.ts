@@ -24,7 +24,7 @@ function isSharePath(url: string): boolean {
 
 /**
  * Opens Add Rotation prefilled when a share custom-scheme URL arrives
- * (`miguardia://guardias/r/?d=…`), e.g. from the website “Mi Guardia App” button.
+ * (`miguardia://guardias/r/?d=…`), e.g. from the website “Interdía App” button.
  */
 export function useShareLinkNavigation(
   navigationRef: RefObject<NavigationContainerRef<TabParamList> | null>,

@@ -1,13 +1,13 @@
 ---
 name: ios-store-submit
 description: >-
-  Guardias iOS App Store version gate, EAS production build, and eas submit.
+  Interdía iOS App Store version gate, EAS production build, and eas submit.
   Use when building or uploading an iOS IPA, submitting to App Store Connect or
   TestFlight, bumping expo.version, handling ITMS-90186 / ITMS-90062, or when
   the user asks to submit / ship / release iOS.
 ---
 
-# iOS store submit — Guardias
+# iOS store submit — Interdía
 
 Follow this skill for **every** iOS production build or App Store Connect upload. Do not skip the version gate because a build already finished.
 
