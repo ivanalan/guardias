@@ -1,4 +1,4 @@
-# Mi Guardia
+# Interdía
 
 Mobile app for tracking on-call medical rotation shifts (guardias) in the Mexican A/B/C/D schedule system.
 

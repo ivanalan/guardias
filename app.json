@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Mi Guardia",
+    "name": "Interdía",
     "slug": "guardias",
     "version": "1.0.8",
     "orientation": "portrait",
@@ -35,14 +35,14 @@
         "expo-calendar",
         {
           "writeOnlyAccess": true,
-          "writeOnlyCalendarPermission": "Mi Guardia necesita permiso para agregar tus guardias al Calendario."
+          "writeOnlyCalendarPermission": "Interdía necesita permiso para agregar tus guardias al Calendario."
         }
       ],
       [
         "expo-media-library",
         {
           "photosPermission": false,
-          "savePhotosPermission": "Mi Guardia necesita permiso para guardar la imagen del calendario en Fotos.",
+          "savePhotosPermission": "Interdía necesita permiso para guardar la imagen del calendario en Fotos.",
           "granularPermissions": []
         }
       ],
@@ -118,7 +118,7 @@
     "ios": {
       "bundleIdentifier": "com.alanmatias.guardias",
       "infoPlist": {
-        "CFBundleDisplayName": "Mi Guardia",
+        "CFBundleDisplayName": "Interdía",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
