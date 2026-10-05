@@ -1,10 +1,10 @@
 ---
-description: Prefer NativeWind + shared RN primitives for Interdía (Expo)
+description: Prefer NativeWind + shared RN primitives for DeGuardia (Expo)
 globs: "**/*.{tsx,jsx}"
 alwaysApply: false
 ---
 
-# Native UI — Interdía
+# Native UI — DeGuardia
 
 **Goal:** One shared UI path on iOS, Android, and web. Style with NativeWind; use React Native primitives. No platform-specific UI files or `@expo/ui`.
 
@@ -31,7 +31,7 @@ alwaysApply: false
 - Do **not** use [`@expo/ui`](https://docs.expo.dev/versions/latest/sdk/ui/) (SwiftUI / Jetpack Compose) in app screens
 - Do **not** branch app UI on `process.env.EXPO_OS` or `Platform.OS` except for rare unavoidable native APIs
 - Do **not** implement Material Design 3 as a design system
-- Do **not** use the `material-3` agent skill for Interdía UI
+- Do **not** use the `material-3` agent skill for DeGuardia UI
 - Do **not** add `react-native-paper` components or themes
 
 ## Exception — home-screen widgets only

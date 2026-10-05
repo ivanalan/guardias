@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Interdía",
+    "name": "DeGuardia",
     "slug": "guardias",
     "version": "1.0.8",
     "orientation": "portrait",
@@ -35,14 +35,14 @@
         "expo-calendar",
         {
           "writeOnlyAccess": true,
-          "writeOnlyCalendarPermission": "Interdía necesita permiso para agregar tus guardias al Calendario."
+          "writeOnlyCalendarPermission": "DeGuardia necesita permiso para agregar tus guardias al Calendario."
         }
       ],
       [
         "expo-media-library",
         {
           "photosPermission": false,
-          "savePhotosPermission": "Interdía necesita permiso para guardar la imagen del calendario en Fotos.",
+          "savePhotosPermission": "DeGuardia necesita permiso para guardar la imagen del calendario en Fotos.",
           "granularPermissions": []
         }
       ],
@@ -118,7 +118,7 @@
     "ios": {
       "bundleIdentifier": "com.alanmatias.guardias",
       "infoPlist": {
-        "CFBundleDisplayName": "Interdía",
+        "CFBundleDisplayName": "DeGuardia",
         "ITSAppUsesNonExemptEncryption": false
       }
     },
