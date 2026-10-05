@@ -1,6 +1,6 @@
-# iOS release guide — Guardias (first-time)
+# iOS release guide — DeGuardia (first-time)
 
-This guide walks you from “I have an Expo app” to “Guardias is live on the App Store.” It explains **what** each step is, **why** it exists, and **where to click**.
+This guide walks you from “I have an Expo app” to “DeGuardia is live on the App Store.” It explains **what** each step is, **why** it exists, and **where to click**.
 
 **Updates after the first live version:** do not skip to `eas submit --latest`. Use the version-train procedure in [Version trains and later uploads](#version-trains-and-later-uploads). Agents must follow `.agents/skills/ios-store-submit/SKILL.md`.
 
@@ -34,14 +34,14 @@ If you already shipped Android: Apple’s **App Store Connect** is the closest e
 
 ---
 
-## Guardias identifiers (do not change lightly)
+## DeGuardia identifiers (do not change lightly)
 
 These are already set in the repo. Treat them as permanent for this app identity:
 
 
 | Field               | Value                     | Where                                                                        |
 | ------------------- | ------------------------- | ---------------------------------------------------------------------------- |
-| App name            | Interdía                | `app.json` → `expo.name` / iOS `CFBundleDisplayName`                         |
+| App name            | DeGuardia                | `app.json` → `expo.name` / iOS `CFBundleDisplayName`                         |
 | Bundle ID           | `com.alanmatias.guardias` | `app.json` → `expo.ios.bundleIdentifier`                                     |
 | User-facing version | e.g. `1.0.1`              | `app.json` → `expo.version`                                                  |
 | iOS build number    | auto-managed remotely     | `eas.json` → `appVersionSource: "remote"` + production `autoIncrement: true` |
@@ -89,7 +89,7 @@ A yearly paid membership with Apple. Without it you cannot distribute on the App
 
 ### Why
 
-Google charges a one-time Play Console fee. Apple charges **USD $99/year** (Individual) for the Developer Program. Individual is enough for Guardias as a personal app.
+Google charges a one-time Play Console fee. Apple charges **USD $99/year** (Individual) for the Developer Program. Individual is enough for DeGuardia as a personal app.
 
 ### Steps
 
@@ -109,7 +109,7 @@ Enrollment can be near-instant or take a day or two. You are ready when:
 
 In App Store Connect → **Business** (or **Agreements, Tax, and Banking**):
 
-1. Accept the **Paid Applications Agreement** even if Guardias is free (Apple still requires banking/tax setup for the account in many regions).
+1. Accept the **Paid Applications Agreement** even if DeGuardia is free (Apple still requires banking/tax setup for the account in many regions).
 2. Complete **Tax** and **Banking** forms if prompted. Incomplete agreements often block “Ready for Sale” later even when review passes.
 
 ---
@@ -131,7 +131,7 @@ EAS can build an IPA without this, but **upload/submit** needs a matching App St
 3. Click the **+** button → **New App**.
 4. Fill the dialog:
   - **Platforms:** iOS  
-  - **Name:** `Interdía` (this is the App Store display name; must be unique on the store)  
+  - **Name:** `DeGuardia` (this is the App Store display name; must be unique on the store)  
   - **Primary Language:** English (U.S.) or Spanish — pick your default; you will add the other localization later  
   - **Bundle ID:** select `com.alanmatias.guardias`  
     - If it is missing from the dropdown: go to [developer.apple.com/account/resources/identifiers/list](https://developer.apple.com/account/resources/identifiers/list) → **+** → **App IDs** → **App** → register `com.alanmatias.guardias`, then return and refresh Connect.  
@@ -152,7 +152,7 @@ Public HTTPS pages Apple (and users) can open. App Store Connect requires a **Pr
 
 ### Why
 
-Guardias is offline-first and does not collect accounts, but Apple still wants a policy describing what you do/don’t collect. Same documents as Play.
+DeGuardia is offline-first and does not collect accounts, but Apple still wants a policy describing what you do/don’t collect. Same documents as Play.
 
 ### Source files in this repo
 
@@ -227,7 +227,7 @@ Local Xcode archives work, but EAS matches this repo’s workflow and already ow
 
 ### Steps
 
-From the Guardias repo root:
+From the DeGuardia repo root:
 
 ```bash
 # once per machine if you prefer a global CLI
@@ -280,10 +280,10 @@ CLI will ask you to authenticate. Options:
 
 ### Where to look in Connect
 
-1. Open your **Guardias** app.
+1. Open your **DeGuardia** app.
 2. Open **TestFlight**.
 3. Under iOS builds, wait until processing finishes (email: “The following build has completed processing”).
-4. If Apple asks for **Export Compliance** on the build, answer consistently with the app: Guardias sets `ITSAppUsesNonExemptEncryption` to `false` — typically you only use standard HTTPS / OS encryption, so “no non-exempt encryption” applies. Confirm with your lawyer if unsure; for this offline calendar app the project intent is “standard / exempt.”
+4. If Apple asks for **Export Compliance** on the build, answer consistently with the app: DeGuardia sets `ITSAppUsesNonExemptEncryption` to `false` — typically you only use standard HTTPS / OS encryption, so “no non-exempt encryption” applies. Confirm with your lawyer if unsure; for this offline calendar app the project intent is “standard / exempt.”
 
 ---
 
@@ -303,9 +303,9 @@ Create or open the **1.0.0** (or current) iOS version if Connect shows “Prepar
 
 #### App Information (app-level, left sidebar)
 
-1. **Name** — Interdía
+1. **Name** — DeGuardia
 2. **Subtitle** (optional, ~30 chars) — short value prop from play-listing short description
-3. **Category** — prefer **Productivity**. Avoid **Medical** unless you are comfortable with medical-app scrutiny; Guardias is a schedule tracker, not a clinical device.
+3. **Category** — prefer **Productivity**. Avoid **Medical** unless you are comfortable with medical-app scrutiny; DeGuardia is a schedule tracker, not a clinical device.
 4. **Privacy Policy URL** — `https://alanmatias.com/guardias/privacy.html`
 5. **License Agreement** — Apple’s standard EULA is fine unless you need custom terms
 
@@ -346,7 +346,7 @@ Screenshots live in Connect only; they do not need to be in this git repo.
 #### Age Rating
 
 1. Open **Age Rating** / questionnaire.
-2. Answer honestly. Guardias has no user-generated content feed, no gambling, no mature themes — ratings should stay in the low / 4+ style range if answers match that.
+2. Answer honestly. DeGuardia has no user-generated content feed, no gambling, no mature themes — ratings should stay in the low / 4+ style range if answers match that.
 3. Save.
 
 #### Pricing and Availability
@@ -388,7 +388,7 @@ Catch signing, splash/icon, and real-device issues Expo Go hides. Apple reviewer
   - Create a group if needed (e.g. “Internal”).  
   - Add yourself (App Store Connect users on the team appear as internal testers).  
   - Enable the build for that group.
-3. On your iPhone: install **TestFlight** from the App Store → accept the invite / open the app → install **Guardias**.
+3. On your iPhone: install **TestFlight** from the App Store → accept the invite / open the app → install **DeGuardia**.
 4. Smoke-test:
   - Create a rotation  
   - Calendar + legend  
@@ -413,7 +413,7 @@ Human/automated review against App Store Guidelines. Passing review is what make
 3. Complete any missing required fields (Connect highlights them).
 4. **App Review Information**:
   - Contact name, phone, email you monitor  
-  - **Sign-in required?** No — Guardias has no login  
+  - **Sign-in required?** No — DeGuardia has no login  
   - **Notes:** e.g. `No login required. Create a rotation on first launch to use the calendar. Offline-only; no account.`
 5. **Version Release** — choose:
   - **Manually release** this version (recommended first time), or  

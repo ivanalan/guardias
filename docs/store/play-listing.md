@@ -1,4 +1,4 @@
-# Google Play listing — Interdía
+# Google Play listing — DeGuardia
 
 Copy these into Play Console for **en-US** and **es-MX** (or `es`) store listings.
 
@@ -6,7 +6,7 @@ Privacy Policy URL: `https://alanmatias.com/guardias/privacy.html`
 Terms (optional): `https://alanmatias.com/guardias/terms.html`
 
 Package name: `com.alanmatias.guardias`  
-App name (device): Interdía
+App name (device): DeGuardia
 
 ---
 
@@ -15,7 +15,7 @@ App name (device): Interdía
 ### App title (≤ 30 characters)
 
 ```
-Interdía
+DeGuardia
 ```
 
 ### Short description (≤ 80 characters)
@@ -27,7 +27,7 @@ Track A-C and A-D medical guardia rotations. Offline calendar for residents.
 ### Full description
 
 ```
-Interdía helps Mexican medical residents and doctors track on-call rotations without ads or accounts.
+DeGuardia helps Mexican medical residents and doctors track on-call rotations without ads or accounts.
 
 Set up A-C or A-D (and similar) guardia patterns, see your shifts on a calendar, and check free weekends at a glance. Everything stays on your device.
 
@@ -57,7 +57,7 @@ Built for the Mexican guardia system so you can plan life around your schedule.
 ### Título de la app (≤ 30 caracteres)
 
 ```
-Interdía
+DeGuardia
 ```
 
 ### Descripción corta (≤ 80 caracteres)
@@ -69,7 +69,7 @@ Organiza rotaciones de guardia A-C y A-D. Calendario sin conexión para resident
 ### Descripción completa
 
 ```
-Interdía ayuda a residentes y médicos en México a llevar sus rotaciones de guardia sin anuncios ni cuentas.
+DeGuardia ayuda a residentes y médicos en México a llevar sus rotaciones de guardia sin anuncios ni cuentas.
 
 Configura patrones A-C o A-D, ve tus turnos en el calendario y revisa de un vistazo los fines de semana libres. Todo se guarda en tu dispositivo.
 

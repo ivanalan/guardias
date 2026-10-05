@@ -1,12 +1,12 @@
 ---
 name: android-store-submit
 description: >-
-  Interdía Android Play Store release path. Use when building or releasing
+  DeGuardia Android Play Store release path. Use when building or releasing
   Android, uploading an AAB, bumping versionCode / expo.version for Play, or
   when the user asks to submit / ship / release Android.
 ---
 
-# Android store submit — Interdía
+# Android store submit — DeGuardia
 
 First-time listing / checklist: `docs/store/ANDROID_RELEASE.md`. This skill is the **repeatable build + handoff** path.
 

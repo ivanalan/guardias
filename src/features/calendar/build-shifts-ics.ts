@@ -40,7 +40,7 @@ export function buildShiftsIcs(
   const lines: string[] = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Interdía//EN',
+    'PRODID:-//DeGuardia//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
   ];

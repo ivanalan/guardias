@@ -195,7 +195,7 @@ export function RotationShareImageCard({ period, language }: Props) {
           resizeMode="cover"
         />
         <Text className="font-mono text-xs" style={{ color: colors.textMuted }}>
-          Interdía
+          DeGuardia
         </Text>
       </View>
     </View>

@@ -1,4 +1,4 @@
-# Android release checklist — Interdía
+# Android release checklist — DeGuardia
 
 ## Before the first production build
 
