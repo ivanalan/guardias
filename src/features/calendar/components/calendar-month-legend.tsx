@@ -5,24 +5,35 @@ import { useTheme } from '../../../theme/theme-context';
 import type { ThemeColors } from '../../../theme/colors';
 import { Pressable, Text, View } from '../../../tw';
 import {
+  secondaryFilterKey,
   toggleLegendFilter,
   type CalendarLegendFilterKey,
   type CalendarLegendFilterState,
 } from '../build-marked-dates';
+import type { SecondaryLegendEntry } from '../month-legend-stats';
+import { resolveRotationColor } from '../../rotations/rotation-colors';
+
+/** Show every named friend chip when total friends ≤ this. */
+const FRIEND_CHIPS_FULL_THRESHOLD = 4;
+/** Named chips kept visible when total friends exceed the threshold. */
+const FRIEND_CHIPS_COLLAPSED_VISIBLE = 2;
 
 type Props = {
   shiftDayCount: number;
-  secondaryShiftDayCount: number;
   freeWeekendCount: number;
   vacationDayCount: number;
   /** Period color for the shifts chip (dot + selected fill). */
   shiftColor: string;
   /** Primary period label for the shifts chip. */
   primaryLabel: string | null;
-  /** Friend period color; null hides the secondary chip. */
-  secondaryShiftColor: string | null;
-  /** Friend period label for the secondary chip. */
-  secondaryLabel: string | null;
+  /** Friend periods with shifts in this month. */
+  secondaryLegend: readonly SecondaryLegendEntry[];
+  /**
+   * When true and friends exceed the full threshold, show all named chips.
+   * Parent owns ephemeral expand state (resets on remount).
+   */
+  friendsExpanded: boolean;
+  onExpandFriends: () => void;
   filter: CalendarLegendFilterState;
   onFilterChange: (filter: CalendarLegendFilterState) => void;
 };
@@ -30,13 +41,13 @@ type Props = {
 /** Summary chips: month counts + multi-select calendar filters. */
 export function CalendarMonthLegend({
   shiftDayCount,
-  secondaryShiftDayCount,
   freeWeekendCount,
   vacationDayCount,
   shiftColor,
   primaryLabel,
-  secondaryShiftColor,
-  secondaryLabel,
+  secondaryLegend,
+  friendsExpanded,
+  onExpandFriends,
   filter,
   onFilterChange,
 }: Props) {
@@ -51,11 +62,28 @@ export function CalendarMonthLegend({
     primaryLabel != null && primaryLabel.trim() !== ''
       ? primaryLabel.trim()
       : null;
-  const showSecondary =
-    secondaryShiftDayCount > 0 &&
-    secondaryShiftColor != null &&
-    secondaryLabel != null &&
-    secondaryLabel.trim() !== '';
+
+  const friendsWithLabels = secondaryLegend.filter(
+    (entry) => entry.label.trim() !== '',
+  );
+  const needsFriendCollapse =
+    friendsWithLabels.length > FRIEND_CHIPS_FULL_THRESHOLD;
+  const visibleFriendChips =
+    needsFriendCollapse && !friendsExpanded
+      ? friendsWithLabels.slice(0, FRIEND_CHIPS_COLLAPSED_VISIBLE)
+      : friendsWithLabels;
+  const overflowFriends =
+    needsFriendCollapse && !friendsExpanded
+      ? friendsWithLabels.slice(FRIEND_CHIPS_COLLAPSED_VISIBLE)
+      : [];
+  const overflowCount = overflowFriends.length;
+  const overflowDayCount = overflowFriends.reduce(
+    (sum, entry) => sum + entry.dayCount,
+    0,
+  );
+  const overflowFilterSelected = overflowFriends.some((entry) =>
+    filter.has(secondaryFilterKey(entry.periodId)),
+  );
 
   return (
     <View className="mt-4 flex-row flex-wrap gap-3">
@@ -78,19 +106,38 @@ export function CalendarMonthLegend({
           colors={colors}
         />
       ) : null}
-      {showSecondary ? (
-        <LegendChip
-          label={secondaryLabel.trim()}
-          count={secondaryShiftDayCount}
-          accessibilityLabel={t('calendar.legend.periodShiftsSummary', {
-            name: secondaryLabel,
-            count: secondaryShiftDayCount,
+      {visibleFriendChips.map((entry) => {
+        const key = secondaryFilterKey(entry.periodId);
+        const color = resolveRotationColor(entry.color, colors);
+        const name = entry.label.trim();
+        return (
+          <LegendChip
+            key={entry.periodId}
+            label={name}
+            count={entry.dayCount}
+            accessibilityLabel={t('calendar.legend.periodShiftsSummary', {
+              name,
+              count: entry.dayCount,
+            })}
+            accessibilityHint={t('calendar.legend.filterFriendShiftsHint')}
+            color={color}
+            selected={filter.has(key)}
+            onPress={() => toggle(key)}
+            colors={colors}
+          />
+        );
+      })}
+      {overflowCount > 0 ? (
+        <CollapsedFriendsChip
+          count={overflowCount}
+          selected={overflowFilterSelected}
+          onPress={onExpandFriends}
+          themeColors={colors}
+          accessibilityLabel={t('calendar.legend.friendsCollapsedSummary', {
+            count: overflowCount,
+            days: overflowDayCount,
           })}
-          accessibilityHint={t('calendar.legend.filterFriendShiftsHint')}
-          color={secondaryShiftColor}
-          selected={filter.has('secondaryShifts')}
-          onPress={() => toggle('secondaryShifts')}
-          colors={colors}
+          accessibilityHint={t('calendar.legend.expandFriendsHint')}
         />
       ) : null}
       <LegendChip
@@ -198,6 +245,54 @@ function LegendChip({
         }}
       >
         {count}
+      </Text>
+    </Pressable>
+  );
+}
+
+type CollapsedFriendsChipProps = {
+  count: number;
+  selected: boolean;
+  onPress: () => void;
+  themeColors: ThemeColors;
+  accessibilityLabel: string;
+  accessibilityHint: string;
+};
+
+function CollapsedFriendsChip({
+  count,
+  selected,
+  onPress,
+  themeColors,
+  accessibilityLabel,
+  accessibilityHint,
+}: CollapsedFriendsChipProps) {
+  const { t } = useTranslation();
+  const label = t('calendar.legend.friendsCollapsedLabel', { count });
+
+  return (
+    <Pressable
+      accessibilityRole="button"
+      accessibilityState={{ selected }}
+      accessibilityLabel={accessibilityLabel}
+      accessibilityHint={accessibilityHint}
+      onPress={onPress}
+      className="flex-row items-center active:opacity-70"
+      style={{
+        borderCurve: 'continuous',
+        borderRadius: 999,
+        backgroundColor: themeColors.bg1,
+        paddingHorizontal: 14,
+        paddingVertical: 9,
+        borderWidth: selected ? 1.5 : 1,
+        borderColor: selected ? themeColors.text : themeColors.border,
+      }}
+    >
+      <Text
+        className="font-mono text-sm"
+        style={{ color: themeColors.text }}
+      >
+        {label}
       </Text>
     </Pressable>
   );

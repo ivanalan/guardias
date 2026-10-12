@@ -22,7 +22,7 @@ export function secondaryPeriods(
   return periods.filter(isSecondary);
 }
 
-/** First secondary period if any (v1 UI expects at most one). */
+/** First secondary period if any (prefer `secondaryPeriods` for multi-friend UI). */
 export function findSecondaryPeriod(
   periods: readonly RotationPeriod[],
 ): RotationPeriod | undefined {

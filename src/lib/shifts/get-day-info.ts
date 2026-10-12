@@ -20,6 +20,7 @@ function isOnVacation(period: RotationPeriod, isoDate: string): boolean {
 /**
  * Classifies a calendar day for the day sheet: free, vacation, or a computed
  * shift from the period that covers that date.
+ * Covered vacation days resolve as shifts (buildShift before vacation).
  */
 export function getDayInfo(
   periods: readonly RotationPeriod[],
@@ -30,6 +31,11 @@ export function getDayInfo(
     return { kind: 'free', date: isoDate };
   }
 
+  const shift = buildShift(period, isoDate);
+  if (shift != null) {
+    return { kind: 'shift', date: isoDate, shift };
+  }
+
   if (isOnVacation(period, isoDate)) {
     return {
       kind: 'vacation',
@@ -38,10 +44,5 @@ export function getDayInfo(
     };
   }
 
-  const shift = buildShift(period, isoDate);
-  if (shift == null) {
-    return { kind: 'free', date: isoDate };
-  }
-
-  return { kind: 'shift', date: isoDate, shift };
+  return { kind: 'free', date: isoDate };
 }

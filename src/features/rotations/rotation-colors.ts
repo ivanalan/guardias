@@ -69,13 +69,17 @@ export function rotationColorsFrom(colors: ThemeColors): string[] {
   return ROTATION_ACCENT_KEYS.map((key) => colors[key]);
 }
 
-export type ShiftDateColorMark = { date: string; color: string };
+export type ShiftDateColorMark = {
+  date: string;
+  color: string;
+  periodId?: string;
+};
 
 /** Resolve shift mark colors for the active color scheme. */
-export function resolveShiftMarks(
-  shiftMarks: readonly ShiftDateColorMark[],
+export function resolveShiftMarks<T extends ShiftDateColorMark>(
+  shiftMarks: readonly T[],
   colors: ThemeColors,
-): ShiftDateColorMark[] {
+): T[] {
   return shiftMarks.map((mark) => ({
     ...mark,
     color: resolveRotationColor(mark.color, colors),

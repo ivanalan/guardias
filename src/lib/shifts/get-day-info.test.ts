@@ -11,7 +11,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -61,6 +64,45 @@ describe('getDayInfo', () => {
       kind: 'vacation',
       date: '2026-07-04',
       rotationLabel: 'Pediatrics',
+    });
+  });
+
+  it('returns shift when covering a vacation day', () => {
+    const covered = [
+      period({
+        id: 'p1',
+        label: 'Pediatrics',
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        pattern: { cycleDays: 4, offset: 'A' },
+        vacationStartDate: '2026-07-04',
+        vacationEndDate: '2026-07-05',
+        coveredDates: ['2026-07-04'],
+      }),
+    ];
+
+    const info = getDayInfo(covered, '2026-07-04');
+    expect(info.kind).toBe('shift');
+    if (info.kind === 'shift') {
+      expect(info.shift.rotationPeriodId).toBe('p1');
+    }
+  });
+
+  it('returns free when a pattern day is skipped', () => {
+    const skipped = [
+      period({
+        id: 'p1',
+        label: 'Pediatrics',
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        pattern: { cycleDays: 4, offset: 'A' },
+        skippedDates: ['2026-07-04'],
+      }),
+    ];
+
+    expect(getDayInfo(skipped, '2026-07-04')).toEqual({
+      kind: 'free',
+      date: '2026-07-04',
     });
   });
 

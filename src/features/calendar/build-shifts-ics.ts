@@ -30,7 +30,7 @@ function escapeIcsText(value: string): string {
 
 /**
  * Builds an RFC 5545 calendar with one all-day recurring VEVENT for a period
- * (`FREQ=DAILY;INTERVAL=3|4`). Vacation pattern days are EXDATE exceptions.
+ * (`FREQ=DAILY;INTERVAL=3|4`). Vacation/skipped days are EXDATE; covers are RDATE.
  */
 export function buildShiftsIcs(
   period: RotationPeriod,
@@ -64,9 +64,14 @@ export function buildShiftsIcs(
     'TRANSP:OPAQUE',
   );
 
-  if (event.vacationExDates.length > 0) {
+  if (event.exDates.length > 0) {
     lines.push(
-      `EXDATE;VALUE=DATE:${event.vacationExDates.map(formatCompactDate).join(',')}`,
+      `EXDATE;VALUE=DATE:${event.exDates.map(formatCompactDate).join(',')}`,
+    );
+  }
+  if (event.rDates.length > 0) {
+    lines.push(
+      `RDATE;VALUE=DATE:${event.rDates.map(formatCompactDate).join(',')}`,
     );
   }
 

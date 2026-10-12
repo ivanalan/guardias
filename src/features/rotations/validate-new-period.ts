@@ -1,6 +1,9 @@
 import type { RotationPeriod, RotationPeriodRole } from './types';
 import { secondaryPeriods } from './period-role';
 
+/** Max friend (secondary) periods a user may save. */
+export const MAX_SECONDARY_PERIODS = 8;
+
 export type RotationValidationError =
   | 'labelRequired'
   | 'dateOrder'
@@ -8,7 +11,7 @@ export type RotationValidationError =
   | 'vacationOutOfBounds'
   | 'dateOverlap'
   | 'firstShiftOutOfBounds'
-  | 'secondaryLimit';
+  | 'secondaryCap';
 
 export type PeriodFormInput = {
   label: string;
@@ -68,20 +71,22 @@ export function validatePeriodForm(
   }
 
   if (input.role === 'secondary') {
-    const otherSecondary = secondaryPeriods(periods).find(
+    const otherSecondaries = secondaryPeriods(periods).filter(
       (period) => period.id !== excludeId,
     );
-    if (otherSecondary != null) {
-      return 'secondaryLimit';
+    if (otherSecondaries.length >= MAX_SECONDARY_PERIODS) {
+      return 'secondaryCap';
     }
   }
 
+  // Primary ranges must not overlap each other. Friend periods may overlap.
   if (
+    input.role === 'primary' &&
     findOverlappingPeriod(
       input.startDate,
       input.endDate,
       periods,
-      input.role,
+      'primary',
       excludeId,
     ) != null
   ) {

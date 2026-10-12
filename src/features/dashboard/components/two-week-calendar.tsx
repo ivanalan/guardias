@@ -11,7 +11,11 @@ import {
   CALENDAR_WEEK_ROW_GAP,
   CELL_SIZE,
   DAY_MARKER_INNER_RADIUS,
+  SECONDARY_DAY_DOT_CAP,
+  SECONDARY_DOT_GAP,
   SECONDARY_DOT_SIZE,
+  SECONDARY_DOT_STACK_HEIGHT,
+  SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT,
   TODAY_BORDER_WIDTH,
   TODAY_INNER_GAP,
   dayMarkerStyle,
@@ -26,6 +30,7 @@ import {
   resolveWeekendBackground,
   withAlpha,
   type DayMarkKind,
+  type SecondaryDayDot,
 } from '../../calendar/calendar-day-marker';
 import { calendarMarkColorsFor } from '../../calendar/calendar-mark-colors';
 import { useTheme } from '../../../theme/theme-context';
@@ -47,7 +52,7 @@ type TwoWeekCalendarProps = {
   weekdayLabels: readonly string[];
   todayIso: string;
   shiftColorByDate: ReadonlyMap<string, string>;
-  secondaryShiftColorByDate: ReadonlyMap<string, string>;
+  secondaryDotsByDate: ReadonlyMap<string, readonly SecondaryDayDot[]>;
   freeWeekendDates: ReadonlySet<string>;
   vacationDates: ReadonlySet<string>;
   /** When set with list props, enables swipe/tap to upcoming shifts. */
@@ -63,7 +68,7 @@ export function TwoWeekCalendar({
   weekdayLabels,
   todayIso,
   shiftColorByDate,
-  secondaryShiftColorByDate,
+  secondaryDotsByDate,
   freeWeekendDates,
   vacationDates,
   upcomingCaption,
@@ -88,7 +93,7 @@ export function TwoWeekCalendar({
       weekdayLabels={weekdayLabels}
       todayIso={todayIso}
       shiftColorByDate={shiftColorByDate}
-      secondaryShiftColorByDate={secondaryShiftColorByDate}
+      secondaryDotsByDate={secondaryDotsByDate}
       freeWeekendDates={freeWeekendDates}
       vacationDates={vacationDates}
     />
@@ -98,6 +103,8 @@ export function TwoWeekCalendar({
     backgroundColor: colors.bg1,
     borderCurve: 'continuous' as const,
     borderRadius,
+    // Android clips absolute weekend pills / friend dots otherwise.
+    overflow: 'visible' as const,
   };
 
   if (!canToggle) {
@@ -202,9 +209,16 @@ type CalendarGridProps = {
   weekdayLabels: readonly string[];
   todayIso: string;
   shiftColorByDate: ReadonlyMap<string, string>;
-  secondaryShiftColorByDate: ReadonlyMap<string, string>;
+  secondaryDotsByDate: ReadonlyMap<string, readonly SecondaryDayDot[]>;
   freeWeekendDates: ReadonlySet<string>;
   vacationDates: ReadonlySet<string>;
+};
+
+type MarkCtx = {
+  shiftColorByDate: ReadonlyMap<string, string>;
+  secondaryDotsByDate: ReadonlyMap<string, readonly SecondaryDayDot[]>;
+  freeWeekendSet: ReadonlySet<string>;
+  vacationSet: ReadonlySet<string>;
 };
 
 function CalendarGrid({
@@ -212,22 +226,22 @@ function CalendarGrid({
   weekdayLabels,
   todayIso,
   shiftColorByDate,
-  secondaryShiftColorByDate,
+  secondaryDotsByDate,
   freeWeekendDates,
   vacationDates,
 }: CalendarGridProps) {
   const { colors } = useTheme();
   const markColors = calendarMarkColorsFor(colors);
   const weeks = [dates.slice(0, 7), dates.slice(7, 14)];
-  const markCtx = {
+  const markCtx: MarkCtx = {
     shiftColorByDate,
-    secondaryShiftColorByDate,
+    secondaryDotsByDate,
     freeWeekendSet: freeWeekendDates,
     vacationSet: vacationDates,
   };
 
   return (
-    <View style={{ gap: CALENDAR_WEEK_ROW_GAP }}>
+    <View style={{ gap: CALENDAR_WEEK_ROW_GAP, overflow: 'visible' }}>
       <View className="flex-row">
         {weekdayLabels.map((label, index) => (
           <Text
@@ -375,13 +389,6 @@ function UpcomingListPage({
   );
 }
 
-type MarkCtx = {
-  shiftColorByDate: ReadonlyMap<string, string>;
-  secondaryShiftColorByDate: ReadonlyMap<string, string>;
-  freeWeekendSet: ReadonlySet<string>;
-  vacationSet: ReadonlySet<string>;
-};
-
 type WeekRowProps = {
   week: readonly string[];
   todayIso: string;
@@ -418,20 +425,31 @@ function WeekRow({
         false,
         isCalendarDatePast(next, todayIso),
       );
-      // Same vertical padding as DayCell so weekend numbers share the row baseline.
+      // Same vertical padding as DayCell; reserve stack height so friend dots
+      // under Sat/Sun are not clipped by a CELL_SIZE-tall weekend capsule row.
       cells.push(
         <View
           key={iso}
           className="flex-[2]"
-          style={{ paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }}
+          style={{
+            paddingTop: CALENDAR_WEEK_ROW_GAP / 2,
+            paddingBottom: CALENDAR_WEEK_ROW_GAP / 2,
+            overflow: 'visible',
+          }}
         >
-          <View className="flex-row self-stretch" style={{ height: CELL_SIZE }}>
+          <View
+            className="flex-row self-stretch"
+            style={{
+              minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT,
+              overflow: 'visible',
+            }}
+          >
             <View
               pointerEvents="none"
               style={{
                 position: 'absolute',
                 top: 0,
-                bottom: 0,
+                height: CELL_SIZE,
                 // Parent is Sat+Sun: 25% is each day’s center. Inset by
                 // half CELL_SIZE so the capsule ends on the day markers.
                 left: '25%',
@@ -490,7 +508,10 @@ function WeekRow({
   return (
     <View
       className="flex-row items-start"
-      style={{ minHeight: CELL_SIZE + CALENDAR_WEEK_ROW_GAP }}
+      style={{
+        minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT + CALENDAR_WEEK_ROW_GAP,
+        overflow: 'visible',
+      }}
     >
       {cells}
     </View>
@@ -507,8 +528,6 @@ type DayCellProps = {
   markColors: ReturnType<typeof calendarMarkColorsFor>;
   markAlpha?: number;
 };
-
-const SECONDARY_DOT_GAP = 4;
 
 function DayCell({
   iso,
@@ -528,10 +547,10 @@ function DayCell({
   const isShift = markKind === 'shift';
   const isVacation = markKind === 'vacation';
   const shiftColor = markCtx.shiftColorByDate.get(iso);
-  const secondaryColor = markCtx.secondaryShiftColorByDate.get(iso);
+  const secondaryDots = markCtx.secondaryDotsByDate.get(iso) ?? [];
   const secondaryDot =
-    secondaryColor != null ? (
-      <SecondaryDot color={secondaryColor} isPast={isPast} />
+    secondaryDots.length > 0 ? (
+      <SecondaryDotRow dots={secondaryDots} isPast={isPast} inkColor={textColor} />
     ) : null;
 
   const textColorMarked = isVacation
@@ -617,11 +636,19 @@ function DayCell({
 
   return (
     <View
-      className="flex-1 items-center justify-center"
+      className="flex-1 items-center"
       style={
         onWeekend
-          ? { height: CELL_SIZE }
-          : { paddingVertical: CALENDAR_WEEK_ROW_GAP / 2 }
+          ? {
+              minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT,
+              overflow: 'visible',
+            }
+          : {
+              paddingTop: CALENDAR_WEEK_ROW_GAP / 2,
+              paddingBottom:
+                CALENDAR_WEEK_ROW_GAP / 2 + SECONDARY_DOT_STACK_HEIGHT,
+              overflow: 'visible',
+            }
       }
     >
       <View
@@ -629,6 +656,7 @@ function DayCell({
           width: CELL_SIZE,
           height: CELL_SIZE,
           alignItems: 'center',
+          overflow: 'visible',
         }}
       >
         {dayContent}
@@ -662,5 +690,43 @@ function SecondaryDot({ color, isPast }: { color: string; isPast: boolean }) {
         backgroundColor,
       }}
     />
+  );
+}
+
+function SecondaryDotRow({
+  dots,
+  isPast,
+  inkColor,
+}: {
+  dots: readonly SecondaryDayDot[];
+  isPast: boolean;
+  inkColor: string;
+}) {
+  const shown = dots.slice(0, SECONDARY_DAY_DOT_CAP);
+  const extra = dots.length - shown.length;
+  const overflowAlpha = markColorAlpha(false, isPast);
+  return (
+    <View
+      pointerEvents="none"
+      className="flex-row items-center"
+      style={{ gap: 2 }}
+    >
+      {shown.map((dot) => (
+        <SecondaryDot key={dot.periodId} color={dot.color} isPast={isPast} />
+      ))}
+      {extra > 0 ? (
+        <Text
+          className="font-mono"
+          style={{
+            fontSize: 8,
+            lineHeight: SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT,
+            color:
+              overflowAlpha < 1 ? withAlpha(inkColor, overflowAlpha) : inkColor,
+          }}
+        >
+          +{extra}
+        </Text>
+      ) : null}
+    </View>
   );
 }

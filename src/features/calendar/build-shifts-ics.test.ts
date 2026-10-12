@@ -11,7 +11,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -48,6 +51,7 @@ describe('buildShiftsIcs', () => {
       endDate: '2026-07-31',
       pattern: { cycleDays: 4, offset: 'B' },
       shiftStartTime: '07:00',
+      shiftLengthHours: 24,
     });
 
     const { ics, eventCount } = buildShiftsIcs(p, now);
@@ -96,6 +100,34 @@ describe('buildShiftsIcs', () => {
 
     expect(eventCount).toBe(1);
     expect(ics).toContain('EXDATE;VALUE=DATE:20260705');
+  });
+
+  it('adds EXDATE for skipped pattern days', () => {
+    const p = period({
+      id: 'period-1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      skippedDates: ['2026-07-05'],
+    });
+
+    const { ics } = buildShiftsIcs(p, now);
+
+    expect(ics).toContain('EXDATE;VALUE=DATE:20260705');
+  });
+
+  it('adds RDATE for covered non-pattern days', () => {
+    const p = period({
+      id: 'period-1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      coveredDates: ['2026-07-02'],
+    });
+
+    const { ics } = buildShiftsIcs(p, now);
+
+    expect(ics).toContain('RDATE;VALUE=DATE:20260702');
   });
 
   it('escapes SUMMARY special characters', () => {

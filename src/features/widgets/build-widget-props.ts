@@ -137,9 +137,13 @@ export function buildTwoWeekWidgetPropsForScheme(
   const shiftColorByDate = new Map(
     resolvedShiftMarks.map((mark) => [mark.date, mark.color]),
   );
-  const secondaryShiftColorByDate = new Map(
-    resolvedSecondary.map((mark) => [mark.date, mark.color]),
-  );
+  // Widgets show one aggregated friend dot (first period in mark order).
+  const secondaryShiftColorByDate = new Map<string, string>();
+  for (const mark of resolvedSecondary) {
+    if (!secondaryShiftColorByDate.has(mark.date)) {
+      secondaryShiftColorByDate.set(mark.date, mark.color);
+    }
+  }
   const freeWeekendDates = new Set(markInputs.freeWeekendDates);
   const vacationDates = new Set(markInputs.vacationDates);
 

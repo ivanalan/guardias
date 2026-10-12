@@ -1,3 +1,4 @@
+import { secondaryFilterKey } from './build-marked-dates';
 import {
   addCalendarDays,
   dayMatchesActiveFilter,
@@ -12,6 +13,9 @@ import {
   PAST_EVENT_OPACITY,
   shiftMarkColorAlpha,
 } from './calendar-day-marker';
+
+const friendKey = secondaryFilterKey('friend-1');
+const friendKeyB = secondaryFilterKey('friend-2');
 
 describe('calendar day marker span helpers', () => {
   const freeWeekendSet = new Set(['2026-08-01', '2026-08-02', '2026-08-08']);
@@ -121,14 +125,14 @@ describe('legend filter matching', () => {
     expect(
       dayMatchesActiveFilter(new Set(), {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'none',
       }),
     ).toBe(true);
     expect(
       isDayDimmedByFilter(new Set(), {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'none',
       }),
     ).toBe(false);
@@ -139,117 +143,135 @@ describe('legend filter matching', () => {
     expect(
       isDayDimmedByFilter(shifts, {
         hasPrimary: true,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'shift',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(shifts, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'none',
       }),
     ).toBe(true);
     expect(
       isDayDimmedByFilter(shifts, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'freeWeekend',
       }),
     ).toBe(true);
     expect(
       isDayDimmedByFilter(shifts, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'none',
       }),
     ).toBe(true);
   });
 
   it('keeps friend-shift days bright including free-weekend days', () => {
-    const friend = new Set(['secondaryShifts'] as const);
+    const friend = new Set([friendKey] as const);
     expect(
       isDayDimmedByFilter(friend, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'none',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(friend, {
         hasPrimary: true,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'shift',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(friend, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'freeWeekend',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(friend, {
         hasPrimary: true,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'shift',
       }),
     ).toBe(true);
     expect(
       isDayDimmedByFilter(friend, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'none',
       }),
     ).toBe(true);
   });
 
+  it('OR-matches among selected friend filters', () => {
+    const bothFriends = new Set([friendKey, friendKeyB] as const);
+    expect(
+      dayMatchesActiveFilter(bothFriends, {
+        hasPrimary: false,
+        secondaryPeriodIds: ['friend-2'],
+        markKind: 'none',
+      }),
+    ).toBe(true);
+    expect(
+      dayMatchesActiveFilter(bothFriends, {
+        hasPrimary: false,
+        secondaryPeriodIds: ['friend-3'],
+        markKind: 'none',
+      }),
+    ).toBe(false);
+  });
+
   it('AND-matches only shared days when both shift filters are selected', () => {
-    const both = new Set(['shifts', 'secondaryShifts'] as const);
+    const both = new Set(['shifts', friendKey] as const);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: true,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'shift',
       }),
     ).toBe(true);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: true,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'shift',
       }),
     ).toBe(false);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'none',
       }),
     ).toBe(false);
   });
 
   it('AND-matches friend shifts with free weekends', () => {
-    const both = new Set(['secondaryShifts', 'freeWeekends'] as const);
+    const both = new Set([friendKey, 'freeWeekends'] as const);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'freeWeekend',
       }),
     ).toBe(true);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: false,
-        hasSecondary: true,
+        secondaryPeriodIds: ['friend-1'],
         markKind: 'none',
       }),
     ).toBe(false);
     expect(
       dayMatchesActiveFilter(both, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'freeWeekend',
       }),
     ).toBe(false);
@@ -261,28 +283,28 @@ describe('legend filter matching', () => {
     expect(
       isDayDimmedByFilter(weekends, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'freeWeekend',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(weekends, {
         hasPrimary: true,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'shift',
       }),
     ).toBe(true);
     expect(
       isDayDimmedByFilter(vacation, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'vacation',
       }),
     ).toBe(false);
     expect(
       isDayDimmedByFilter(vacation, {
         hasPrimary: false,
-        hasSecondary: false,
+        secondaryPeriodIds: [],
         markKind: 'none',
       }),
     ).toBe(true);
@@ -292,7 +314,7 @@ describe('legend filter matching', () => {
     const shifts = new Set(['shifts'] as const);
     const unmarked = {
       hasPrimary: false,
-      hasSecondary: false,
+      secondaryPeriodIds: [] as string[],
       markKind: 'none' as const,
     };
     expect(isDayDimmedByFilter(shifts, unmarked, { inactive: true })).toBe(

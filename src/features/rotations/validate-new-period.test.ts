@@ -15,7 +15,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -129,7 +132,7 @@ describe('validatePeriodForm', () => {
     ).toBeNull();
   });
 
-  it('returns secondaryLimit when another secondary exists', () => {
+  it('allows another secondary with a non-overlapping range', () => {
     const withFriend = [
       ...periods,
       period({
@@ -150,16 +153,16 @@ describe('validatePeriodForm', () => {
         },
         withFriend,
       ),
-    ).toBe('secondaryLimit');
+    ).toBeNull();
   });
 
-  it('allows editing the existing secondary', () => {
+  it('allows secondary periods that overlap each other', () => {
     const withFriend = [
       ...periods,
       period({
         id: 'friend',
-        startDate: '2026-01-01',
-        endDate: '2026-03-31',
+        startDate: '2026-07-01',
+        endDate: '2026-09-30',
         role: 'secondary',
       }),
     ];
@@ -167,13 +170,62 @@ describe('validatePeriodForm', () => {
       validatePeriodForm(
         {
           ...baseInput,
+          label: 'Luis',
+          role: 'secondary',
+          startDate: '2026-07-01',
+          endDate: '2026-09-30',
+        },
+        withFriend,
+      ),
+    ).toBeNull();
+  });
+
+  it('returns secondaryCap when 8 secondaries already exist', () => {
+    const withFriends = [
+      ...periods,
+      ...Array.from({ length: 8 }, (_, i) =>
+        period({
+          id: `friend-${i}`,
+          startDate: '2026-01-01',
+          endDate: '2026-12-31',
+          role: 'secondary',
+        }),
+      ),
+    ];
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
+          label: 'Ninth',
+          role: 'secondary',
+          startDate: '2026-01-01',
+          endDate: '2026-12-31',
+        },
+        withFriends,
+      ),
+    ).toBe('secondaryCap');
+  });
+
+  it('allows editing an existing secondary when at the cap', () => {
+    const withFriends = Array.from({ length: 8 }, (_, i) =>
+      period({
+        id: `friend-${i}`,
+        startDate: '2026-01-01',
+        endDate: '2026-12-31',
+        role: 'secondary',
+      }),
+    );
+    expect(
+      validatePeriodForm(
+        {
+          ...baseInput,
           label: 'Maria',
           role: 'secondary',
           startDate: '2026-01-01',
-          endDate: '2026-03-31',
+          endDate: '2026-12-31',
         },
-        withFriend,
-        'friend',
+        withFriends,
+        'friend-0',
       ),
     ).toBeNull();
   });

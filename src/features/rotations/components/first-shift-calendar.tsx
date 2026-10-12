@@ -8,7 +8,7 @@ import type { AppLanguage } from '../../../i18n';
 import { parseCalendarDate } from '../../../lib/shifts/parse-calendar-date';
 import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { useTheme } from '../../../theme/theme-context';
-import { WIDGET_RADIUS } from '../../../theme/widget-radius';
+import { BORDER_RADIUS } from '../../../theme/layout';
 import { Pressable, Text, View } from '../../../tw';
 import { buildCalendarDayMarkContext } from '../../calendar/calendar-day-marker';
 import { calendarThemeFor } from '../../calendar/calendar-theme';
@@ -65,13 +65,18 @@ export function FirstShiftCalendar({
     );
   }, [selectedFirstShift]);
 
+  // Preview always as primary so friend (secondary) drafts still show fills /
+  // free weekends — not calendar dots only.
+  const previewPeriod =
+    period.role === 'secondary' ? { ...period, role: 'primary' as const } : period;
   const monthInputs = datesValid
-    ? getMonthMarkInputs([period], currentMonth)
+    ? getMonthMarkInputs([previewPeriod], currentMonth)
     : {
         shiftMarks: [],
         secondaryShiftMarks: [],
         freeWeekendDates: [],
         vacationDates: [],
+        skippedDates: [],
       };
   const resolvedShiftMarks = useMemo(
     () => resolveShiftMarks(monthInputs.shiftMarks, colors),
@@ -88,11 +93,14 @@ export function FirstShiftCalendar({
         todayIso,
         selectedFirstShift,
         [],
+        null,
+        monthInputs.skippedDates,
       ),
     [
       resolvedShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
+      monthInputs.skippedDates,
       todayIso,
       selectedFirstShift,
     ],
@@ -174,7 +182,7 @@ export function FirstShiftCalendar({
             borderColor: colors.border,
             backgroundColor: colors.bg1,
             borderCurve: 'continuous',
-            borderRadius: WIDGET_RADIUS,
+            borderRadius: BORDER_RADIUS,
           }}
         >
           <Calendar
@@ -192,7 +200,7 @@ export function FirstShiftCalendar({
             firstDay={1}
             monthFormat="MMMM yyyy"
             markingType="custom"
-            markedDates={buildMonthMarkedDates([period], currentMonth)}
+            markedDates={buildMonthMarkedDates([previewPeriod], currentMonth)}
             dayComponent={DayComponent}
             renderHeader={(date) => (
               <CalendarMonthHeader

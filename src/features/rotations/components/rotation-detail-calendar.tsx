@@ -71,6 +71,8 @@ function RotationDetailMonthCard({
             todayIso,
             null,
             [],
+            null,
+            monthInputs.skippedDates,
           ),
     [
       friendShift,
@@ -78,6 +80,7 @@ function RotationDetailMonthCard({
       resolvedSecondaryShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
+      monthInputs.skippedDates,
       todayIso,
     ],
   );

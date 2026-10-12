@@ -6,6 +6,10 @@ import {
   type RotationPeriod,
 } from './types';
 import { isRotationColor, normalizeRotationColor } from './rotation-colors';
+import {
+  normalizeExceptionDates,
+  normalizeShiftLengthHours,
+} from './storage';
 
 /** Hosted share path on alanmatias.com (website landing; app opens via custom scheme). */
 export const SHARE_LINK_ORIGIN = 'https://alanmatias.com';
@@ -30,7 +34,10 @@ export type SharedRotationDraft = {
   firstShiftDate: string | null;
   vacationStartDate: string | null;
   vacationEndDate: string | null;
+  skippedDates: string[];
+  coveredDates: string[];
   shiftStartTime: string;
+  shiftLengthHours: number;
   color: string;
 };
 
@@ -94,7 +101,10 @@ export function periodToShareDraft(period: RotationPeriod): SharedRotationDraft 
     firstShiftDate: period.firstShiftDate,
     vacationStartDate: period.vacationStartDate,
     vacationEndDate: period.vacationEndDate,
+    skippedDates: period.skippedDates,
+    coveredDates: period.coveredDates,
     shiftStartTime: period.shiftStartTime,
+    shiftLengthHours: period.shiftLengthHours,
     color: normalizeRotationColor(period.color),
   };
 }
@@ -135,9 +145,14 @@ export function parseShareDraft(raw: unknown): SharedRotationDraft | null {
     typeof data.shiftStartTime === 'string' && HH_MM.test(data.shiftStartTime)
       ? data.shiftStartTime
       : DEFAULT_SHIFT_START_TIME;
+  const shiftLengthHours = normalizeShiftLengthHours(data.shiftLengthHours);
   const color = isRotationColor(data.color)
     ? data.color
     : normalizeRotationColor(data.color);
+  const { skippedDates, coveredDates } = normalizeExceptionDates(
+    data.skippedDates,
+    data.coveredDates,
+  );
 
   return {
     label: data.label.trim(),
@@ -150,7 +165,10 @@ export function parseShareDraft(raw: unknown): SharedRotationDraft | null {
     firstShiftDate: data.firstShiftDate,
     vacationStartDate: data.vacationStartDate,
     vacationEndDate: data.vacationEndDate,
+    skippedDates,
+    coveredDates,
     shiftStartTime,
+    shiftLengthHours,
     color,
   };
 }

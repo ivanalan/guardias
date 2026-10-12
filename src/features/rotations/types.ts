@@ -20,8 +20,21 @@ export const DEFAULT_PATTERN: RotationPattern = {
   offset: 'A',
 };
 
-/** Default local time each 24h shift starts (`HH:mm`). */
+/** Default local time each shift starts (`HH:mm`). */
 export const DEFAULT_SHIFT_START_TIME = '07:00';
+
+/** Allowed shift length range (inclusive), in whole hours. */
+export const MIN_SHIFT_LENGTH_HOURS = 8;
+export const MAX_SHIFT_LENGTH_HOURS = 40;
+
+/** Default shift length in hours. */
+export const DEFAULT_SHIFT_LENGTH_HOURS = 24;
+
+/** Whole-hour options for the shift-length picker (8…40). */
+export const SHIFT_LENGTH_HOUR_OPTIONS: readonly number[] = Array.from(
+  { length: MAX_SHIFT_LENGTH_HOURS - MIN_SHIFT_LENGTH_HOURS + 1 },
+  (_, i) => MIN_SHIFT_LENGTH_HOURS + i,
+);
 
 /**
  * `primary` drives Home, free weekends, and calendar fills.
@@ -47,8 +60,14 @@ export type RotationPeriod = {
   vacationStartDate: string | null;
   /** Inclusive vacation block end, or null if none. */
   vacationEndDate: string | null;
+  /** ISO dates removed from the pattern (skipped shifts). */
+  skippedDates: string[];
+  /** ISO dates worked outside the pattern (incl. over vacation). */
+  coveredDates: string[];
   /** Local time each shift starts, `HH:mm`. */
   shiftStartTime: string;
+  /** Length of each shift in hours. */
+  shiftLengthHours: number;
   /** Calendar mark color for shift days (`#RRGGBB`). */
   color: string;
   /** Whose schedule this period represents. */

@@ -8,6 +8,7 @@
     "@expo/vector-icons": "^15.0.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-community/datetimepicker": "9.1.0",
+    "@react-native-picker/picker": "2.11.4",
     "@react-native-segmented-control/segmented-control": "2.5.7",
     "@react-navigation/bottom-tabs": "^7.18.8",
     "@react-navigation/native": "^7.3.8",
@@ -80,7 +81,9 @@
   "expo": {
     "autolinking": {
       "android": {
-        "exclude": ["expo-widgets"]
+        "exclude": [
+          "expo-widgets"
+        ]
       }
     }
   },

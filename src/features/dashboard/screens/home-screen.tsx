@@ -96,10 +96,22 @@ function ActiveHomeContent({
     }
     return map;
   }, [resolvedShiftMarks]);
-  const secondaryShiftColorByDate = useMemo(() => {
-    const map = new Map<string, string>();
-    for (const { date, color } of resolvedSecondaryShiftMarks) {
-      map.set(date, color);
+  const secondaryDotsByDate = useMemo(() => {
+    const map = new Map<
+      string,
+      { periodId: string; color: string }[]
+    >();
+    for (const mark of resolvedSecondaryShiftMarks) {
+      if (mark.periodId == null) {
+        continue;
+      }
+      const list = map.get(mark.date);
+      const entry = { periodId: mark.periodId, color: mark.color };
+      if (list != null) {
+        list.push(entry);
+      } else {
+        map.set(mark.date, [entry]);
+      }
     }
     return map;
   }, [resolvedSecondaryShiftMarks]);
@@ -166,7 +178,7 @@ function ActiveHomeContent({
         weekdayLabels={weekdayInitials(language)}
         todayIso={todayIso}
         shiftColorByDate={shiftColorByDate}
-        secondaryShiftColorByDate={secondaryShiftColorByDate}
+        secondaryDotsByDate={secondaryDotsByDate}
         freeWeekendDates={freeWeekendDates}
         vacationDates={vacationDates}
         upcomingCaption={t('home.upcomingShifts')}

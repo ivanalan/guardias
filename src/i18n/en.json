@@ -41,6 +41,9 @@
     "freeDay": "Free day",
     "vacationDay": "Vacation",
     "shiftDay": "Shift",
+    "skipShift": "Remove shift",
+    "coverDay": "Cover this day",
+    "friendShiftMeta": "Shift · {{time}}",
     "startsOn": "Starts {{date}}",
     "endsOn": "Ends {{date}}",
     "duration": "{{hours}} hours",
@@ -87,9 +90,12 @@
       "filterFriendShiftsHint": "Highlight your friend’s shift days on the calendar",
       "filterFreeWeekendsHint": "Highlight free weekends on the calendar",
       "filterVacationHint": "Highlight vacation days on the calendar",
+      "expandFriendsHint": "Show each friend’s filter chip",
       "myShiftsLabel": "My shifts",
       "freeWeekendsLabel": "Free weekends",
       "vacationLabel": "Vacation",
+      "friendsCollapsedLabel": "+{{count}} friends",
+      "friendsCollapsedSummary": "+{{count}} friends ({{days}} days)",
       "myShiftsSummary_one": "My shifts ({{count}})",
       "myShiftsSummary_other": "My shifts ({{count}})",
       "periodShiftsSummary_one": "{{name}} ({{count}})",
@@ -172,6 +178,8 @@
       "previewShowCalendar": "Show calendar",
       "previewHideCalendar": "Hide calendar",
       "shiftStartTime": "Start",
+      "shiftLength": "Shift length",
+      "shiftLengthHours": "{{hours}}h",
       "color": "Color",
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacation days",
@@ -187,7 +195,7 @@
       "vacationOutOfBounds": "Vacation must fall within the rotation dates.",
       "dateOverlap": "This date range overlaps another rotation. If this is someone else’s schedule, mark it as a friend’s shift.",
       "firstShiftOutOfBounds": "First shift must fall within the rotation dates.",
-      "secondaryLimit": "You can only add one friend’s shift for now. Edit or delete the existing one first."
+      "secondaryCap": "You can add up to 8 friend’s shifts. Edit or delete one before adding another."
     }
   }
 }

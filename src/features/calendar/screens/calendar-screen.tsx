@@ -112,10 +112,26 @@ export function CalendarScreen({ navigation }: Props) {
   const openDestAfterPeriodPickerRef = useRef(false);
   // iOS cannot present share / Linking while a Modal is dismissing.
   const pendingShareRef = useRef<PendingShare | null>(null);
+  /** Day open in DayDetail — brand ring until the sheet dismisses. */
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  /** Ephemeral: 5+ friends expand overflow chips in place; resets on remount. */
+  const [friendsExpanded, setFriendsExpanded] = useState(false);
 
   useEffect(() => {
     configureCalendarLocale(language, t('calendar.today'));
   }, [language, t]);
+
+  useEffect(() => {
+    return navigation.addListener('state', () => {
+      const state = navigation.getState();
+      const dayDetailOpen = state.routes.some(
+        (route) => route.name === 'DayDetail',
+      );
+      if (!dayDetailOpen) {
+        setSelectedDate(null);
+      }
+    });
+  }, [navigation]);
 
   // ±2 months so next/prev (and fast swipe) paints with marks before onMonthChange.
   const monthInputs = getMarkInputsForMonthWindow(periods, visibleMonth, 2);
@@ -128,10 +144,6 @@ export function CalendarScreen({ navigation }: Props) {
     [monthInputs.secondaryShiftMarks, colors],
   );
   const resolvedShiftColor = resolveRotationColor(monthInputs.shiftColor, colors);
-  const resolvedSecondaryShiftColor =
-    monthInputs.secondaryShiftColor != null
-      ? resolveRotationColor(monthInputs.secondaryShiftColor, colors)
-      : null;
   const markedDates = buildMarkedDates(
     resolvedShiftMarks,
     monthInputs.freeWeekendDates,
@@ -150,15 +162,19 @@ export function CalendarScreen({ navigation }: Props) {
         null,
         resolvedSecondaryShiftMarks,
         visibleMonth.slice(0, 7),
+        monthInputs.skippedDates,
+        selectedDate,
       ),
     [
       resolvedShiftMarks,
       resolvedSecondaryShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
+      monthInputs.skippedDates,
       filter,
       todayIso,
       visibleMonth,
+      selectedDate,
     ],
   );
   const DayComponent = useMemo(
@@ -166,20 +182,26 @@ export function CalendarScreen({ navigation }: Props) {
     [markContext],
   );
 
+  const secondaryPeriodIdsKey = monthInputs.secondaryLegend
+    .map((entry) => entry.periodId)
+    .join('\0');
+
   useEffect(() => {
     setFilter((prev) =>
       pruneLegendFilterForMonthCounts(prev, {
         shiftDayCount: monthInputs.shiftDayCount,
-        secondaryShiftDayCount: monthInputs.secondaryShiftDayCount,
         freeWeekendCount: monthInputs.freeWeekendCount,
         vacationDayCount: monthInputs.vacationDayCount,
+        secondaryPeriodIds: secondaryPeriodIdsKey
+          ? secondaryPeriodIdsKey.split('\0')
+          : [],
       }),
     );
   }, [
     monthInputs.shiftDayCount,
-    monthInputs.secondaryShiftDayCount,
     monthInputs.freeWeekendCount,
     monthInputs.vacationDayCount,
+    secondaryPeriodIdsKey,
   ]);
 
   const onViewModeChange = (mode: CalendarViewMode) => {
@@ -191,6 +213,7 @@ export function CalendarScreen({ navigation }: Props) {
   };
 
   const onDayPress = (day: DateData) => {
+    setSelectedDate(day.dateString);
     navigation.navigate('DayDetail', { date: day.dateString });
   };
 
@@ -226,9 +249,9 @@ export function CalendarScreen({ navigation }: Props) {
       if (destination === 'google') {
         const event = buildShiftExportEvent(period);
         const details =
-          event != null && event.vacationExDates.length > 0
+          event != null && event.exDates.length > 0
             ? t('calendar.shareGoogleVacationNote', {
-                dates: event.vacationExDates.join(', '),
+                dates: event.exDates.join(', '),
               })
             : undefined;
         const result = await openGoogleCalendar(period, { details });
@@ -248,9 +271,9 @@ export function CalendarScreen({ navigation }: Props) {
       if (destination === 'device') {
         const event = buildShiftExportEvent(period);
         const notes =
-          event != null && event.vacationExDates.length > 0
+          event != null && event.exDates.length > 0
             ? t('calendar.shareDeviceVacationNote', {
-                dates: event.vacationExDates.join(', '),
+                dates: event.exDates.join(', '),
               })
             : undefined;
         const result = await openDeviceCalendar(period, { notes });
@@ -545,13 +568,13 @@ export function CalendarScreen({ navigation }: Props) {
             />
             <CalendarMonthLegend
               shiftDayCount={monthInputs.shiftDayCount}
-              secondaryShiftDayCount={monthInputs.secondaryShiftDayCount}
               freeWeekendCount={monthInputs.freeWeekendCount}
               vacationDayCount={monthInputs.vacationDayCount}
               shiftColor={resolvedShiftColor}
               primaryLabel={monthInputs.primaryLabel}
-              secondaryShiftColor={resolvedSecondaryShiftColor}
-              secondaryLabel={monthInputs.secondaryLabel}
+              secondaryLegend={monthInputs.secondaryLegend}
+              friendsExpanded={friendsExpanded}
+              onExpandFriends={() => setFriendsExpanded(true)}
               filter={filter}
               onFilterChange={setFilter}
             />

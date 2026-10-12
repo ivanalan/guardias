@@ -17,7 +17,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -212,14 +215,65 @@ describe('getRangeMarkInputs', () => {
     expect(both.freeWeekendDates).toEqual(primaryOnly.freeWeekendDates);
     expect(both.secondaryShiftDayCount).toBeGreaterThan(0);
     expect(both.primaryLabel).toBe('Test');
-    expect(both.secondaryLabel).toBe('Maria');
-    expect(both.secondaryShiftColor).toBe('#0D9488');
+    expect(both.secondaryLegend).toEqual([
+      {
+        periodId: 'friend',
+        label: 'Maria',
+        color: '#0D9488',
+        dayCount: both.secondaryShiftDayCount,
+      },
+    ]);
     expect(both.secondaryShiftMarks.every((m) => m.color === '#0D9488')).toBe(
+      true,
+    );
+    expect(both.secondaryShiftMarks.every((m) => m.periodId === 'friend')).toBe(
       true,
     );
     // Jul 1 2026 is B — friend shift, not mine (A).
     expect(both.secondaryShiftMarks.map((m) => m.date)).toContain('2026-07-01');
     expect(both.shiftMarks.map((m) => m.date)).not.toContain('2026-07-01');
+  });
+
+  it('emits multiple secondary marks on the same date for concurrent friends', () => {
+    const mine = period({
+      id: 'p1',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      color: '#2F69F3',
+    });
+    const ana = period({
+      id: 'ana',
+      label: 'Ana',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      color: '#0D9488',
+      role: 'secondary',
+    });
+    const luis = period({
+      id: 'luis',
+      label: 'Luis',
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      color: '#E07A5F',
+      role: 'secondary',
+    });
+
+    const both = getMonthMarkInputs([mine, ana, luis], '2026-07-15');
+    const onJul1 = both.secondaryShiftMarks.filter(
+      (m) => m.date === '2026-07-01',
+    );
+    expect(onJul1.map((m) => m.periodId).sort()).toEqual(['ana', 'luis']);
+    expect(both.secondaryLegend.map((e) => e.periodId)).toEqual([
+      'ana',
+      'luis',
+    ]);
+    // Unique dates, not mark rows.
+    expect(both.secondaryShiftDayCount).toBe(
+      new Set(both.secondaryShiftMarks.map((m) => m.date)).size,
+    );
   });
 });
 

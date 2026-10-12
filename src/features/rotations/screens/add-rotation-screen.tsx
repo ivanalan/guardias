@@ -5,8 +5,9 @@ import {
   useState,
   type ReactNode,
 } from 'react';
-import { Alert, ScrollView, Switch } from 'react-native';
+import { Alert, ScrollView, Switch, View as RNView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { Picker } from '@react-native-picker/picker';
 import { Ionicons } from '@expo/vector-icons';
 import { usePreventRemove } from '@react-navigation/native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -35,10 +36,13 @@ import { DEFAULT_ROTATION_COLOR } from '../rotation-colors';
 import { useRotations } from '../rotations-context';
 import type { ShiftsStackParamList } from '../shifts-stack';
 import type { SharedRotationDraft } from '../share-rotation-link';
+import { normalizeShiftLengthHours } from '../storage';
 import {
   DEFAULT_PATTERN,
+  DEFAULT_SHIFT_LENGTH_HOURS,
   DEFAULT_SHIFT_START_TIME,
   OFFSETS_FOR_CYCLE,
+  SHIFT_LENGTH_HOUR_OPTIONS,
   type CycleDays,
   type OffsetLetter,
   type RotationPeriod,
@@ -72,7 +76,13 @@ function dismissRotationForm(navigation: Props['navigation']) {
 }
 
 type ActivePicker =
-  'start' | 'end' | 'shiftStart' | 'vacationStart' | 'vacationEnd' | null;
+  | 'start'
+  | 'end'
+  | 'shiftStart'
+  | 'shiftLength'
+  | 'vacationStart'
+  | 'vacationEnd'
+  | null;
 
 const FIELD_BOX_CLASS =
   'h-14 flex-row items-center rounded-xl border border-neutral-200 px-4';
@@ -91,6 +101,7 @@ function initialFormState(
       offset: existing.pattern.offset,
       firstShiftOverride: existing.firstShiftDate,
       shiftStartTime: existing.shiftStartTime,
+      shiftLengthHours: existing.shiftLengthHours,
       color: existing.color,
       isFriendShift: existing.role === 'secondary',
       vacationEnabled:
@@ -112,6 +123,7 @@ function initialFormState(
       offset: draft.pattern.offset,
       firstShiftOverride: draft.firstShiftDate,
       shiftStartTime: draft.shiftStartTime,
+      shiftLengthHours: draft.shiftLengthHours,
       color: draft.color,
       isFriendShift: false,
       vacationEnabled:
@@ -133,6 +145,7 @@ function initialFormState(
     offset: DEFAULT_PATTERN.offset,
     firstShiftOverride: null as string | null,
     shiftStartTime: DEFAULT_SHIFT_START_TIME,
+    shiftLengthHours: DEFAULT_SHIFT_LENGTH_HOURS,
     color: DEFAULT_ROTATION_COLOR,
     isFriendShift: false,
     vacationEnabled: false,
@@ -149,7 +162,7 @@ function isPeriodError(error: RotationValidationError | null): boolean {
   return (
     error === 'dateOrder' ||
     error === 'dateOverlap' ||
-    error === 'secondaryLimit'
+    error === 'secondaryCap'
   );
 }
 
@@ -183,6 +196,7 @@ function isFormDirty(snapshot: FormSnapshot, current: FormSnapshot): boolean {
     snapshot.offset !== current.offset ||
     snapshot.firstShiftOverride !== current.firstShiftOverride ||
     snapshot.shiftStartTime !== current.shiftStartTime ||
+    snapshot.shiftLengthHours !== current.shiftLengthHours ||
     snapshot.color !== current.color ||
     snapshot.isFriendShift !== current.isFriendShift ||
     snapshot.vacationEnabled !== current.vacationEnabled ||
@@ -194,7 +208,7 @@ function isFormDirty(snapshot: FormSnapshot, current: FormSnapshot): boolean {
 /** Add or edit rotation form (F1 / F4). */
 export function AddRotationScreen({ navigation, route }: Props) {
   const { t, i18n } = useTranslation();
-  const { colors } = useTheme();
+  const { colors, scheme } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods, addPeriod, updatePeriod } = useRotations();
 
@@ -226,6 +240,9 @@ export function AddRotationScreen({ navigation, route }: Props) {
     initial.firstShiftOverride,
   );
   const [shiftStartTime, setShiftStartTime] = useState(initial.shiftStartTime);
+  const [shiftLengthHours, setShiftLengthHours] = useState(
+    normalizeShiftLengthHours(initial.shiftLengthHours),
+  );
   const [color, setColor] = useState(initial.color);
   const [isFriendShift, setIsFriendShift] = useState(initial.isFriendShift);
   const [vacationEnabled, setVacationEnabled] = useState(
@@ -257,6 +274,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     offset,
     firstShiftOverride,
     shiftStartTime,
+    shiftLengthHours,
     color,
     isFriendShift,
     vacationEnabled,
@@ -292,7 +310,10 @@ export function AddRotationScreen({ navigation, route }: Props) {
     firstShiftDate: firstShiftOverride,
     vacationStartDate: effectiveVacationEnabled ? vacationStartDate : null,
     vacationEndDate: effectiveVacationEnabled ? vacationEndDate : null,
+    skippedDates: existing?.skippedDates ?? shareDraft?.skippedDates ?? [],
+    coveredDates: existing?.coveredDates ?? shareDraft?.coveredDates ?? [],
     shiftStartTime,
+    shiftLengthHours,
     color,
     role,
     createdAt: existing?.createdAt ?? '1970-01-01T00:00:00.000Z',
@@ -512,6 +533,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
         shiftStartTime,
+        shiftLengthHours,
         color,
         role,
       });
@@ -525,7 +547,10 @@ export function AddRotationScreen({ navigation, route }: Props) {
         firstShiftDate: persistedFirstShift,
         vacationStartDate: vacationStart,
         vacationEndDate: vacationEnd,
+        skippedDates: shareDraft?.skippedDates ?? [],
+        coveredDates: shareDraft?.coveredDates ?? [],
         shiftStartTime,
+        shiftLengthHours,
         color,
         role,
         createdAt: new Date().toISOString(),
@@ -557,6 +582,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     offset,
     firstShiftOverride,
     shiftStartTime,
+    shiftLengthHours,
     color,
     isFriendShift,
     vacationEnabled,
@@ -568,6 +594,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     updatePeriod,
     editingId,
     existing,
+    shareDraft,
     periods,
   ]);
 
@@ -713,13 +740,26 @@ export function AddRotationScreen({ navigation, route }: Props) {
         <SectionRule label={t('shifts.form.sectionDetails')} />
 
         <View>
-          <DateField
-            label={t('shifts.form.shiftStartTime')}
-            valueLabel={formatFormTime(shiftStartTime, language)}
-            selected={activePicker === 'shiftStart'}
-            onPress={() => togglePicker('shiftStart')}
-            icon="time-outline"
-          />
+          <View className="flex-row gap-3">
+            <DateField
+              label={t('shifts.form.shiftStartTime')}
+              valueLabel={formatFormTime(shiftStartTime, language)}
+              selected={activePicker === 'shiftStart'}
+              onPress={() => togglePicker('shiftStart')}
+              icon="time-outline"
+              fill
+            />
+            <DateField
+              label={t('shifts.form.shiftLength')}
+              valueLabel={t('shifts.form.shiftLengthHours', {
+                hours: shiftLengthHours,
+              })}
+              selected={activePicker === 'shiftLength'}
+              onPress={() => togglePicker('shiftLength')}
+              icon="time-outline"
+              fill
+            />
+          </View>
           {activePicker === 'shiftStart' ? (
             <PickerSlot>
               <DateTimePicker
@@ -730,6 +770,32 @@ export function AddRotationScreen({ navigation, route }: Props) {
                 onDismiss={dismissPicker}
               />
             </PickerSlot>
+          ) : null}
+          {activePicker === 'shiftLength' ? (
+            <RNView style={{ width: '100%', paddingVertical: 4 }}>
+              <Picker
+                selectedValue={shiftLengthHours}
+                onValueChange={(value) => {
+                  setShiftLengthHours(normalizeShiftLengthHours(Number(value)));
+                }}
+                accessibilityLabel={t('shifts.form.shiftLength')}
+                themeVariant={scheme}
+                style={{ width: '100%', height: 216 }}
+                itemStyle={{
+                  color: colors.text,
+                  fontSize: 20,
+                }}
+              >
+                {SHIFT_LENGTH_HOUR_OPTIONS.map((hours) => (
+                  <Picker.Item
+                    key={hours}
+                    label={t('shifts.form.shiftLengthHours', { hours })}
+                    value={hours}
+                    color={colors.text}
+                  />
+                ))}
+              </Picker>
+            </RNView>
           ) : null}
         </View>
 

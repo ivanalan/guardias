@@ -1,6 +1,10 @@
 import type { RotationPeriod } from '@/features/rotations/types';
 
-import { getDefaultFirstShiftDate, isShiftDay } from './is-shift-day';
+import {
+  getDefaultFirstShiftDate,
+  isShiftDay,
+  isSkippedPatternDay,
+} from './is-shift-day';
 
 function period(
   overrides: Partial<RotationPeriod> &
@@ -12,7 +16,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -176,5 +183,45 @@ describe('isShiftDay', () => {
 
     expect(isShiftDay(p, '2026-07-06')).toBe(false);
     expect(isShiftDay(p, '2026-07-10')).toBe(true);
+  });
+
+  it('skips pattern days listed in skippedDates', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      skippedDates: ['2026-07-04'],
+    });
+
+    expect(isShiftDay(p, '2026-07-04')).toBe(false);
+    expect(isSkippedPatternDay(p, '2026-07-04')).toBe(true);
+    expect(isShiftDay(p, '2026-07-08')).toBe(true);
+  });
+
+  it('treats coveredDates as shifts even over vacation', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      vacationStartDate: '2026-07-04',
+      vacationEndDate: '2026-07-05',
+      coveredDates: ['2026-07-04', '2026-07-02'],
+    });
+
+    expect(isShiftDay(p, '2026-07-04')).toBe(true);
+    expect(isShiftDay(p, '2026-07-02')).toBe(true);
+    expect(isShiftDay(p, '2026-07-05')).toBe(false);
+  });
+
+  it('lets skippedDates win over coveredDates when both list the date', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'A' },
+      skippedDates: ['2026-07-02'],
+      coveredDates: ['2026-07-02'],
+    });
+
+    expect(isShiftDay(p, '2026-07-02')).toBe(false);
   });
 });

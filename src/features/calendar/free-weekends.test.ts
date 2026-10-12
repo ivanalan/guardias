@@ -32,6 +32,19 @@ describe('listFreeWeekendDates', () => {
       listFreeWeekendDates(shifts, '2026-07-11', '2026-07-12'),
     ).toEqual([]);
   });
+
+  it('clears a free weekend when Saturday is covered (extra shift)', () => {
+    // Without Sat cover, Jul 11–12 would be free; cover = shift on Sat.
+    const withoutCover = new Set<string>();
+    expect(
+      listFreeWeekendDates(withoutCover, '2026-07-11', '2026-07-12'),
+    ).toEqual(['2026-07-11', '2026-07-12']);
+
+    const withCover = new Set<string>(['2026-07-11']);
+    expect(
+      listFreeWeekendDates(withCover, '2026-07-11', '2026-07-12'),
+    ).toEqual([]);
+  });
 });
 
 describe('countFreeWeekends', () => {

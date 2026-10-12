@@ -9,10 +9,15 @@ import {
   CALENDAR_WEEK_ROW_GAP,
   CELL_SIZE,
   DAY_MARKER_INNER_RADIUS,
+  SECONDARY_DAY_DOT_CAP,
+  SECONDARY_DOT_GAP,
   SECONDARY_DOT_SIZE,
+  SECONDARY_DOT_STACK_HEIGHT,
+  SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT,
   TODAY_BORDER_WIDTH,
   TODAY_INNER_GAP,
   type CalendarDayMarkContext,
+  type SecondaryDayDot,
   dayMarkerStyle,
   dayNumber,
   getDayMarkKind,
@@ -28,6 +33,7 @@ import {
   resolveVacationTextColor,
   resolveWeekendBackground,
   shiftMarkColorAlpha,
+  visibleSecondaryDotsForDay,
   withAlpha,
 } from '../calendar-day-marker';
 import { calendarMarkColorsFor } from '../calendar-mark-colors';
@@ -36,14 +42,17 @@ type CalendarDayProps = DayProps & {
   date?: DateData;
 };
 
-const dayRowPadding = CALENDAR_WEEK_ROW_GAP / 2;
+const dayRowPaddingTop = CALENDAR_WEEK_ROW_GAP / 2;
+const dayRowPaddingBottom =
+  CALENDAR_WEEK_ROW_GAP / 2 + SECONDARY_DOT_STACK_HEIGHT;
 
 const daySlotStyle = {
   alignSelf: 'stretch' as const,
   alignItems: 'center' as const,
-  justifyContent: 'center' as const,
-  minHeight: CELL_SIZE + CALENDAR_WEEK_ROW_GAP,
-  paddingVertical: dayRowPadding,
+  justifyContent: 'flex-start' as const,
+  minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT + CALENDAR_WEEK_ROW_GAP,
+  paddingTop: dayRowPaddingTop,
+  paddingBottom: dayRowPaddingBottom,
   overflow: 'visible' as const,
 };
 
@@ -111,17 +120,23 @@ function CalendarDayInner({
 
   const inactive = state === 'inactive' || state === 'disabled';
   const isToday = iso === markContext.todayIso || state === 'today';
+  const isSelected = markContext.selectedIso === iso;
+  const showRing = !inactive && (isToday || isSelected);
   const label = dayNumber(iso);
   const markKind = getDayMarkKind(iso, markContext);
   const isPast = isCalendarDatePast(iso, markContext.todayIso);
   const hasPrimary = markContext.shiftColorByDate.has(iso);
-  const secondaryColor = markContext.secondaryShiftColorByDate.get(iso);
-  const hasSecondary = secondaryColor != null;
+  const secondaryDotsOnDay =
+    markContext.secondaryDotsByDate.get(iso) ?? EMPTY_SECONDARY_DOTS;
+  const visibleSecondaryDots = visibleSecondaryDotsForDay(
+    secondaryDotsOnDay,
+    markContext.filter,
+  );
   const dimmedByFilter = isDayDimmedByFilter(
     markContext.filter,
     {
       hasPrimary,
-      hasSecondary,
+      secondaryPeriodIds: secondaryDotsOnDay.map((dot) => dot.periodId),
       markKind,
     },
     {
@@ -132,11 +147,12 @@ function CalendarDayInner({
   );
   const labelAlpha = markColorAlpha(dimmedByFilter, isPast);
   const secondaryDot =
-    !inactive && secondaryColor != null ? (
-      <SecondaryDot
-        color={secondaryColor}
+    !inactive && visibleSecondaryDots.length > 0 ? (
+      <SecondaryDotRow
+        dots={visibleSecondaryDots}
         dimmed={dimmedByFilter}
         isPast={isPast}
+        inkColor={colors.text}
       />
     ) : null;
 
@@ -174,7 +190,7 @@ function CalendarDayInner({
           className="active:opacity-80"
           style={[weekendSpanPressableStyle, { zIndex: 1 }]}
         >
-          {isToday ? (
+          {showRing ? (
             <TodayOutline
               label={label}
               textColor={textColor}
@@ -217,7 +233,7 @@ function CalendarDayInner({
           style={weekendSpanPressableStyle}
         >
           <View pointerEvents="none" style={weekendSpanPillStyle(weekendBg)} />
-          {isToday ? (
+          {showRing ? (
             <View style={{ zIndex: 1 }}>
               <TodayOutline
                 label={label}
@@ -259,7 +275,7 @@ function CalendarDayInner({
         onLongPress={handleLongPress}
         testID={testID}
       >
-        {isToday || isPatternAnchor ? (
+        {showRing || isPatternAnchor ? (
           <TodayFilledMarker
             label={label}
             backgroundColor={backgroundColor}
@@ -294,7 +310,7 @@ function CalendarDayInner({
         onLongPress={handleLongPress}
         testID={testID}
       >
-        {isToday ? (
+        {showRing ? (
           <TodayFilledMarker
             label={label}
             backgroundColor={backgroundColor}
@@ -326,7 +342,7 @@ function CalendarDayInner({
         onLongPress={handleLongPress}
         testID={testID}
       >
-        {isToday ? (
+        {showRing ? (
           <TodayFilledMarker
             label={label}
             backgroundColor={backgroundColor}
@@ -351,6 +367,8 @@ function CalendarDayInner({
     : labelAlpha < 1
       ? withAlpha(colors.text, labelAlpha)
       : colors.text;
+  const struckThrough =
+    !inactive && markKind === 'none' && markContext.skippedSet.has(iso);
 
   return (
     <DayShell
@@ -359,18 +377,20 @@ function CalendarDayInner({
       onLongPress={handleLongPress}
       testID={testID}
     >
-      {isToday && !inactive ? (
+      {showRing ? (
         <TodayOutline
           label={label}
           textColor={textColor}
           inkColor={colors.brand}
           secondaryDot={secondaryDot}
+          struckThrough={struckThrough}
         />
       ) : (
         <DayLabelBox
           textColor={textColor}
           label={label}
           secondaryDot={inactive ? null : secondaryDot}
+          struckThrough={struckThrough}
         />
       )}
     </DayShell>
@@ -384,8 +404,6 @@ type DayShellProps = {
   onLongPress: () => void;
   testID?: string;
 };
-
-const SECONDARY_DOT_GAP = 4;
 
 /** Keeps the day fill at CELL_SIZE and parks the friend dot fully below it. */
 function DayMarkWithSecondaryDot({
@@ -424,15 +442,23 @@ function DayLabelBox({
   label,
   textColor,
   secondaryDot,
+  struckThrough = false,
 }: {
   label: string;
   textColor: string;
   secondaryDot: ReactNode;
+  struckThrough?: boolean;
 }) {
   return (
     <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
       <View style={dayMarkerBoxStyle}>
-        <Text className="font-mono text-sm" style={{ color: textColor }}>
+        <Text
+          className="font-mono text-sm"
+          style={{
+            color: textColor,
+            textDecorationLine: struckThrough ? 'line-through' : 'none',
+          }}
+        >
           {label}
         </Text>
       </View>
@@ -470,6 +496,8 @@ function FilledDayMarker({
   );
 }
 
+const EMPTY_SECONDARY_DOTS: readonly SecondaryDayDot[] = [];
+
 function SecondaryDot({
   color,
   dimmed,
@@ -491,6 +519,51 @@ function SecondaryDot({
         backgroundColor,
       }}
     />
+  );
+}
+
+function SecondaryDotRow({
+  dots,
+  dimmed,
+  isPast,
+  inkColor,
+}: {
+  dots: readonly SecondaryDayDot[];
+  dimmed: boolean;
+  isPast: boolean;
+  inkColor: string;
+}) {
+  const shown = dots.slice(0, SECONDARY_DAY_DOT_CAP);
+  const extra = dots.length - shown.length;
+  const overflowAlpha = markColorAlpha(dimmed, isPast);
+  return (
+    <View
+      pointerEvents="none"
+      className="flex-row items-center"
+      style={{ gap: 2 }}
+    >
+      {shown.map((dot) => (
+        <SecondaryDot
+          key={dot.periodId}
+          color={dot.color}
+          dimmed={dimmed}
+          isPast={isPast}
+        />
+      ))}
+      {extra > 0 ? (
+        <Text
+          className="font-mono"
+          style={{
+            fontSize: 8,
+            lineHeight: SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT,
+            color:
+              overflowAlpha < 1 ? withAlpha(inkColor, overflowAlpha) : inkColor,
+          }}
+        >
+          +{extra}
+        </Text>
+      ) : null}
+    </View>
   );
 }
 
@@ -522,11 +595,13 @@ function TodayOutline({
   textColor,
   inkColor,
   secondaryDot,
+  struckThrough = false,
 }: {
   label: string;
   textColor: string;
   inkColor: string;
   secondaryDot?: ReactNode;
+  struckThrough?: boolean;
 }) {
   return (
     <DayMarkWithSecondaryDot secondaryDot={secondaryDot}>
@@ -540,7 +615,13 @@ function TodayOutline({
           ...dayMarkerStyle,
         }}
       >
-        <Text className="font-mono text-sm" style={{ color: textColor }}>
+        <Text
+          className="font-mono text-sm"
+          style={{
+            color: textColor,
+            textDecorationLine: struckThrough ? 'line-through' : 'none',
+          }}
+        >
           {label}
         </Text>
       </View>

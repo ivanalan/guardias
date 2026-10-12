@@ -41,6 +41,9 @@
     "freeDay": "Día libre",
     "vacationDay": "Vacaciones",
     "shiftDay": "Guardia",
+    "skipShift": "Quitar guardia",
+    "coverDay": "Cubrir este día",
+    "friendShiftMeta": "Guardia · {{time}}",
     "startsOn": "Inicia {{date}}",
     "endsOn": "Termina {{date}}",
     "duration": "{{hours}} horas",
@@ -87,9 +90,12 @@
       "filterFriendShiftsHint": "Resaltar las guardias de tu amigo en el calendario",
       "filterFreeWeekendsHint": "Resaltar fines libres en el calendario",
       "filterVacationHint": "Resaltar días de vacaciones en el calendario",
+      "expandFriendsHint": "Mostrar el filtro de cada amigo",
       "myShiftsLabel": "Mis guardias",
       "freeWeekendsLabel": "Fines libres",
       "vacationLabel": "Vacaciones",
+      "friendsCollapsedLabel": "+{{count}} amigos",
+      "friendsCollapsedSummary": "+{{count}} amigos ({{days}} días)",
       "myShiftsSummary_one": "Mis guardias ({{count}})",
       "myShiftsSummary_other": "Mis guardias ({{count}})",
       "periodShiftsSummary_one": "{{name}} ({{count}})",
@@ -172,6 +178,8 @@
       "previewShowCalendar": "Mostrar calendario",
       "previewHideCalendar": "Ocultar calendario",
       "shiftStartTime": "Inicio",
+      "shiftLength": "Duración",
+      "shiftLengthHours": "{{hours}}h",
       "color": "Color",
       "colorSwatchA11y": "Color {{color}}",
       "vacation": "Vacaciones",
@@ -187,7 +195,7 @@
       "vacationOutOfBounds": "Las vacaciones deben estar dentro de las fechas de la rotación.",
       "dateOverlap": "Este rango de fechas se traslapa con otra rotación. Si es el horario de otra persona, márcalo como guardia de un amigo.",
       "firstShiftOutOfBounds": "La primera guardia debe estar dentro de las fechas de la rotación.",
-      "secondaryLimit": "Por ahora solo puedes agregar una guardia de amigo. Edita o elimina la existente primero."
+      "secondaryCap": "Puedes agregar hasta 8 guardias de amigo. Edita o elimina una antes de agregar otra."
     }
   }
 }

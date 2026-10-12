@@ -1,0 +1,928 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeGuardia — Guardia exceptions (day sheet)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>
+  /* ---------------------------------------------------------------
+     Workbench chrome
+     --------------------------------------------------------------- */
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 28px 120px;
+    background: #14161a;
+    color: #e7e9ee;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1 { font: 600 22px/1.3 inherit; margin: 0 0 6px; }
+  h2 { font: 600 15px/1.3 inherit; margin: 40px 0 14px; color: #cfd4de; }
+  .sub { color: #9aa2b1; max-width: 78ch; margin: 0 0 24px; }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0 0 28px;
+    background: rgba(20, 22, 26, 0.92);
+    backdrop-filter: blur(10px);
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; }
+  .toolbar .glabel {
+    color: #8b93a3; font-size: 12px; text-transform: uppercase; letter-spacing: .06em;
+  }
+  .seg {
+    display: inline-flex; background: #1d2027; border: 1px solid #2b3038;
+    border-radius: 8px; padding: 2px;
+  }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: #aeb6c4;
+    font: 500 13px/1 inherit; padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: #3a4250; color: #fff; }
+  .ghost {
+    appearance: none; background: transparent; color: #aeb6c4;
+    border: 1px solid #2b3038; border-radius: 8px; padding: 7px 12px;
+    font: 500 13px/1 inherit; cursor: pointer;
+  }
+  .ghost:hover { color: #fff; border-color: #465065; }
+
+  .layout {
+    display: grid;
+    grid-template-columns: minmax(320px, 380px) minmax(280px, 360px);
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 780px) {
+    .layout { grid-template-columns: 1fr; }
+  }
+
+  .frame-label {
+    display: inline-block; font: 600 11px/1 inherit; letter-spacing: .08em;
+    text-transform: uppercase; color: #8b93a3; margin-bottom: 6px;
+  }
+  .frame-title { font: 600 15px/1.3 inherit; margin: 0 0 4px; color: #f2f4f8; }
+  .frame-why { color: #9aa2b1; font-size: 13px; margin: 0 0 12px; }
+
+  .device {
+    position: relative;
+    border-radius: 26px;
+    padding: 18px 16px 20px;
+    background: var(--bg);
+    border: 1px solid #2b3038;
+    overflow: hidden;
+    min-height: 520px;
+  }
+
+  .device[data-scheme="light"] {
+    --bg: #F6F1EC;
+    --bg1: #FFFFFF;
+    --text: #1C1B1F;
+    --brand: #1C1B1F;
+    --onColor: #FFFFFF;
+    --weekend: #007259;
+    --vacation: #4A47EF;
+    --textMuted: #49454F;
+    --textDisabled: #C4C4C4;
+    --border: #E5E5E5;
+    --accent: #DC211E;
+    --scrim: rgba(0,0,0,0.4);
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  .device[data-scheme="dark"] {
+    --bg: #171616;
+    --bg1: #2A2927;
+    --text: #E8DFDF;
+    --brand: #E8DFDF;
+    --onColor: #FFFFFF;
+    --weekend: #0A6A42;
+    --vacation: #3E3CD4;
+    --textMuted: #A8A29E;
+    --textDisabled: #5C5C5C;
+    --border: #3F3F3F;
+    --accent: #C11E1E;
+    --scrim: rgba(0,0,0,0.6);
+    --shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .serif { font-family: "Instrument Serif", Georgia, serif; }
+  .mono { font-family: ui-monospace, Menlo, Consolas, monospace; }
+
+  /* Calendar */
+  .cal-header {
+    display: flex; align-items: baseline; justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .cal-month {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 28px; color: var(--text); margin: 0; letter-spacing: -0.02em;
+  }
+  .cal-meta { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--textMuted); }
+  .weekdays {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 4px;
+  }
+  .weekdays span {
+    text-align: center; font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; color: var(--textMuted); padding: 4px 0;
+  }
+  .grid {
+    display: grid; grid-template-columns: repeat(7, 1fr);
+    gap: 6px 0;
+  }
+  .day {
+    appearance: none; border: 0; background: transparent;
+    height: 42px; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; padding: 0; position: relative;
+  }
+  .day:focus-visible { outline: 2px solid var(--brand); outline-offset: 1px; border-radius: 10px; }
+  .day .mark {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+    color: var(--text); position: relative;
+  }
+  .day.shift .mark { background: var(--accent); color: var(--onColor); }
+  .day.vacation .mark { background: var(--vacation); color: var(--onColor); }
+  .day.weekend .mark { background: var(--weekend); color: var(--onColor); }
+  .day.cover .mark {
+    background: var(--accent); color: var(--onColor);
+    box-shadow: inset 0 0 0 1.5px dashed rgba(255,255,255,0.55);
+  }
+  .day.cover .mark::after {
+    content: "";
+    position: absolute; top: 3px; right: 3px;
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--onColor);
+  }
+  .day.skipped .mark {
+    color: var(--textMuted);
+    text-decoration: line-through;
+    text-decoration-thickness: 1px;
+    opacity: 0.55;
+  }
+  .day.today .mark {
+    box-shadow: inset 0 0 0 2px var(--brand);
+  }
+  .day.today.shift .mark,
+  .day.today.cover .mark {
+    box-shadow: inset 0 0 0 2px var(--brand);
+    padding: 2px;
+  }
+  .day.today.shift .mark > span,
+  .day.today.cover .mark > span {
+    display: flex; align-items: center; justify-content: center;
+    width: 100%; height: 100%; border-radius: 7px;
+    background: var(--accent); color: var(--onColor);
+  }
+  .day.muted .mark { opacity: 0.35; }
+  .day.selected .mark { outline: 2px solid var(--brand); outline-offset: 2px; }
+  .day.pickable .mark {
+    outline: 1.5px dashed var(--textMuted); outline-offset: 2px;
+  }
+  .day.pickable:hover .mark { outline-color: var(--accent); }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px;
+  }
+  .chip {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 8px 12px; border-radius: 999px; background: var(--bg1);
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--text);
+  }
+  .chip .dot {
+    width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+  }
+  .chip .dot.dash {
+    background: transparent;
+    border: 1.5px dashed var(--accent);
+    border-radius: 3px;
+  }
+  .chip .count { color: var(--textMuted); }
+
+  /* Day sheet overlay */
+  .sheet-scrim {
+    position: absolute; inset: 0;
+    background: var(--scrim);
+    opacity: 0; pointer-events: none;
+    transition: opacity 180ms ease;
+  }
+  .sheet-scrim.open { opacity: 1; pointer-events: auto; }
+
+  .sheet {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    border-radius: 22px 22px 0 0;
+    padding: 10px 20px 28px;
+    transform: translateY(105%);
+    transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+    box-shadow: 0 -8px 32px rgba(0,0,0,0.18);
+    max-height: 92%;
+    overflow: auto;
+  }
+  .sheet.open { transform: translateY(0); }
+  .grab {
+    width: 36px; height: 4px; border-radius: 2px;
+    background: var(--border); margin: 0 auto 16px;
+  }
+  .sheet-date {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 34px; letter-spacing: -0.02em; color: var(--text);
+    margin: 0 0 2px; line-height: 1.1;
+  }
+  .sheet-status {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 16px; color: var(--text); margin: 0 0 2px;
+  }
+  .sheet-sub {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 13px; color: var(--text); opacity: 0.5; margin: 0 0 18px;
+  }
+
+  .cards {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    margin-bottom: 16px;
+  }
+  .card {
+    background: var(--bg1); border: 1px solid var(--border);
+    border-radius: 16px; padding: 14px 14px 12px;
+    box-shadow: var(--shadow);
+  }
+  .card .ico {
+    width: 20px; height: 20px; margin-bottom: 10px; color: var(--accent);
+  }
+  .card .val {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 22px; color: var(--text); margin: 0 0 2px;
+  }
+  .card .sub {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; color: var(--text); opacity: 0.5; margin: 0;
+  }
+
+  .action {
+    appearance: none; width: 100%;
+    border: 1px solid var(--border);
+    background: var(--bg1); color: var(--text);
+    border-radius: 14px; padding: 14px 16px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 14px;
+    cursor: pointer; text-align: left;
+    display: flex; align-items: center; justify-content: space-between;
+    transition: background 120ms ease, opacity 120ms ease;
+  }
+  .action:active { opacity: 0.75; }
+  .action.primary {
+    background: var(--text); color: var(--bg); border-color: transparent;
+  }
+  .action.danger {
+    color: var(--accent);
+  }
+  .action .chev { opacity: 0.4; font-size: 18px; line-height: 1; }
+  .action + .action { margin-top: 8px; }
+
+  .followup {
+    margin-top: 12px;
+    padding: 12px 14px;
+    background: var(--bg1);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    display: none;
+  }
+  .followup.show { display: block; }
+  .followup p {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 13px; color: var(--text); margin: 0 0 10px;
+  }
+  .followup-row { display: flex; gap: 8px; }
+  .followup-row button {
+    appearance: none; flex: 1;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--text); border-radius: 10px; padding: 10px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px;
+    cursor: pointer;
+  }
+  .followup-row button.emph {
+    background: var(--text); color: var(--bg); border-color: transparent;
+  }
+
+  .toast {
+    position: absolute; left: 16px; right: 16px; bottom: 16px;
+    background: var(--text); color: var(--bg);
+    border-radius: 12px; padding: 12px 14px;
+    font-family: ui-monospace, Menlo, monospace; font-size: 13px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+    transform: translateY(120%); opacity: 0;
+    transition: transform 200ms ease, opacity 200ms ease;
+    z-index: 5;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast button {
+    appearance: none; border: 0; background: transparent;
+    color: inherit; font: inherit; font-weight: 600;
+    text-decoration: underline; cursor: pointer; padding: 0;
+  }
+
+  .picker-hint {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 12px; color: var(--textMuted);
+    margin: 0 0 10px; display: none;
+  }
+  .picker-hint.show { display: block; }
+
+  /* Standalone day-sheet frames */
+  .sheet-static {
+    background: var(--bg);
+    border-radius: 22px;
+    padding: 20px;
+    border: 1px solid #2b3038;
+  }
+
+  .states {
+    display: flex; flex-wrap: wrap; gap: 22px; margin-top: 8px;
+  }
+  .state { width: 300px; }
+  .state .caption {
+    font-size: 12px; color: #9aa2b1; margin: 8px 0 0;
+  }
+
+  .verdict {
+    margin-top: 40px; padding: 20px 22px; max-width: 96ch;
+    background: #191c22; border: 1px solid #262a32; border-radius: 12px;
+  }
+  .verdict p { color: #b9c0cd; margin: 0 0 10px; }
+  .verdict strong { color: #f2f4f8; }
+  .verdict ol { color: #b9c0cd; padding-left: 20px; margin: 0; }
+  .verdict li { margin-bottom: 4px; }
+  .verdict code {
+    background: #23272f; padding: 1px 5px; border-radius: 4px; font-size: 12.5px;
+  }
+
+  .flow {
+    display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0 0;
+  }
+  .step {
+    background: #1d2027; border: 1px solid #2b3038; border-radius: 10px;
+    padding: 10px 12px; font-size: 12.5px; color: #b9c0cd; max-width: 180px;
+  }
+  .step b { display: block; color: #f2f4f8; margin-bottom: 3px; font-size: 12px; }
+</style>
+</head>
+<body>
+
+<h1>Guardia exceptions — day sheet prototype</h1>
+<p class="sub">
+  Tap a day → one contextual verb. No swap wizard, no exceptions settings.
+  Instant toggle; optional “cover another day?” after skip (v1.1).
+  Calendar keeps fill colors; cover days get a light dashed edge + corner mark.
+</p>
+
+<div class="toolbar">
+  <div class="group">
+    <span class="glabel">Lang</span>
+    <div class="seg" id="langSeg">
+      <button type="button" data-lang="es" aria-pressed="true">ES</button>
+      <button type="button" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+  </div>
+  <div class="group">
+    <span class="glabel">Scheme</span>
+    <div class="seg" id="schemeSeg">
+      <button type="button" data-scheme="light" aria-pressed="true">Light</button>
+      <button type="button" data-scheme="dark" aria-pressed="false">Dark</button>
+    </div>
+  </div>
+  <div class="group">
+    <span class="glabel">Scope</span>
+    <div class="seg" id="scopeSeg">
+      <button type="button" data-scope="v1" aria-pressed="true">v1</button>
+      <button type="button" data-scope="v11" aria-pressed="false">v1.1 swap hint</button>
+    </div>
+  </div>
+  <button type="button" class="ghost" id="resetBtn">Reset demo</button>
+</div>
+
+<div class="layout">
+  <!-- Interactive calendar + sheet -->
+  <div>
+    <span class="frame-label">Interactive</span>
+    <h3 class="frame-title">Calendar → day sheet</h3>
+    <p class="frame-why">
+      Try Fri 10 (shift → skip), Sun 12 (free → cover), Mon 13 (vacation, secondary),
+      Wed 15 (already a cover). Friend dots are not editable.
+    </p>
+    <div class="device" id="device" data-scheme="light">
+      <div class="cal-header">
+        <h2 class="cal-month">octubre 2026</h2>
+        <span class="cal-meta mono" id="periodMeta">Guardia A · Urgencias</span>
+      </div>
+      <p class="picker-hint" id="pickerHint"></p>
+      <div class="weekdays mono" id="weekdays"></div>
+      <div class="grid" id="grid"></div>
+      <div class="legend" id="legend"></div>
+
+      <div class="sheet-scrim" id="scrim"></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true">
+        <div class="grab"></div>
+        <h3 class="sheet-date" id="sheetDate"></h3>
+        <p class="sheet-status" id="sheetStatus"></p>
+        <p class="sheet-sub" id="sheetSub"></p>
+        <div class="cards" id="sheetCards"></div>
+        <button type="button" class="action" id="primaryAction"></button>
+        <div class="followup" id="followup">
+          <p id="followupCopy"></p>
+          <div class="followup-row">
+            <button type="button" class="emph" id="pickDayBtn"></button>
+            <button type="button" id="notNowBtn"></button>
+          </div>
+        </div>
+      </div>
+      <div class="toast" id="toast">
+        <span id="toastMsg"></span>
+        <button type="button" id="toastUndo"></button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Flow map -->
+  <div>
+    <span class="frame-label">Flow</span>
+    <h3 class="frame-title">One contextual verb</h3>
+    <p class="frame-why">Sheet action depends on day kind — never a 5-item ActionSheet.</p>
+    <div class="flow">
+      <div class="step"><b>Shift day</b>No voy esta guardia → free + Restore</div>
+      <div class="step"><b>Free (in rotation)</b>Cubrir este día → shift fill + cover mark</div>
+      <div class="step"><b>Vacation</b>Leave as-is (v1) or secondary Restore</div>
+      <div class="step"><b>After skip (v1.1)</b>Also cover another day? Pick · Not now</div>
+    </div>
+
+    <h2 style="margin-top:28px">Day sheet states</h2>
+    <div class="states" id="staticStates"></div>
+  </div>
+</div>
+
+<div class="verdict">
+  <p><strong>Product rules baked into this mock</strong></p>
+  <ol>
+    <li>Instant toggle — no confirm dialog for single-day edits.</li>
+    <li>Cover days: same shift fill + dashed edge / corner mark. Skipped: empty (optional faint strike in demo).</li>
+    <li>Legend: one extra line (“Edited days”) — not three new chips.</li>
+    <li>Friend secondary dots: open day sheet read-only for their schedule; no skip/cover.</li>
+    <li>Copy uses resident verbs — never “exception / override / EXDATE”.</li>
+  </ol>
+</div>
+
+<script>
+(() => {
+  const COPY = {
+    es: {
+      weekdays: ["L","M","X","J","V","S","D"],
+      periodMeta: "Guardia A · Urgencias",
+      freeDay: "Día libre",
+      vacationDay: "Vacaciones",
+      shiftLabel: "Urgencias",
+      startsOn: (d) => `Inicia ${d}`,
+      endsOn: (d) => `Termina ${d}`,
+      skip: "No voy esta guardia",
+      cover: "Cubrir este día",
+      restore: "Restaurar",
+      restorePattern: "Restaurar patrón",
+      toastSkipped: "Guardia quitada",
+      toastCovered: "Día cubierto",
+      toastRestored: "Patrón restaurado",
+      undo: "Deshacer",
+      followup: "¿También cubres otro día?",
+      pickDay: "Elegir día",
+      notNow: "Ahora no",
+      pickerHint: "Toca un día libre para cubrir",
+      friendNote: "Horario de Ana (solo lectura)",
+      vacationNote: "Vacaciones · Urgencias",
+      legendShifts: "Urgencias",
+      legendEdited: "Días editados",
+      legendWeekend: "Fin de semana libre",
+      coverBadge: "Extra",
+      skippedBadge: "No voy",
+    },
+    en: {
+      weekdays: ["M","T","W","T","F","S","S"],
+      periodMeta: "Letter A · ER",
+      freeDay: "Free day",
+      vacationDay: "Vacation",
+      shiftLabel: "ER",
+      startsOn: (d) => `Starts ${d}`,
+      endsOn: (d) => `Ends ${d}`,
+      skip: "Skip this shift",
+      cover: "Cover this day",
+      restore: "Restore",
+      restorePattern: "Restore pattern",
+      toastSkipped: "Shift removed",
+      toastCovered: "Day covered",
+      toastRestored: "Pattern restored",
+      undo: "Undo",
+      followup: "Also cover another day?",
+      pickDay: "Pick a day",
+      notNow: "Not now",
+      pickerHint: "Tap a free day to cover",
+      friendNote: "Ana’s schedule (read-only)",
+      vacationNote: "Vacation · ER",
+      legendShifts: "ER",
+      legendEdited: "Edited days",
+      legendWeekend: "Free weekend",
+      coverBadge: "Extra",
+      skippedBadge: "Skipped",
+    },
+  };
+
+  /** Pattern: A = every 4th day starting Oct 2 → 2,6,10,14,18,22,26,30 */
+  const PATTERN = new Set([2, 6, 10, 14, 18, 22, 26, 30]);
+  const VACATION = new Set([13]);
+  const WEEKEND = new Set([3, 4]); // free weekend demo
+  const FRIEND = new Set([7, 11, 19]); // secondary dots only
+
+  /** Mutable exception state: date → 'skip' | 'cover' | null */
+  let edits = {
+    15: "cover", // seed: already covered Wed
+  };
+  let selected = null;
+  let lang = "es";
+  let scheme = "light";
+  let scope = "v1";
+  let pickMode = false;
+  let lastAction = null; // for toast undo
+  let toastTimer = null;
+
+  const device = document.getElementById("device");
+  const grid = document.getElementById("grid");
+  const weekdaysEl = document.getElementById("weekdays");
+  const legendEl = document.getElementById("legend");
+  const sheet = document.getElementById("sheet");
+  const scrim = document.getElementById("scrim");
+  const toast = document.getElementById("toast");
+  const followup = document.getElementById("followup");
+  const pickerHint = document.getElementById("pickerHint");
+  const periodMeta = document.getElementById("periodMeta");
+  const staticStates = document.getElementById("staticStates");
+
+  function t() { return COPY[lang]; }
+
+  function dayKind(n) {
+    if (VACATION.has(n)) return "vacation";
+    const edit = edits[n];
+    if (edit === "skip") return "skipped";
+    if (edit === "cover") return "cover";
+    if (PATTERN.has(n)) return "shift";
+    if (WEEKEND.has(n)) return "weekend";
+    return "free";
+  }
+
+  function effectiveShift(n) {
+    const k = dayKind(n);
+    return k === "shift" || k === "cover";
+  }
+
+  function dateLabel(n) {
+    if (lang === "es") {
+      const days = ["jueves","viernes","sábado","domingo","lunes","martes","miércoles","jueves","viernes","sábado","domingo","lunes","martes","miércoles","jueves","viernes","sábado","domingo","lunes","martes","miércoles","jueves","viernes","sábado","domingo","lunes","martes","miércoles","jueves","viernes","sábado"];
+      // Oct 1 2026 is Thursday
+      return `${days[n - 1]} ${n} de octubre`;
+    }
+    const days = ["Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat","Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    return `${days[n - 1]}, Oct ${n}`;
+  }
+
+  function shortDate(n) {
+    return lang === "es" ? `${n} oct` : `Oct ${n}`;
+  }
+
+  function renderWeekdays() {
+    weekdaysEl.innerHTML = t().weekdays.map((w) => `<span>${w}</span>`).join("");
+  }
+
+  function renderGrid() {
+    // Oct 2026 starts Thursday = index 3 in Mon-first grid
+    const blanks = 3;
+    let html = "";
+    for (let i = 0; i < blanks; i++) {
+      html += `<div class="day muted"><div class="mark"></div></div>`;
+    }
+    for (let n = 1; n <= 31; n++) {
+      const kind = dayKind(n);
+      const classes = ["day", kind];
+      if (n === 12) classes.push("today"); // demo "today"
+      if (n === selected) classes.push("selected");
+      if (pickMode && (kind === "free" || kind === "skipped")) classes.push("pickable");
+      const friend = FRIEND.has(n)
+        ? `<span style="position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:5px;height:5px;border-radius:50%;background:#2F69F3"></span>`
+        : "";
+      const inner = (n === 12 && (kind === "shift" || kind === "cover"))
+        ? `<span>${n}</span>`
+        : n;
+      html += `<button type="button" class="${classes.join(" ")}" data-day="${n}" aria-label="${dateLabel(n)}"><div class="mark">${inner}${friend}</div></button>`;
+    }
+    grid.innerHTML = html;
+    grid.querySelectorAll("[data-day]").forEach((btn) => {
+      btn.addEventListener("click", () => onDayTap(+btn.dataset.day));
+    });
+  }
+
+  function renderLegend() {
+    const c = t();
+    const shiftCount = [...PATTERN].filter((n) => dayKind(n) !== "skipped").length
+      + Object.keys(edits).filter((k) => edits[k] === "cover" && !PATTERN.has(+k)).length;
+    const editedCount = Object.keys(edits).filter((k) => edits[k]).length;
+    legendEl.innerHTML = `
+      <span class="chip"><span class="dot"></span>${c.legendShifts}<span class="count">${shiftCount}</span></span>
+      <span class="chip"><span class="dot" style="background:var(--weekend)"></span>${c.legendWeekend}<span class="count">1</span></span>
+      ${editedCount > 0 ? `<span class="chip"><span class="dot dash"></span>${c.legendEdited}<span class="count">${editedCount}</span></span>` : ""}
+    `;
+  }
+
+  function openSheet(n) {
+    selected = n;
+    pickMode = false;
+    pickerHint.classList.remove("show");
+    renderGrid();
+    const c = t();
+    const kind = dayKind(n);
+    const isFriendOnly = FRIEND.has(n) && !effectiveShift(n) && kind !== "vacation" && kind !== "cover" && kind !== "shift" && kind !== "skipped";
+
+    document.getElementById("sheetDate").textContent = dateLabel(n);
+    followup.classList.remove("show");
+
+    const action = document.getElementById("primaryAction");
+    const cards = document.getElementById("sheetCards");
+    const status = document.getElementById("sheetStatus");
+    const sub = document.getElementById("sheetSub");
+
+    if (kind === "vacation") {
+      status.textContent = c.vacationDay;
+      sub.textContent = c.vacationNote;
+      cards.innerHTML = "";
+      action.style.display = "none";
+      // v1: no action on vacation
+    } else if (kind === "shift" || kind === "cover") {
+      status.textContent = c.shiftLabel;
+      sub.textContent = kind === "cover" ? c.coverBadge : (PATTERN.has(n) ? "A · 1 de 4" : c.coverBadge);
+      cards.innerHTML = `
+        <div class="card">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4v4M10 14L19 5M19 10v7a2 2 0 01-2 2H7a2 2 0 01-2-2V7a2 2 0 012-2h7"/></svg>
+          <p class="val">07:00</p>
+          <p class="sub">${c.startsOn(shortDate(n))}</p>
+        </div>
+        <div class="card">
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5v-4M14 10L5 19M5 14V7a2 2 0 012-2h10a2 2 0 012 2v10a2 2 0 01-2 2h-7"/></svg>
+          <p class="val">07:00</p>
+          <p class="sub">${c.endsOn(shortDate(n + 1 > 31 ? 1 : n + 1))}</p>
+        </div>
+      `;
+      action.style.display = "";
+      if (kind === "cover" && !PATTERN.has(n)) {
+        action.className = "action";
+        action.innerHTML = `<span>${c.restore}</span><span class="chev">↩</span>`;
+        action.onclick = () => doRestore(n);
+      } else {
+        action.className = "action danger";
+        action.innerHTML = `<span>${c.skip}</span><span class="chev">→</span>`;
+        action.onclick = () => doSkip(n);
+      }
+    } else if (kind === "skipped") {
+      status.textContent = c.freeDay;
+      sub.textContent = c.skippedBadge;
+      cards.innerHTML = "";
+      action.style.display = "";
+      action.className = "action";
+      action.innerHTML = `<span>${c.restorePattern}</span><span class="chev">↩</span>`;
+      action.onclick = () => doRestore(n);
+    } else {
+      // free
+      status.textContent = c.freeDay;
+      sub.textContent = FRIEND.has(n) ? c.friendNote : "";
+      cards.innerHTML = "";
+      if (FRIEND.has(n) && !PATTERN.has(n)) {
+        // Secondary: no skip/cover from your calendar
+        action.style.display = "none";
+      } else {
+        action.style.display = "";
+        action.className = "action primary";
+        action.innerHTML = `<span>${c.cover}</span><span class="chev">→</span>`;
+        action.onclick = () => doCover(n);
+      }
+    }
+
+    sheet.classList.add("open");
+    scrim.classList.add("open");
+  }
+
+  function closeSheet() {
+    sheet.classList.remove("open");
+    scrim.classList.remove("open");
+    selected = null;
+    followup.classList.remove("show");
+    renderGrid();
+  }
+
+  function showToast(msg, undoFn) {
+    const c = t();
+    document.getElementById("toastMsg").textContent = msg;
+    const undoBtn = document.getElementById("toastUndo");
+    undoBtn.textContent = c.undo;
+    undoBtn.onclick = () => {
+      undoFn?.();
+      hideToast();
+      renderAll();
+      if (selected != null) openSheet(selected);
+    };
+    toast.classList.add("show");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(hideToast, 3200);
+  }
+
+  function hideToast() {
+    toast.classList.remove("show");
+  }
+
+  function doSkip(n) {
+    const prev = edits[n] ?? (PATTERN.has(n) ? null : null);
+    lastAction = { type: "skip", n, prev: edits[n] };
+    if (PATTERN.has(n)) edits[n] = "skip";
+    else if (edits[n] === "cover") delete edits[n];
+    renderAll();
+    openSheet(n);
+    showToast(t().toastSkipped, () => {
+      if (lastAction?.prev) edits[n] = lastAction.prev;
+      else delete edits[n];
+    });
+    if (scope === "v11") {
+      const c = t();
+      document.getElementById("followupCopy").textContent = c.followup;
+      document.getElementById("pickDayBtn").textContent = c.pickDay;
+      document.getElementById("notNowBtn").textContent = c.notNow;
+      followup.classList.add("show");
+    }
+  }
+
+  function doCover(n) {
+    lastAction = { type: "cover", n, prev: edits[n] };
+    edits[n] = "cover";
+    pickMode = false;
+    pickerHint.classList.remove("show");
+    renderAll();
+    openSheet(n);
+    showToast(t().toastCovered, () => {
+      delete edits[n];
+    });
+  }
+
+  function doRestore(n) {
+    lastAction = { type: "restore", n, prev: edits[n] };
+    delete edits[n];
+    renderAll();
+    openSheet(n);
+    showToast(t().toastRestored, () => {
+      if (lastAction.prev) edits[n] = lastAction.prev;
+    });
+  }
+
+  function onDayTap(n) {
+    if (pickMode) {
+      const kind = dayKind(n);
+      if (kind === "free" || kind === "skipped") {
+        doCover(n);
+        return;
+      }
+      return;
+    }
+    openSheet(n);
+  }
+
+  function renderStaticStates() {
+    const c = t();
+    const states = [
+      {
+        title: lang === "es" ? "Guardia → Skip" : "Shift → Skip",
+        body: `
+          <h3 class="sheet-date" style="font-size:28px">${lang === "es" ? "viernes 10" : "Fri 10"}</h3>
+          <p class="sheet-status">${c.shiftLabel}</p>
+          <p class="sheet-sub" style="margin-bottom:14px">A · 1 de 4</p>
+          <button class="action danger" style="pointer-events:none"><span>${c.skip}</span><span class="chev">→</span></button>
+        `,
+      },
+      {
+        title: lang === "es" ? "Libre → Cubrir" : "Free → Cover",
+        body: `
+          <h3 class="sheet-date" style="font-size:28px">${lang === "es" ? "domingo 12" : "Sun 12"}</h3>
+          <p class="sheet-status">${c.freeDay}</p>
+          <p class="sheet-sub" style="margin-bottom:14px">&nbsp;</p>
+          <button class="action primary" style="pointer-events:none"><span>${c.cover}</span><span class="chev">→</span></button>
+        `,
+      },
+      {
+        title: lang === "es" ? "Tras skip + Restore" : "After skip + Restore",
+        body: `
+          <h3 class="sheet-date" style="font-size:28px">${lang === "es" ? "viernes 10" : "Fri 10"}</h3>
+          <p class="sheet-status">${c.freeDay}</p>
+          <p class="sheet-sub" style="margin-bottom:14px">${c.skippedBadge}</p>
+          <button class="action" style="pointer-events:none"><span>${c.restorePattern}</span><span class="chev">↩</span></button>
+        `,
+      },
+      {
+        title: "v1.1 follow-up",
+        body: `
+          <h3 class="sheet-date" style="font-size:28px">${lang === "es" ? "viernes 10" : "Fri 10"}</h3>
+          <p class="sheet-status">${c.freeDay}</p>
+          <div class="followup show" style="margin-top:12px">
+            <p>${c.followup}</p>
+            <div class="followup-row">
+              <button class="emph" style="pointer-events:none">${c.pickDay}</button>
+              <button style="pointer-events:none">${c.notNow}</button>
+            </div>
+          </div>
+        `,
+      },
+    ];
+    staticStates.innerHTML = states.map((s) => `
+      <div class="state">
+        <div class="sheet-static" data-scheme="${scheme}" style="background:var(--bg);--bg:${scheme==="light"?"#F6F1EC":"#171616"};--bg1:${scheme==="light"?"#FFFFFF":"#2A2927"};--text:${scheme==="light"?"#1C1B1F":"#E8DFDF"};--border:${scheme==="light"?"#E5E5E5":"#3F3F3F"};--accent:${scheme==="light"?"#DC211E":"#C11E1E"}">
+          ${s.body}
+        </div>
+        <p class="caption">${s.title}</p>
+      </div>
+    `).join("");
+  }
+
+  function renderAll() {
+    periodMeta.textContent = t().periodMeta;
+    renderWeekdays();
+    renderGrid();
+    renderLegend();
+    renderStaticStates();
+  }
+
+  // Toolbar
+  document.getElementById("langSeg").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-lang]");
+    if (!btn) return;
+    lang = btn.dataset.lang;
+    [...e.currentTarget.children].forEach((b) => b.setAttribute("aria-pressed", b === btn));
+    renderAll();
+    if (selected != null) openSheet(selected);
+  });
+
+  document.getElementById("schemeSeg").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-scheme]");
+    if (!btn) return;
+    scheme = btn.dataset.scheme;
+    device.dataset.scheme = scheme;
+    [...e.currentTarget.children].forEach((b) => b.setAttribute("aria-pressed", b === btn));
+    renderStaticStates();
+  });
+
+  document.getElementById("scopeSeg").addEventListener("click", (e) => {
+    const btn = e.target.closest("[data-scope]");
+    if (!btn) return;
+    scope = btn.dataset.scope;
+    [...e.currentTarget.children].forEach((b) => b.setAttribute("aria-pressed", b === btn));
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", () => {
+    edits = { 15: "cover" };
+    pickMode = false;
+    selected = null;
+    hideToast();
+    closeSheet();
+    renderAll();
+  });
+
+  scrim.addEventListener("click", closeSheet);
+
+  document.getElementById("notNowBtn").addEventListener("click", () => {
+    followup.classList.remove("show");
+  });
+
+  document.getElementById("pickDayBtn").addEventListener("click", () => {
+    followup.classList.remove("show");
+    closeSheet();
+    pickMode = true;
+    pickerHint.textContent = t().pickerHint;
+    pickerHint.classList.add("show");
+    renderGrid();
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
