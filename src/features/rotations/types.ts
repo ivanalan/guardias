@@ -1,8 +1,8 @@
-/** Cycle length: `3` = A-C, `4` = A-D. */
-export type CycleDays = 3 | 4;
+/** Cycle length: `3` = A-C, `4` = A-D, `5` = A-E. */
+export type CycleDays = 3 | 4 | 5;
 
-/** Letter on the year-anchored calendar (Jan 1 = A). `D` only valid for A-D. */
-export type OffsetLetter = 'A' | 'B' | 'C' | 'D';
+/** Letter on the year-anchored calendar (Jan 1 = A). `D`/`E` only for longer cycles. */
+export type OffsetLetter = 'A' | 'B' | 'C' | 'D' | 'E';
 
 export type RotationPattern = {
   cycleDays: CycleDays;
@@ -12,6 +12,7 @@ export type RotationPattern = {
 export const OFFSETS_FOR_CYCLE: Record<CycleDays, readonly OffsetLetter[]> = {
   3: ['A', 'B', 'C'],
   4: ['A', 'B', 'C', 'D'],
+  5: ['A', 'B', 'C', 'D', 'E'],
 };
 
 /** Default pattern: A-D with offset A. */

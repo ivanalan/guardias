@@ -1,6 +1,7 @@
 {
   "common": {
-    "back": "Atrás"
+    "back": "Atrás",
+    "next": "Siguiente"
   },
   "tabs": {
     "home": "Inicio",
@@ -25,6 +26,17 @@
     "shiftsCompleted": "guardias completadas",
     "progressOf": " / {{total}}",
     "periodLabel": "{{label}}",
+    "shareCoach": {
+      "title": "Comparte tu rotación",
+      "body": "Toca aquí cuando quieras compartir tu calendario.",
+      "gotIt": "Entendido"
+    },
+    "noPrimaryTitle": "Agrega tu rotación",
+    "noPrimaryBody": "Ya tienes la guardia de un amigo. Agrega la tuya para ver cuántas te quedan, tus fines libres y más.",
+    "noPrimaryCta": "Agregar rotación",
+    "noUpcomingTitle": "Sin próximas guardias",
+    "noUpcomingBody": "Tus rotaciones ya no tienen guardias. Agrega una nueva para seguir viendo Inicio.",
+    "noUpcomingCta": "Agregar rotación",
     "stats": {
       "timeLeft": "Tiempo restante",
       "timeUntilNext": "Próxima guardia",
@@ -115,9 +127,13 @@
     "openA11y": "Abrir ajustes"
   },
   "shifts": {
-    "emptyTitle": "Agrega tu primera rotación",
+    "emptyTitle": "DeGuardia",
     "emptyBody": "Ve cuántas guardias te quedan, tu próximo fin de semana libre y más.",
     "emptyCta": "Agregar rotación",
+    "emptyInfoTitle": "Comparte y consulta",
+    "emptyInfoBody": "Comparte tu rotación con un enlace, o agrega un widget a tu pantalla de inicio.",
+    "emptyInfoShareTitle": "Un solo enlace",
+    "emptyInfoWidgetTitle": "Widget en inicio",
     "addA11y": "Agregar rotación",
     "addTitle": "Agregar rotación",
     "editTitle": "Editar rotación",
@@ -172,6 +188,9 @@
       "patternAC": "A-C (cada 3 días)",
       "patternACTitle": "A-C",
       "patternACSubtitle": "Cada 3 días",
+      "patternAE": "A-E (cada 5 días)",
+      "patternAETitle": "A-E",
+      "patternAESubtitle": "Cada 5 días",
       "offset": "Guardia",
       "firstShiftDate": "Primera guardia",
       "firstShiftHint": "Selecciona un día para fijar el patrón",

@@ -115,6 +115,21 @@ describe('parseShareDraft', () => {
     ).toBeNull();
   });
 
+  it('accepts A-E patterns and rejects E on shorter cycles', () => {
+    expect(
+      parseShareDraft({
+        ...periodToShareDraft(period()),
+        pattern: { cycleDays: 5, offset: 'E' },
+      }),
+    ).not.toBeNull();
+    expect(
+      parseShareDraft({
+        ...periodToShareDraft(period()),
+        pattern: { cycleDays: 4, offset: 'E' },
+      }),
+    ).toBeNull();
+  });
+
   it('rejects empty labels', () => {
     expect(
       parseShareDraft({

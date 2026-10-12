@@ -50,7 +50,7 @@ function isNullableIsoDate(value: unknown): value is string | null {
 }
 
 function isCycleDays(value: unknown): value is CycleDays {
-  return value === 3 || value === 4;
+  return value === 3 || value === 4 || value === 5;
 }
 
 function isOffsetLetter(
