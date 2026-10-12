@@ -21,6 +21,7 @@ import { ANDROID_TEXT_WIDTH_BUMP } from '../../../theme/android-text';
 import { brandSelection } from '../../../theme/colors';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, Text, TextInput, View } from '../../../tw';
+import { markHomeShareCoachSeen } from '../../dashboard/home-share-tour';
 import { FirstShiftCalendar } from '../components/first-shift-calendar';
 import { RotationColorSwatches } from '../components/rotation-color-swatches';
 import {
@@ -61,18 +62,24 @@ type Props = NativeStackScreenProps<
  * Leave the add/edit form without leaving a zombie AddRotation on the Shifts
  * tab. Cross-tab open from Home mounts AddRotation as the stack's only route;
  * plain goBack() then returns to Home without popping the form.
+ *
+ * `toHome` is used after a successful add so onboarding / first-save lands on
+ * Home (where the share coach runs) instead of the empty Shifts list.
  */
-function dismissRotationForm(navigation: Props['navigation']) {
-  if (navigation.getState().routes.length > 1) {
-    navigation.goBack();
+function dismissRotationForm(
+  navigation: Props['navigation'],
+  options?: { toHome?: boolean },
+) {
+  const parent = navigation.getParent();
+  if (options?.toHome || navigation.getState().routes.length <= 1) {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'ShiftsList' }],
+    });
+    parent?.navigate('Home');
     return;
   }
-  const parent = navigation.getParent();
-  navigation.reset({
-    index: 0,
-    routes: [{ name: 'ShiftsList' }],
-  });
-  parent?.navigate('Home');
+  navigation.goBack();
 }
 
 type ActivePicker =
@@ -265,6 +272,8 @@ export function AddRotationScreen({ navigation, route }: Props) {
   const startAtPickerOpenRef = useRef<string | null>(null);
   const vacationStartAtPickerOpenRef = useRef<string | null>(null);
   const [leaveConfirmed, setLeaveConfirmed] = useState(false);
+  /** After a successful add, land on Home instead of popping to Shifts. */
+  const leaveToHomeRef = useRef(false);
 
   const isDirty = isFormDirty(initial, {
     label,
@@ -350,7 +359,7 @@ export function AddRotationScreen({ navigation, route }: Props) {
     if (!leaveConfirmed) {
       return;
     }
-    dismissRotationForm(navigation);
+    dismissRotationForm(navigation, { toHome: leaveToHomeRef.current });
   }, [leaveConfirmed, navigation]);
 
   // When start / vacation-start pickers close after a real change, fill end if untouched.
@@ -555,6 +564,11 @@ export function AddRotationScreen({ navigation, route }: Props) {
         role,
         createdAt: new Date().toISOString(),
       });
+      // Receivers of a share link already know sharing — skip the Home coach.
+      if (shareDraft != null) {
+        void markHomeShareCoachSeen();
+      }
+      leaveToHomeRef.current = true;
     }
     setLeaveConfirmed(true);
   }
@@ -694,14 +708,19 @@ export function AddRotationScreen({ navigation, route }: Props) {
           <FieldLabel>{t('shifts.form.schedule')}</FieldLabel>
           <View className="flex-row flex-wrap gap-2">
             <PatternPill
+              label={t('shifts.form.patternAC')}
+              selected={cycleDays === 3}
+              onPress={() => selectCycleDays(3)}
+            />
+            <PatternPill
               label={t('shifts.form.patternAD')}
               selected={cycleDays === 4}
               onPress={() => selectCycleDays(4)}
             />
             <PatternPill
-              label={t('shifts.form.patternAC')}
-              selected={cycleDays === 3}
-              onPress={() => selectCycleDays(3)}
+              label={t('shifts.form.patternAE')}
+              selected={cycleDays === 5}
+              onPress={() => selectCycleDays(5)}
             />
           </View>
         </View>

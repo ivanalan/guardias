@@ -90,6 +90,20 @@ describe('isShiftDay', () => {
     expect(isShiftDay(p, '2026-07-09')).toBe(true);
   });
 
+  it('uses a 5-day cycle for A-E anchored to Jan 1', () => {
+    // 2026-07-01 = B on A-E; A days are Jul 5, 10, …
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-15',
+      pattern: { cycleDays: 5, offset: 'A' },
+    });
+
+    expect(isShiftDay(p, '2026-07-01')).toBe(false);
+    expect(isShiftDay(p, '2026-07-05')).toBe(true);
+    expect(isShiftDay(p, '2026-07-10')).toBe(true);
+    expect(isShiftDay(p, '2026-07-15')).toBe(true);
+  });
+
   it('returns false outside the period bounds', () => {
     const p = period({
       startDate: '2026-07-01',

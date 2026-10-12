@@ -1,5 +1,6 @@
 import { Ionicons } from '@expo/vector-icons';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
+import { Alert, Platform, Share, type View as RNView } from 'react-native';
 import type { CompositeScreenProps } from '@react-navigation/native';
 import type { BottomTabScreenProps } from '@react-navigation/bottom-tabs';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
@@ -27,15 +28,30 @@ import {
 import type { TabParamList } from '../../../navigation/types';
 import { useTheme } from '../../../theme/theme-context';
 import { Pressable, ScrollView, View } from '../../../tw';
+import { buildShiftExportEvent } from '../../calendar/build-shift-export-event';
+import {
+  RotationImageCaptureHost,
+  type RotationImageShareRequest,
+} from '../../calendar/components/rotation-image-capture-host';
+import {
+  ShareDestinationModal,
+  type ShareDestination,
+} from '../../calendar/components/share-destination-modal';
+import { openDeviceCalendar } from '../../calendar/open-device-calendar';
+import { openGoogleCalendar } from '../../calendar/open-google-calendar';
 import { getRangeMarkInputs } from '../../calendar/month-legend-stats';
 import { ShiftsEmptyState } from '../../rotations/components/shifts-empty-state';
+import { primaryPeriods } from '../../rotations/period-role';
 import {
   resolveRotationColor,
   resolveShiftMarks,
 } from '../../rotations/rotation-colors';
 import { useRotations } from '../../rotations/rotations-context';
+import { buildShareUrl } from '../../rotations/share-rotation-link';
 import type { RotationPeriod } from '../../rotations/types';
+import { HomeIdleEmpty } from '../components/home-idle-empty';
 import { NextShiftCard } from '../components/next-shift-card';
+import { ShareCoachMark } from '../components/share-coach-mark';
 import { ShiftsLeftCard } from '../components/shifts-left-card';
 import { TwoWeekCalendar } from '../components/two-week-calendar';
 import { WeekendBanner } from '../components/weekend-banner';
@@ -45,10 +61,16 @@ import {
   formatWeekdayLong,
   weekdayInitials,
 } from '../format-home-copy';
+import {
+  hasSeenHomeShareCoach,
+  markHomeShareCoachSeen,
+} from '../home-share-tour';
 import { getTwoWeekDates } from '../two-week-dates';
 
 const REFRESH_MS = 60_000;
 const UPCOMING_SHIFTS_LIMIT = 4;
+/** Let Home layout settle after save → tab navigation before measuring. */
+const SHARE_COACH_START_DELAY_MS = 450;
 
 type Props = CompositeScreenProps<
   NativeStackScreenProps<DashboardStackParamList, 'HomeHome'>,
@@ -208,7 +230,25 @@ export function HomeScreen({ navigation }: Props) {
   const { colors } = useTheme();
   const language = (i18n.language === 'en' ? 'en' : 'es') as AppLanguage;
   const { periods } = useRotations();
+  const shareTargetRef = useRef<RNView>(null);
   const [now, setNow] = useState(() => new Date());
+  const [shareVisible, setShareVisible] = useState(false);
+  const [sharing, setSharing] = useState(false);
+  const [shareCoachVisible, setShareCoachVisible] = useState(false);
+  const [imageRequest, setImageRequest] =
+    useState<RotationImageShareRequest | null>(null);
+  const pendingShareRef = useRef<{
+    period: RotationPeriod;
+    destination: ShareDestination;
+  } | null>(null);
+
+  const status = getHomepageShiftStatus(periods, now);
+  const primaryCount = primaryPeriods(periods).length;
+
+  function dismissShareCoach() {
+    setShareCoachVisible(false);
+    void markHomeShareCoachSeen();
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -222,16 +262,180 @@ export function HomeScreen({ navigation }: Props) {
     }, []),
   );
 
-  const status = getHomepageShiftStatus(periods, now);
+  // First primary on Home: one-time spotlight on the share control.
+  useFocusEffect(
+    useCallback(() => {
+      if (status.kind === 'idle' || primaryCount !== 1 || shareCoachVisible) {
+        return;
+      }
+
+      let cancelled = false;
+      const timer = setTimeout(() => {
+        void (async () => {
+          if (cancelled || (await hasSeenHomeShareCoach())) {
+            return;
+          }
+          setShareCoachVisible(true);
+        })();
+      }, SHARE_COACH_START_DELAY_MS);
+
+      return () => {
+        cancelled = true;
+        clearTimeout(timer);
+      };
+    }, [status.kind, primaryCount, shareCoachVisible]),
+  );
+
+  async function runShareAction(
+    sharePeriod: RotationPeriod,
+    destination: ShareDestination,
+  ) {
+    setSharing(true);
+    try {
+      if (destination === 'image') {
+        setImageRequest({ period: sharePeriod });
+        return;
+      }
+
+      if (destination === 'link') {
+        const url = buildShareUrl(sharePeriod);
+        try {
+          await Share.share(Platform.OS === 'ios' ? { url } : { message: url });
+        } catch {
+          Alert.alert(
+            t('shifts.detail.shareFailedTitle'),
+            t('shifts.detail.shareFailedBody'),
+          );
+        }
+        return;
+      }
+
+      if (destination === 'google') {
+        const event = buildShiftExportEvent(sharePeriod);
+        const details =
+          event != null && event.exDates.length > 0
+            ? t('calendar.shareGoogleVacationNote', {
+                dates: event.exDates.join(', '),
+              })
+            : undefined;
+        const result = await openGoogleCalendar(sharePeriod, { details });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareGoogleFailed'));
+          }
+        }
+        return;
+      }
+
+      if (destination === 'device') {
+        const event = buildShiftExportEvent(sharePeriod);
+        const notes =
+          event != null && event.exDates.length > 0
+            ? t('calendar.shareDeviceVacationNote', {
+                dates: event.exDates.join(', '),
+              })
+            : undefined;
+        const result = await openDeviceCalendar(sharePeriod, { notes });
+        if (!result.ok) {
+          if (result.reason === 'empty') {
+            Alert.alert(
+              t('calendar.shareEmptyTitle'),
+              t('calendar.shareEmptyBody'),
+            );
+          } else {
+            Alert.alert(t('calendar.shareDeviceFailed'));
+          }
+        }
+      }
+    } finally {
+      if (destination !== 'image') {
+        setSharing(false);
+      }
+    }
+  }
+
+  function onImageShareComplete(
+    result: 'saved' | 'shared' | 'empty' | 'unavailable' | 'failed',
+  ) {
+    setImageRequest(null);
+    setSharing(false);
+    if (result === 'saved') {
+      Alert.alert(
+        t('calendar.shareImageSavedTitle'),
+        t('calendar.shareImageSavedBody'),
+      );
+      return;
+    }
+    if (result === 'empty') {
+      Alert.alert(t('calendar.shareEmptyTitle'), t('calendar.shareEmptyBody'));
+      return;
+    }
+    if (result === 'unavailable') {
+      Alert.alert(t('calendar.shareUnavailable'));
+      return;
+    }
+    if (result === 'failed') {
+      Alert.alert(
+        t('calendar.shareImageFailedTitle'),
+        t('calendar.shareImageFailedBody'),
+      );
+    }
+  }
+
+  function flushPendingShare() {
+    const pending = pendingShareRef.current;
+    if (pending == null) {
+      return;
+    }
+    pendingShareRef.current = null;
+    void runShareAction(pending.period, pending.destination);
+  }
+
+  function queueShareAfterDest(destination: ShareDestination) {
+    if (status.kind === 'idle') {
+      setShareVisible(false);
+      return;
+    }
+    pendingShareRef.current = { period: status.period, destination };
+    setShareVisible(false);
+    if (Platform.OS !== 'ios') {
+      setTimeout(() => {
+        flushPendingShare();
+      }, 300);
+    }
+  }
 
   if (status.kind === 'idle') {
+    const openAddRotation = () => {
+      // Keep ShiftsList under the form so the native stack back control shows.
+      navigation.navigate('Shifts', {
+        state: {
+          index: 1,
+          routes: [{ name: 'ShiftsList' }, { name: 'AddRotation' }],
+        },
+      });
+    };
+
+    // Existing periods but nothing for Home — not first-run onboarding.
+    if (periods.length > 0) {
+      return (
+        <View className="flex-1" style={{ backgroundColor: colors.bg }}>
+          <HomeIdleEmpty
+            variant={primaryCount === 0 ? 'friendOnly' : 'noUpcoming'}
+            onAddPress={openAddRotation}
+          />
+        </View>
+      );
+    }
+
     return (
       <View className="flex-1" style={{ backgroundColor: colors.bg }}>
-        <ShiftsEmptyState
-          onAddPress={() => {
-            navigation.navigate('Shifts', { screen: 'AddRotation' });
-          }}
-        />
+        <ShiftsEmptyState onAddPress={openAddRotation} />
       </View>
     );
   }
@@ -246,21 +450,47 @@ export function HomeScreen({ navigation }: Props) {
           <ScreenPageTitle
             title={status.period.label}
             right={
-              <Pressable
-                accessibilityRole="button"
-                accessibilityLabel={t('settings.openA11y')}
-                onPress={() => {
-                  navigation.navigate('Settings');
-                }}
-                className="px-2 active:opacity-60"
-                hitSlop={8}
-              >
-                <Ionicons
-                  name="settings-outline"
-                  size={SCREEN_PAGE_TITLE_ICON_SIZE}
-                  color={colors.brand}
-                />
-              </Pressable>
+              <View className="flex-row items-center">
+                <View ref={shareTargetRef} collapsable={false}>
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityLabel={t('shifts.detail.shareA11y')}
+                    onPress={() => {
+                      if (sharing) {
+                        return;
+                      }
+                      if (shareCoachVisible) {
+                        dismissShareCoach();
+                      }
+                      setShareVisible(true);
+                    }}
+                    disabled={sharing}
+                    className="px-2 active:opacity-60"
+                    hitSlop={8}
+                  >
+                    <Ionicons
+                      name="share-social-outline"
+                      size={SCREEN_PAGE_TITLE_ICON_SIZE}
+                      color={colors.brand}
+                    />
+                  </Pressable>
+                </View>
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityLabel={t('settings.openA11y')}
+                  onPress={() => {
+                    navigation.navigate('Settings');
+                  }}
+                  className="px-2 active:opacity-60"
+                  hitSlop={8}
+                >
+                  <Ionicons
+                    name="settings-outline"
+                    size={SCREEN_PAGE_TITLE_ICON_SIZE}
+                    color={colors.brand}
+                  />
+                </Pressable>
+              </View>
             }
           />
         </View>
@@ -276,6 +506,33 @@ export function HomeScreen({ navigation }: Props) {
           language={language}
         />
       </ScrollView>
+      <ShareDestinationModal
+        visible={shareVisible}
+        linkPrimary
+        rotationLabel={status.period.label}
+        onSelect={queueShareAfterDest}
+        onCancel={() => {
+          pendingShareRef.current = null;
+          setShareVisible(false);
+        }}
+        onDismiss={flushPendingShare}
+      />
+      <RotationImageCaptureHost
+        request={imageRequest}
+        language={language}
+        onComplete={onImageShareComplete}
+      />
+      <ShareCoachMark
+        visible={shareCoachVisible}
+        targetRef={shareTargetRef}
+        onDismiss={dismissShareCoach}
+        onTargetPress={() => {
+          dismissShareCoach();
+          if (!sharing) {
+            setShareVisible(true);
+          }
+        }}
+      />
     </View>
   );
 }

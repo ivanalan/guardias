@@ -1,0 +1,1500 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeGuardia — Empty-state Info visual options</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 28px 120px;
+    background: #14161a;
+    color: #e7e9ee;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1 { font: 600 22px/1.3 inherit; margin: 0 0 6px; }
+  h2 {
+    font: 600 15px/1.3 inherit;
+    margin: 48px 0 8px;
+    color: #cfd4de;
+  }
+  .sub { color: #9aa2b1; max-width: 92ch; margin: 0 0 20px; }
+  .sub code, .notes code {
+    background: #23272f;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0 0 28px;
+    background: rgba(20, 22, 26, 0.94);
+    backdrop-filter: blur(10px);
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .toolbar .glabel {
+    color: #8b93a3;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .seg {
+    display: inline-flex;
+    background: #1d2027;
+    border: 1px solid #2b3038;
+    border-radius: 8px;
+    padding: 2px;
+  }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: #aeb6c4;
+    font: 500 13px/1 inherit; padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: #3a4250; color: #fff; }
+
+  .strip-wrap {
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin: 0 -8px 8px;
+  }
+  .strip {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    width: max-content;
+    padding: 4px 8px 8px;
+  }
+  .strip-arrow {
+    align-self: center;
+    color: #5c6575;
+    font-size: 22px;
+    padding: 0 2px;
+    user-select: none;
+  }
+
+  .wf { width: 220px; }
+  .wf.lg { width: 300px; }
+  .wf .meta { margin-bottom: 8px; min-height: 4.2em; }
+  .wf .step {
+    font: 600 10px/1 inherit;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8b93a3;
+    margin-bottom: 4px;
+  }
+  .wf .step.base { color: #aeb6c4; }
+  .wf .step.flow1 { color: #8eb4ff; }
+  .wf .step.flow2 { color: #7ee0a8; }
+  .wf h3 {
+    font: 600 13px/1.25 inherit;
+    margin: 0 0 2px;
+    color: #f2f4f8;
+  }
+  .wf .why {
+    color: #8b93a3;
+    font-size: 11.5px;
+    margin: 0;
+  }
+
+  .large-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 28px;
+    align-items: flex-start;
+  }
+  .large-item { width: 300px; }
+  .large-item .meta { margin-bottom: 10px; min-height: 4.2em; }
+  .large-item .tag {
+    font: 600 10px/1 inherit;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .tag.base { color: #aeb6c4; }
+  .tag.flow1 { color: #8eb4ff; }
+  .tag.flow2 { color: #7ee0a8; }
+  .large-item h3 {
+    font: 600 15px/1.3 inherit;
+    margin: 0 0 4px;
+    color: #f2f4f8;
+  }
+  .large-item .why {
+    color: #9aa2b1;
+    font-size: 12.5px;
+    margin: 0;
+  }
+
+  .phone {
+    width: 220px;
+    height: 440px;
+    border-radius: 28px;
+    border: 1px solid #2b3038;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+    color: var(--text);
+  }
+  .phone.lg {
+    width: 300px;
+    height: 600px;
+    border-radius: 34px;
+  }
+  .phone[data-scheme="light"],
+  [data-scheme="light"] .phone {
+    --bg: #F6F1EC;
+    --bg1: #FFFFFF;
+    --text: #1C1B1F;
+    --brand: #1C1B1F;
+    --inverse: #F4F0F0;
+    --muted: #49454F;
+    --border: #E5E5E5;
+    --weekend: #007259;
+    --on-weekend: #F4F0F0;
+    --pill: #E8E4DF;
+    --accent: #2F69F3;
+    --red: #DC211E;
+    --home-wall: #1a1c22;
+    --home-icon: #3a3f4a;
+  }
+  .phone[data-scheme="dark"],
+  [data-scheme="dark"] .phone {
+    --bg: #171616;
+    --bg1: #2A2927;
+    --text: #E8DFDF;
+    --brand: #E8DFDF;
+    --inverse: #171616;
+    --muted: #A8A29A;
+    --border: #3A3836;
+    --weekend: #2A9B7A;
+    --on-weekend: #F4F0F0;
+    --pill: #3A3836;
+    --accent: #1C648F;
+    --red: #C11E1E;
+    --home-wall: #0e0f12;
+    --home-icon: #2a2e38;
+  }
+
+  .status {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px 4px;
+    font: 600 10px/1 "IBM Plex Mono", monospace;
+  }
+  .phone.lg .status { padding: 14px 22px 6px; font-size: 12px; }
+
+  .body {
+    height: calc(100% - 26px);
+    display: flex;
+    flex-direction: column;
+    padding: 6px 16px 14px;
+    gap: 8px;
+  }
+  .phone.lg .body {
+    height: calc(100% - 34px);
+    padding: 8px 22px 20px;
+    gap: 12px;
+  }
+
+  .serif {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0;
+    color: var(--text);
+  }
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .grow { flex: 1; display: flex; flex-direction: column; gap: 8px; min-height: 0; }
+  .phone.lg .grow { gap: 12px; }
+  .grow.end { justify-content: flex-end; flex: 0; }
+
+  .cta {
+    appearance: none;
+    border: 0;
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 28px;
+    background: var(--brand);
+    color: var(--inverse);
+    font: 600 11px/1 "IBM Plex Mono", monospace;
+    cursor: pointer;
+    text-align: center;
+  }
+  .phone.lg .cta { padding: 15px 18px; font-size: 14px; border-radius: 32px; }
+  .cta.ghost {
+    background: transparent;
+    color: var(--muted);
+  }
+  .cta.soft {
+    background: var(--bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  .cta.pill-sm {
+    padding: 9px 12px;
+    font-size: 10px;
+    border-radius: 24px;
+  }
+  .phone.lg .cta.pill-sm { padding: 12px 14px; font-size: 12px; }
+
+  .card {
+    background: var(--bg1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .phone.lg .card { border-radius: 16px; padding: 14px 16px; }
+  .card .label {
+    font: 500 9px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .phone.lg .card .label { font-size: 11px; margin-bottom: 8px; }
+  .card .line {
+    font: 400 10px/1.35 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin: 0;
+  }
+  .phone.lg .card .line { font-size: 12px; }
+
+  /* Feature rows (baseline) */
+  .feature {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 10px;
+  }
+  .phone.lg .feature {
+    border-radius: 14px;
+    padding: 14px;
+    gap: 12px;
+  }
+  .feature .icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    background: color-mix(in srgb, var(--accent) 18%, var(--bg1));
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .phone.lg .feature .icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+  .feature .ftitle {
+    font: 600 11px/1.2 "IBM Plex Mono", monospace;
+    color: var(--text);
+    margin: 0 0 3px;
+  }
+  .phone.lg .feature .ftitle { font-size: 13px; }
+  .feature .fbody {
+    font: 400 9px/1.35 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin: 0;
+  }
+  .phone.lg .feature .fbody { font-size: 11px; }
+
+  /* Mini share sheet */
+  .share-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .phone.lg .share-mini { gap: 8px; }
+  .share-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-radius: 22px;
+    font: 600 9px/1 "IBM Plex Mono", monospace;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+  }
+  .phone.lg .share-pill { padding: 11px 12px; font-size: 11px; border-radius: 26px; }
+  .share-pill.primary {
+    background: var(--brand);
+    color: var(--inverse);
+    border-color: var(--brand);
+  }
+  .share-pill .glyph { font-size: 11px; opacity: .85; }
+  .phone.lg .share-pill .glyph { font-size: 13px; }
+
+  .url-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 99px;
+    background: var(--pill);
+    font: 500 9px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .phone.lg .url-chip { font-size: 11px; padding: 8px 12px; }
+  .url-chip .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--weekend);
+    flex-shrink: 0;
+  }
+
+  /* Home wallpaper + widgets */
+  .home-stage {
+    background: var(--home-wall);
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    overflow: hidden;
+  }
+  .phone.lg .home-stage {
+    border-radius: 18px;
+    padding: 14px;
+    gap: 10px;
+  }
+  .home-stage .wall-icons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    opacity: .55;
+  }
+  .home-stage .wall-icons span {
+    aspect-ratio: 1;
+    border-radius: 10px;
+    background: var(--home-icon);
+  }
+  .phone.lg .home-stage .wall-icons span { border-radius: 12px; }
+
+  .w-cal {
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 8px;
+  }
+  .phone.lg .w-cal { border-radius: 14px; padding: 10px; }
+  .w-cal .wd {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+    margin-bottom: 4px;
+    font: 500 7px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    text-align: center;
+  }
+  .phone.lg .w-cal .wd { font-size: 9px; gap: 3px; margin-bottom: 6px; }
+  .w-cal .days {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+  }
+  .phone.lg .w-cal .days { gap: 3px; }
+  .w-cal .days span {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    font: 500 7px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .w-cal .days span { font-size: 9px; }
+  .w-cal .days span.shift {
+    background: var(--red);
+    color: #fff;
+  }
+  .w-cal .days span.free {
+    background: var(--weekend);
+    color: var(--on-weekend);
+  }
+  .w-cal .days span.today {
+    box-shadow: inset 0 0 0 1.5px var(--text);
+    color: var(--text);
+  }
+
+  .w-up {
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 8px 10px;
+  }
+  .phone.lg .w-up { border-radius: 14px; padding: 10px 12px; }
+  .w-up .wtitle {
+    font: 500 8px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .phone.lg .w-up .wtitle { font-size: 10px; margin-bottom: 8px; }
+  .w-up .row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .w-up .row:last-child { margin-bottom: 0; }
+  .w-up .rail {
+    width: 3px;
+    height: 22px;
+    border-radius: 99px;
+    background: var(--pill);
+    flex-shrink: 0;
+  }
+  .w-up .rail.on { background: var(--red); }
+  .w-up .dayn {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 16px;
+    line-height: 1;
+    color: var(--text);
+    width: 22px;
+  }
+  .phone.lg .w-up .dayn { font-size: 20px; width: 28px; }
+  .w-up .meta-line {
+    font: 400 8px/1.2 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .w-up .meta-line { font-size: 10px; }
+  .w-up .meta-line strong {
+    color: var(--text);
+    font-weight: 600;
+  }
+
+  /* Split panels */
+  .split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    flex: 1;
+    min-height: 0;
+  }
+  .phone.lg .split { gap: 10px; }
+  .panel {
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .phone.lg .panel { border-radius: 14px; padding: 12px; gap: 8px; }
+  .panel .ptitle {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 15px;
+    line-height: 1.1;
+    margin: 0;
+    color: var(--text);
+  }
+  .phone.lg .panel .ptitle { font-size: 20px; }
+  .panel .pcaption {
+    font: 400 8px/1.3 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin: 0;
+  }
+  .phone.lg .panel .pcaption { font-size: 10px; }
+
+  .device-sil {
+    flex: 1;
+    min-height: 72px;
+    border-radius: 14px;
+    border: 2px solid var(--border);
+    background: linear-gradient(160deg, var(--pill), var(--bg));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .device-sil .bubble {
+    background: var(--brand);
+    color: var(--inverse);
+    font: 500 8px/1.3 "IBM Plex Mono", monospace;
+    padding: 6px 8px;
+    border-radius: 10px;
+    max-width: 90%;
+    text-align: center;
+  }
+  .phone.lg .device-sil .bubble { font-size: 10px; padding: 8px 10px; }
+
+  .share-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .phone.lg .share-compact { border-radius: 14px; padding: 12px 14px; gap: 8px; }
+  .share-compact .modes {
+    font: 500 9px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .share-compact .modes { font-size: 11px; }
+
+  /* Handoff scene */
+  .handoff {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    min-height: 0;
+  }
+  .handoff-phones {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+  }
+  .mini-phone {
+    flex: 1;
+    border: 1.5px solid var(--border);
+    background: var(--bg1);
+    border-radius: 14px;
+    padding: 8px 6px;
+    min-height: 120px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .phone.lg .mini-phone { min-height: 160px; border-radius: 16px; padding: 10px 8px; }
+  .mini-phone .mp-label {
+    font: 500 8px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    text-align: center;
+  }
+  .phone.lg .mini-phone .mp-label { font-size: 10px; }
+  .mini-phone .mp-body {
+    flex: 1;
+    border-radius: 8px;
+    background: var(--pill);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px;
+    text-align: center;
+  }
+  .mini-phone .mp-body .serif {
+    font-size: 14px;
+  }
+  .phone.lg .mini-phone .mp-body .serif { font-size: 18px; }
+  .handoff-arrow {
+    font: 600 16px/1 inherit;
+    color: var(--muted);
+    flex-shrink: 0;
+  }
+  .flow-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 100%;
+  }
+  .flow-steps .step-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    font: 400 9px/1.35 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .flow-steps .step-row { font-size: 11px; }
+  .flow-steps .n {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--pill);
+    color: var(--text);
+    display: grid;
+    place-items: center;
+    font: 600 9px/1 "IBM Plex Mono", monospace;
+    flex-shrink: 0;
+  }
+  .phone.lg .flow-steps .n { width: 22px; height: 22px; font-size: 11px; }
+
+  /* Widget gallery / size picker */
+  .gallery {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-height: 0;
+  }
+  .gallery-card {
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 12px;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .phone.lg .gallery-card { border-radius: 14px; padding: 10px; }
+  .gallery-card .gname {
+    font: 600 9px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+  }
+  .phone.lg .gallery-card .gname { font-size: 11px; }
+  .gallery-card .gsize {
+    font: 400 8px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .gallery-card .gsize { font-size: 10px; }
+
+  .notes {
+    margin-top: 28px;
+    padding: 18px 20px;
+    max-width: 96ch;
+    background: #191c22;
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .notes h3 {
+    font: 600 14px/1.3 inherit;
+    margin: 0 0 10px;
+    color: #f2f4f8;
+  }
+  .notes ul { color: #b9c0cd; padding-left: 20px; margin: 0; }
+  .notes li { margin-bottom: 8px; }
+  .notes .pro { color: #9fd8b4; }
+  .notes .con { color: #e9a3a3; }
+  .notes strong { color: #f2f4f8; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body data-scheme="light">
+  <h1>DeGuardia — Empty-state Info visual options</h1>
+  <p class="sub">
+    Alternatives for the empty-state <strong>Info</strong> step
+    (<code>ShiftsEmptyState</code>): show off <strong>share</strong> and
+    <strong>home-screen widgets</strong> more visually than icon+text cards.
+    No app changes — pick a direction (e.g. <code>B2</code> or <code>C2 + C3</code>).
+  </p>
+
+  <div class="toolbar">
+    <div class="group">
+      <span class="glabel">Scheme</span>
+      <div class="seg" id="schemeSeg">
+        <button type="button" data-scheme="light" aria-pressed="true">Light</button>
+        <button type="button" data-scheme="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       A · Baseline
+       ============================================================ -->
+  <h2>A · Current baseline</h2>
+  <p class="sub">Today’s Info step: title + two icon/text feature cards + CTA.</p>
+
+  <div class="large-row">
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag base">A · Baseline</div>
+        <h3>Icon + text cards</h3>
+        <p class="why">What ships now after Preview → Next.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:36px">Comparte y consulta al instante</h4>
+            <p class="mono" style="font-size:12px">Después de armar tu rotación, puedes enviarla o verla desde la pantalla de inicio.</p>
+            <div class="feature">
+              <div class="icon">↗</div>
+              <div>
+                <p class="ftitle">Un solo enlace</p>
+                <p class="fbody">Manda un enlace a quien lleva otra letra — lo abren y ya tienen tu rotación.</p>
+              </div>
+            </div>
+            <div class="feature">
+              <div class="icon">▣</div>
+              <div>
+                <p class="ftitle">Widget en inicio</p>
+                <p class="fbody">Agrega un widget a tu pantalla de inicio para ver tus próximas guardias sin abrir la app.</p>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+  <!-- ============================================================
+       B · Flow 1 — richer single Info
+       ============================================================ -->
+  <h2>B · Flow 1: Keep 2 steps (Preview → richer Info)</h2>
+  <p class="sub">
+    Preview stays as-is (fin libre → calendario 2 semanas → countdown).
+    Only the Info screen changes. Three visual treatments for the same beat.
+  </p>
+
+  <div class="strip-wrap">
+    <div class="strip">
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow1">Context</div>
+          <h3>Preview (unchanged)</h3>
+          <p class="why">Home ghosts: weekend → calendar → countdown.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:22px">Calendario de guardias</h4>
+              <p class="mono" style="font-size:9px">Ve cuántas guardias te quedan, tu próximo fin libre y más.</p>
+              <div class="card" style="background:var(--weekend);border-color:var(--weekend)">
+                <div class="serif" style="font-size:18px;color:var(--on-weekend)">8 - 9 de agosto</div>
+                <div class="line" style="color:var(--on-weekend);margin-top:4px">Siguiente fin libre</div>
+              </div>
+              <div class="card" style="padding:8px">
+                <div class="w-cal" style="padding:0;background:transparent">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="serif" style="font-size:22px;color:var(--red)">2/10</div>
+                <div class="line" style="margin-top:4px">guardias restantes</div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Siguiente</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow1">B1</div>
+          <h3>Stacked product cards</h3>
+          <p class="why">Share sheet mini + home widgets stacked.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:20px">Comparte y consulta al instante</h4>
+              <div class="card" style="padding:8px">
+                <div class="label">Un solo enlace</div>
+                <div class="share-mini">
+                  <div class="share-pill soft" style="border:1px solid var(--border)">▣ Imagen</div>
+                  <div class="share-pill soft" style="border:1px solid var(--border)">▦ Calendario</div>
+                  <div class="share-pill primary"><span class="glyph">↗</span> Compartir enlace</div>
+                </div>
+              </div>
+              <div class="card" style="padding:8px;flex:1;min-height:0;display:flex;flex-direction:column">
+                <div class="label">Widget en inicio</div>
+                <div class="home-stage" style="flex:1">
+                  <div class="w-cal">
+                    <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                    <div class="days">
+                      <span class="shift">3</span><span>4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    </div>
+                  </div>
+                  <div class="w-up">
+                    <div class="wtitle">Próximas</div>
+                    <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>mar</strong> · en 1 sem</div></div>
+                    <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sáb</strong> · en 11 d</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar rotación</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow1">B2</div>
+          <h3>Split panels</h3>
+          <p class="why">Share left · widgets right, equal weight.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:20px">Comparte y consulta al instante</h4>
+              <p class="mono" style="font-size:9px">Después de armar tu rotación.</p>
+              <div class="split">
+                <div class="panel">
+                  <p class="ptitle">Un solo enlace</p>
+                  <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+                  <div class="device-sil">
+                    <div class="bubble">Abren y ya tienen tu rotación</div>
+                  </div>
+                  <p class="pcaption">Para quien lleva otra letra</p>
+                </div>
+                <div class="panel">
+                  <p class="ptitle">Widget</p>
+                  <div class="w-cal" style="background:var(--pill)">
+                    <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                    <div class="days">
+                      <span class="shift">3</span><span>4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    </div>
+                  </div>
+                  <div class="w-up" style="padding:6px 8px">
+                    <div class="row"><div class="rail on"></div><div class="dayn" style="font-size:14px">11</div></div>
+                  </div>
+                  <p class="pcaption">Sin abrir la app</p>
+                </div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar rotación</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow1">B3</div>
+          <h3>Hero + secondary</h3>
+          <p class="why">Widget home stage dominates; share is compact.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:20px">Consulta al instante</h4>
+              <p class="mono" style="font-size:9px">Widgets en tu pantalla de inicio.</p>
+              <div class="home-stage">
+                <div class="wall-icons">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="w-cal">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+                <div class="w-up">
+                  <div class="wtitle">Próximas guardias</div>
+                  <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>martes</strong></div></div>
+                  <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sábado</strong></div></div>
+                </div>
+              </div>
+              <div class="share-compact">
+                <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+                <div class="modes">Imagen · Calendario · Enlace</div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar rotación</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- Large B frames -->
+  <h2>B · Large frames</h2>
+  <p class="sub">Same three Info variants at readable size.</p>
+
+  <div class="large-row">
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow1">B1 · Stacked product cards</div>
+        <h3>Share sheet + widget stage</h3>
+        <p class="why">Mirrors real ShareDestinationModal + TwoWeekCalendar / UpcomingShifts.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:32px">Comparte y consulta al instante</h4>
+            <p class="mono" style="font-size:12px">Después de armar tu rotación, puedes enviarla o verla desde la pantalla de inicio.</p>
+            <div class="card">
+              <div class="label">Un solo enlace</div>
+              <div class="share-mini">
+                <div class="share-pill">▣ Descargar imagen</div>
+                <div class="share-pill">▦ Calendario del dispositivo</div>
+                <div class="share-pill primary"><span class="glyph">↗</span> Compartir enlace</div>
+              </div>
+            </div>
+            <div class="card" style="flex:1;min-height:0;display:flex;flex-direction:column;padding:12px">
+              <div class="label">Widget en inicio</div>
+              <div class="home-stage" style="flex:1">
+                <div class="w-cal">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+                <div class="w-up">
+                  <div class="wtitle">Próximas guardias</div>
+                  <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>martes</strong> · en 1 semana</div></div>
+                  <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sábado</strong> · en 11 días</div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow1">B2 · Split panels</div>
+        <h3>Equal share + widget</h3>
+        <p class="why">Two columns; link chip + outcome bubble vs widget previews.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:32px">Comparte y consulta al instante</h4>
+            <p class="mono" style="font-size:12px">Después de armar tu rotación, puedes enviarla o verla desde la pantalla de inicio.</p>
+            <div class="split" style="flex:1">
+              <div class="panel">
+                <p class="ptitle">Un solo enlace</p>
+                <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+                <div class="device-sil" style="min-height:120px">
+                  <div class="bubble">Lo abren y ya tienen tu rotación</div>
+                </div>
+                <p class="pcaption">Para quien lleva otra letra</p>
+              </div>
+              <div class="panel">
+                <p class="ptitle">Widget en inicio</p>
+                <div class="w-cal" style="background:var(--pill)">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+                <div class="w-up">
+                  <div class="wtitle">Próximas</div>
+                  <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>mar</strong></div></div>
+                  <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sáb</strong></div></div>
+                </div>
+                <p class="pcaption">Sin abrir la app</p>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow1">B3 · Hero + secondary</div>
+        <h3>Widgets first</h3>
+        <p class="why">Home wallpaper stage is the sell; share is a compact footer row.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:32px">Consulta al instante</h4>
+            <p class="mono" style="font-size:12px">Agrega un widget a tu pantalla de inicio.</p>
+            <div class="home-stage" style="flex:1">
+              <div class="wall-icons">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="w-cal">
+                <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                <div class="days">
+                  <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                  <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                </div>
+              </div>
+              <div class="w-up">
+                <div class="wtitle">Próximas guardias</div>
+                <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>martes</strong> · en 1 semana</div></div>
+                <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sábado</strong> · en 11 días</div></div>
+                <div class="row"><div class="rail"></div><div class="dayn">19</div><div class="meta-line"><strong>miércoles</strong></div></div>
+              </div>
+            </div>
+            <div class="share-compact">
+              <div class="label" style="margin:0">También puedes compartir</div>
+              <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+              <div class="modes">Imagen · Calendario · Enlace</div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- ============================================================
+       C · Flow 2 — split steps
+       ============================================================ -->
+  <h2>C · Flow 2: Expand to 3+ steps</h2>
+  <p class="sub">
+    Storyboard: <strong>Preview → Share → Widget → CTA</strong>.
+    Mix one Share variant (C1 or C2) with one Widget variant (C3 or C4).
+  </p>
+
+  <div class="strip-wrap">
+    <div class="strip">
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow2">1 · Preview</div>
+          <h3>Same as today</h3>
+          <p class="why">Then Next → Share step.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:22px">Calendario de guardias</h4>
+              <p class="mono" style="font-size:9px">Vista previa del inicio</p>
+              <div class="card" style="background:var(--weekend);border-color:var(--weekend)">
+                <div class="serif" style="font-size:16px;color:var(--on-weekend)">8 - 9 ago</div>
+                <div class="line" style="color:var(--on-weekend);margin-top:2px">Fin libre</div>
+              </div>
+              <div class="card" style="padding:8px">
+                <div class="w-cal" style="padding:0;background:transparent">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span>4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="serif" style="font-size:20px;color:var(--red)">2/10</div>
+                <div class="line" style="margin-top:2px">restantes</div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Siguiente</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow2">2a · C1</div>
+          <h3>Share sheet hero</h3>
+          <p class="why">Full mock of combined share sheet.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:22px">Un solo enlace</h4>
+              <p class="mono" style="font-size:9px">Manda tu rotación a quien lleva otra letra.</p>
+              <div class="card" style="margin-top:auto">
+                <div class="serif" style="font-size:18px;margin-bottom:8px">Emergencias</div>
+                <div class="label">Exportar en este teléfono</div>
+                <div class="share-mini" style="margin-bottom:10px">
+                  <div class="share-pill">▦ Calendario</div>
+                  <div class="share-pill">▣ Imagen</div>
+                </div>
+                <div class="label">Enviar un enlace compartible</div>
+                <div class="share-pill primary"><span class="glyph">↗</span> Compartir enlace</div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Siguiente</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">/</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow2">2b · C2</div>
+          <h3>Link handoff</h3>
+          <p class="why">Outcome: they open → form prefilled.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:22px">Un solo enlace</h4>
+              <p class="mono" style="font-size:9px">Lo abren y ya tienen tu rotación.</p>
+              <div class="handoff">
+                <div class="handoff-phones">
+                  <div class="mini-phone">
+                    <div class="mp-label">Tú</div>
+                    <div class="mp-body">
+                      <div class="url-chip" style="font-size:7px"><span class="dot"></span>…/r/ab12</div>
+                      <span class="mono" style="font-size:8px">Compartir</span>
+                    </div>
+                  </div>
+                  <div class="handoff-arrow">→</div>
+                  <div class="mini-phone">
+                    <div class="mp-label">Ellos</div>
+                    <div class="mp-body">
+                      <div class="serif">A–D · B</div>
+                      <span class="mono" style="font-size:8px">Formulario listo</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Siguiente</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow2">3a · C3</div>
+          <h3>Home grid</h3>
+          <p class="why">Widgets sitting on a fake home screen.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:20px">Widget en inicio</h4>
+              <p class="mono" style="font-size:9px">Ve tus guardias sin abrir la app.</p>
+              <div class="home-stage" style="flex:1">
+                <div class="wall-icons">
+                  <span></span><span></span><span></span><span></span>
+                </div>
+                <div class="w-cal">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span>4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+                <div class="w-up">
+                  <div class="wtitle">Próximas</div>
+                  <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>mar</strong></div></div>
+                </div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar rotación</button>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">/</div>
+
+      <article class="wf">
+        <div class="meta">
+          <div class="step flow2">3b · C4</div>
+          <h3>Size picker</h3>
+          <p class="why">Widget gallery: calendar vs upcoming.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:20px">Elige el tamaño</h4>
+              <p class="mono" style="font-size:9px">Widgets → DeGuardia</p>
+              <div class="gallery">
+                <div class="gallery-card">
+                  <div class="gname">Calendario 2 semanas</div>
+                  <div class="gsize">Mediano</div>
+                  <div class="w-cal" style="background:var(--pill)">
+                    <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                    <div class="days">
+                      <span class="shift">3</span><span>4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="gallery-card">
+                  <div class="gname">Próximas guardias</div>
+                  <div class="gsize">Alto</div>
+                  <div class="w-up" style="background:var(--pill)">
+                    <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>mar</strong></div></div>
+                    <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sáb</strong></div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar rotación</button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+
+  <!-- Large C frames -->
+  <h2>C · Large frames (Share + Widget)</h2>
+  <p class="sub">Pick one from each row for the 3-step flow.</p>
+
+  <div class="large-row">
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow2">C1 · Share sheet hero</div>
+        <h3>In-app share UI</h3>
+        <p class="why">Shows export + link primary, like rotation detail.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:36px">Un solo enlace</h4>
+            <p class="mono" style="font-size:12px">Manda un enlace a quien lleva otra letra — lo abren y ya tienen tu rotación.</p>
+            <div class="card" style="margin-top:auto">
+              <div class="serif" style="font-size:28px;margin-bottom:12px">Emergencias</div>
+              <div class="label">Exportar en este teléfono</div>
+              <div class="share-mini" style="margin-bottom:14px">
+                <div class="share-pill">▦ Calendario del dispositivo</div>
+                <div class="share-pill">▣ Descargar imagen</div>
+              </div>
+              <div class="label">Enviar un enlace compartible</div>
+              <div class="share-pill primary"><span class="glyph">↗</span> Compartir enlace</div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Siguiente</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow2">C2 · Link handoff</div>
+        <h3>Deep-link outcome</h3>
+        <p class="why">Emphasizes what happens when they open the link.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:36px">Un solo enlace</h4>
+            <p class="mono" style="font-size:12px">Manda un enlace a quien lleva otra letra — lo abren y ya tienen tu rotación.</p>
+            <div class="handoff" style="flex:1">
+              <div class="handoff-phones">
+                <div class="mini-phone">
+                  <div class="mp-label">Tú envías</div>
+                  <div class="mp-body">
+                    <div class="url-chip"><span class="dot"></span>deguardia.app/r/…</div>
+                    <span class="mono" style="font-size:10px">WhatsApp · Messages</span>
+                  </div>
+                </div>
+                <div class="handoff-arrow">→</div>
+                <div class="mini-phone">
+                  <div class="mp-label">Ellos abren</div>
+                  <div class="mp-body">
+                    <div class="serif">A–D · Guardia B</div>
+                    <span class="mono" style="font-size:10px">Horario y letra listos</span>
+                  </div>
+                </div>
+              </div>
+              <div class="flow-steps">
+                <div class="step-row"><span class="n">1</span><span>Compartes el enlace desde la rotación</span></div>
+                <div class="step-row"><span class="n">2</span><span>Lo abren en DeGuardia</span></div>
+                <div class="step-row"><span class="n">3</span><span>El formulario se prellena — solo guardan</span></div>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Siguiente</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow2">C3 · Home grid</div>
+        <h3>Widgets on home screen</h3>
+        <p class="why">TwoWeekCalendar + UpcomingShifts in a wallpaper stage.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:36px">Widget en inicio</h4>
+            <p class="mono" style="font-size:12px">Ve tus próximas guardias sin abrir la app.</p>
+            <div class="home-stage" style="flex:1">
+              <div class="wall-icons">
+                <span></span><span></span><span></span><span></span>
+              </div>
+              <div class="w-cal">
+                <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                <div class="days">
+                  <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                  <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                </div>
+              </div>
+              <div class="w-up">
+                <div class="wtitle">Próximas guardias</div>
+                <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>martes</strong> · en 1 semana</div></div>
+                <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sábado</strong> · en 11 días</div></div>
+                <div class="row"><div class="rail"></div><div class="dayn">19</div><div class="meta-line"><strong>miércoles</strong></div></div>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+    <article class="large-item">
+      <div class="meta">
+        <div class="tag flow2">C4 · Size picker</div>
+        <h3>Widget gallery</h3>
+        <p class="why">Shows both sizes; copy points at OS Widgets → DeGuardia.</p>
+      </div>
+      <div class="phone lg" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:36px">Elige el tamaño</h4>
+            <p class="mono" style="font-size:12px">Mantén pulsado el fondo → Widgets → DeGuardia.</p>
+            <div class="gallery" style="flex:1">
+              <div class="gallery-card" style="flex:1">
+                <div class="gname">Calendario 2 semanas</div>
+                <div class="gsize">Mediano · TwoWeekCalendar</div>
+                <div class="w-cal" style="background:var(--pill);flex:1">
+                  <div class="wd"><span>L</span><span>M</span><span>M</span><span>J</span><span>V</span><span>S</span><span>D</span></div>
+                  <div class="days">
+                    <span class="shift">3</span><span class="today">4</span><span>5</span><span class="shift">6</span><span>7</span><span class="free">8</span><span class="free">9</span>
+                    <span>10</span><span class="shift">11</span><span>12</span><span>13</span><span>14</span><span class="shift">15</span><span>16</span>
+                  </div>
+                </div>
+              </div>
+              <div class="gallery-card">
+                <div class="gname">Próximas guardias</div>
+                <div class="gsize">Alto · UpcomingShifts</div>
+                <div class="w-up" style="background:var(--pill)">
+                  <div class="row"><div class="rail on"></div><div class="dayn">11</div><div class="meta-line"><strong>martes</strong> · en 1 semana</div></div>
+                  <div class="row"><div class="rail"></div><div class="dayn">15</div><div class="meta-line"><strong>sábado</strong> · en 11 días</div></div>
+                  <div class="row"><div class="rail"></div><div class="dayn">19</div><div class="meta-line"><strong>miércoles</strong></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <button class="cta" tabindex="-1">Agregar rotación</button>
+          <button class="cta ghost" tabindex="-1">Atrás</button>
+        </div>
+      </div>
+    </article>
+
+  </div>
+
+  <!-- ============================================================
+       Notes
+       ============================================================ -->
+  <div class="notes">
+    <h3>Notes (pros / cons) — no recommended pick yet</h3>
+    <ul>
+      <li>
+        <strong>A baseline</strong> —
+        <span class="pro">pro:</span> cheapest, clear copy ·
+        <span class="con">con:</span> doesn’t show what share or widgets look like
+      </li>
+      <li>
+        <strong>B1 stacked cards</strong> —
+        <span class="pro">pro:</span> faithful to real share sheet + both widgets ·
+        <span class="con">con:</span> tall; may feel dense under a big title on small phones
+      </li>
+      <li>
+        <strong>B2 split panels</strong> —
+        <span class="pro">pro:</span> equal weight for share and widgets; scannable ·
+        <span class="con">con:</span> each side is smaller; widgets less “home-screen” glamorous
+      </li>
+      <li>
+        <strong>B3 hero + secondary</strong> —
+        <span class="pro">pro:</span> best widget showcase; wallpaper stage reads instantly ·
+        <span class="con">con:</span> share becomes secondary; link story is thinner
+      </li>
+      <li>
+        <strong>C1 share sheet</strong> —
+        <span class="pro">pro:</span> teaches the real in-app share UI ·
+        <span class="con">con:</span> less emotional “why share” than the handoff story
+      </li>
+      <li>
+        <strong>C2 link handoff</strong> —
+        <span class="pro">pro:</span> clearest outcome (prefilled rotation) ·
+        <span class="con">con:</span> invents a two-phone scene not in the product UI
+      </li>
+      <li>
+        <strong>C3 home grid</strong> —
+        <span class="pro">pro:</span> strongest “lives on my home screen” feeling ·
+        <span class="con">con:</span> doesn’t explain how to add the widget
+      </li>
+      <li>
+        <strong>C4 size picker</strong> —
+        <span class="pro">pro:</span> shows both widget types + OS how-to hook ·
+        <span class="con">con:</span> more didactic; less atmospheric than C3
+      </li>
+      <li>
+        <strong>Flow length</strong> —
+        Flow 1 = 2 taps to CTA · Flow 2 = 3–4 taps. Longer only pays off if each step earns the visual.
+      </li>
+    </ul>
+  </div>
+
+  <script>
+    const body = document.body;
+    const seg = document.getElementById('schemeSeg');
+    seg.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-scheme]');
+      if (!btn) return;
+      const scheme = btn.getAttribute('data-scheme');
+      body.setAttribute('data-scheme', scheme);
+      seg.querySelectorAll('button').forEach((b) => {
+        b.setAttribute('aria-pressed', String(b === btn));
+      });
+      document.querySelectorAll('.phone').forEach((p) => {
+        p.setAttribute('data-scheme', scheme);
+      });
+    });
+  </script>
+</body>
+</html>

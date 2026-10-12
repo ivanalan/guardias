@@ -14,6 +14,7 @@ const OFFSET_INDEX: Record<OffsetLetter, number> = {
   B: 1,
   C: 2,
   D: 3,
+  E: 4,
 };
 
 function isOnVacation(period: RotationPeriod, isoDate: string): boolean {

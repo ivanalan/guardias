@@ -239,6 +239,9 @@ function CalendarGrid({
     freeWeekendSet: freeWeekendDates,
     vacationSet: vacationDates,
   };
+  // Collapse friend-dot reserve when nothing in the window needs it.
+  const secondaryDotStackHeight =
+    secondaryDotsByDate.size > 0 ? SECONDARY_DOT_STACK_HEIGHT : 0;
 
   return (
     <View style={{ gap: CALENDAR_WEEK_ROW_GAP, overflow: 'visible' }}>
@@ -262,6 +265,7 @@ function CalendarGrid({
           inkColor={colors.brand}
           textColor={colors.text}
           markColors={markColors}
+          secondaryDotStackHeight={secondaryDotStackHeight}
         />
       ))}
     </View>
@@ -396,6 +400,7 @@ type WeekRowProps = {
   inkColor: string;
   textColor: string;
   markColors: ReturnType<typeof calendarMarkColorsFor>;
+  secondaryDotStackHeight: number;
 };
 
 function WeekRow({
@@ -405,6 +410,7 @@ function WeekRow({
   inkColor,
   textColor,
   markColors,
+  secondaryDotStackHeight,
 }: WeekRowProps) {
   const cells: ReactNode[] = [];
 
@@ -440,7 +446,7 @@ function WeekRow({
           <View
             className="flex-row self-stretch"
             style={{
-              minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT,
+              minHeight: CELL_SIZE + secondaryDotStackHeight,
               overflow: 'visible',
             }}
           >
@@ -472,6 +478,7 @@ function WeekRow({
               inkColor={inkColor}
               textColor={textColor}
               markColors={markColors}
+              secondaryDotStackHeight={secondaryDotStackHeight}
             />
             <DayCell
               iso={next}
@@ -482,6 +489,7 @@ function WeekRow({
               inkColor={inkColor}
               textColor={textColor}
               markColors={markColors}
+              secondaryDotStackHeight={secondaryDotStackHeight}
             />
           </View>
         </View>,
@@ -500,6 +508,7 @@ function WeekRow({
           inkColor={inkColor}
           textColor={textColor}
           markColors={markColors}
+          secondaryDotStackHeight={secondaryDotStackHeight}
         />
       </View>,
     );
@@ -509,7 +518,7 @@ function WeekRow({
     <View
       className="flex-row items-start"
       style={{
-        minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT + CALENDAR_WEEK_ROW_GAP,
+        minHeight: CELL_SIZE + secondaryDotStackHeight + CALENDAR_WEEK_ROW_GAP,
         overflow: 'visible',
       }}
     >
@@ -526,6 +535,7 @@ type DayCellProps = {
   inkColor: string;
   textColor: string;
   markColors: ReturnType<typeof calendarMarkColorsFor>;
+  secondaryDotStackHeight: number;
   markAlpha?: number;
 };
 
@@ -537,6 +547,7 @@ function DayCell({
   inkColor,
   textColor,
   markColors,
+  secondaryDotStackHeight,
   markAlpha,
 }: DayCellProps) {
   const isToday = iso === todayIso;
@@ -640,13 +651,13 @@ function DayCell({
       style={
         onWeekend
           ? {
-              minHeight: CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT,
+              minHeight: CELL_SIZE + secondaryDotStackHeight,
               overflow: 'visible',
             }
           : {
               paddingTop: CALENDAR_WEEK_ROW_GAP / 2,
               paddingBottom:
-                CALENDAR_WEEK_ROW_GAP / 2 + SECONDARY_DOT_STACK_HEIGHT,
+                CALENDAR_WEEK_ROW_GAP / 2 + secondaryDotStackHeight,
               overflow: 'visible',
             }
       }

@@ -1,6 +1,7 @@
 {
   "common": {
-    "back": "Back"
+    "back": "Back",
+    "next": "Next"
   },
   "tabs": {
     "home": "Home",
@@ -25,6 +26,17 @@
     "shiftsCompleted": "shifts completed",
     "progressOf": " / {{total}}",
     "periodLabel": "{{label}}",
+    "shareCoach": {
+      "title": "Share your rotation",
+      "body": "Tap here anytime to share your schedule.",
+      "gotIt": "Got it"
+    },
+    "noPrimaryTitle": "Add your rotation",
+    "noPrimaryBody": "You already have a friend’s schedule. Add yours to see shifts left, free weekends, and more.",
+    "noPrimaryCta": "Add rotation",
+    "noUpcomingTitle": "No upcoming shifts",
+    "noUpcomingBody": "Your rotations don’t have any shifts left. Add a new one to keep tracking Home.",
+    "noUpcomingCta": "Add rotation",
     "stats": {
       "timeLeft": "Time left",
       "timeUntilNext": "Next shift",
@@ -115,9 +127,13 @@
     "openA11y": "Open settings"
   },
   "shifts": {
-    "emptyTitle": "Add your first rotation",
+    "emptyTitle": "DeGuardia",
     "emptyBody": "See how many shifts you have left, your next free weekend, and more.",
-    "emptyCta": "Add a rotation",
+    "emptyCta": "Add rotation",
+    "emptyInfoTitle": "Share and view",
+    "emptyInfoBody": "Share your rotation with a link or add a widget to your home screen.",
+    "emptyInfoShareTitle": "One link",
+    "emptyInfoWidgetTitle": "Home screen widget",
     "addA11y": "Add rotation",
     "addTitle": "Add rotation",
     "editTitle": "Edit rotation",
@@ -172,6 +188,9 @@
       "patternAC": "A-C (every 3 days)",
       "patternACTitle": "A-C",
       "patternACSubtitle": "Every 3 days",
+      "patternAE": "A-E (every 5 days)",
+      "patternAETitle": "A-E",
+      "patternAESubtitle": "Every 5 days",
       "offset": "Shift",
       "firstShiftDate": "First shift",
       "firstShiftHint": "Select a day to set the pattern",

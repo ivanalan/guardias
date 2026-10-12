@@ -341,13 +341,20 @@ export function RotationDetailScreen({ navigation, route }: Props) {
     );
   }
 
-  const isAD = period.pattern.cycleDays === 4;
-  const patternTitle = isAD
-    ? t('shifts.form.patternADTitle')
-    : t('shifts.form.patternACTitle');
-  const patternSubtitle = isAD
-    ? t('shifts.form.patternADSubtitle')
-    : t('shifts.form.patternACSubtitle');
+  const patternTitleKey =
+    period.pattern.cycleDays === 5
+      ? 'shifts.form.patternAETitle'
+      : period.pattern.cycleDays === 4
+        ? 'shifts.form.patternADTitle'
+        : 'shifts.form.patternACTitle';
+  const patternSubtitleKey =
+    period.pattern.cycleDays === 5
+      ? 'shifts.form.patternAESubtitle'
+      : period.pattern.cycleDays === 4
+        ? 'shifts.form.patternADSubtitle'
+        : 'shifts.form.patternACSubtitle';
+  const patternTitle = t(patternTitleKey);
+  const patternSubtitle = t(patternSubtitleKey);
   const subtitle = t('shifts.rowMeta', {
     range: formatPeriodRange(period.startDate, period.endDate, language),
     letter: period.pattern.offset,

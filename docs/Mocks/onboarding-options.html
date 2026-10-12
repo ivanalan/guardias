@@ -1,0 +1,1578 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>DeGuardia — Onboarding slides (full flow)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Instrument+Serif&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 28px 120px;
+    background: #14161a;
+    color: #e7e9ee;
+    font: 14px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  }
+
+  h1 { font: 600 22px/1.3 inherit; margin: 0 0 6px; }
+  h2 {
+    font: 600 15px/1.3 inherit;
+    margin: 48px 0 8px;
+    color: #cfd4de;
+  }
+  .sub { color: #9aa2b1; max-width: 88ch; margin: 0 0 20px; }
+  .sub code, .notes code, .verdict code {
+    background: #23272f;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  .toolbar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 22px;
+    align-items: center;
+    padding: 12px 16px;
+    margin: 0 0 28px;
+    background: rgba(20, 22, 26, 0.94);
+    backdrop-filter: blur(10px);
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .toolbar .group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .toolbar .glabel {
+    color: #8b93a3;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+  }
+  .seg {
+    display: inline-flex;
+    background: #1d2027;
+    border: 1px solid #2b3038;
+    border-radius: 8px;
+    padding: 2px;
+  }
+  .seg button {
+    appearance: none; border: 0; background: transparent; color: #aeb6c4;
+    font: 500 13px/1 inherit; padding: 7px 12px; border-radius: 6px; cursor: pointer;
+  }
+  .seg button[aria-pressed="true"] { background: #3a4250; color: #fff; }
+
+  /* ---------- Storyboard strip ---------- */
+  .strip-wrap {
+    overflow-x: auto;
+    padding-bottom: 12px;
+    margin: 0 -8px 8px;
+  }
+  .strip {
+    display: flex;
+    gap: 18px;
+    align-items: flex-start;
+    width: max-content;
+    padding: 4px 8px 8px;
+  }
+  .strip-arrow {
+    align-self: center;
+    color: #5c6575;
+    font-size: 22px;
+    padding: 0 2px;
+    user-select: none;
+  }
+
+  .wf {
+    width: 220px;
+  }
+  .wf .meta {
+    margin-bottom: 8px;
+    min-height: 3.6em;
+  }
+  .wf .step {
+    font: 600 10px/1 inherit;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8b93a3;
+    margin-bottom: 4px;
+  }
+  .wf .step.phase-slides { color: #8eb4ff; }
+  .wf .step.phase-setup { color: #7ee0a8; }
+  .wf .step.phase-home { color: #e0c07e; }
+  .wf h3 {
+    font: 600 13px/1.25 inherit;
+    margin: 0 0 2px;
+    color: #f2f4f8;
+  }
+  .wf .why {
+    color: #8b93a3;
+    font-size: 11.5px;
+    margin: 0;
+  }
+
+  .phone {
+    width: 220px;
+    height: 440px;
+    border-radius: 28px;
+    border: 1px solid #2b3038;
+    background: var(--bg);
+    overflow: hidden;
+    position: relative;
+    color: var(--text);
+  }
+  .phone.lg {
+    width: 300px;
+    height: 600px;
+    border-radius: 34px;
+  }
+  .phone[data-scheme="light"],
+  [data-scheme="light"] .phone {
+    --bg: #F6F1EC;
+    --bg1: #FFFFFF;
+    --text: #1C1B1F;
+    --brand: #1C1B1F;
+    --inverse: #F4F0F0;
+    --muted: #49454F;
+    --border: #E5E5E5;
+    --weekend: #007259;
+    --pill: #E8E4DF;
+    --accent: #2F69F3;
+    --vacation: #4A47EF;
+    --red: #DC211E;
+  }
+  .phone[data-scheme="dark"],
+  [data-scheme="dark"] .phone {
+    --bg: #171616;
+    --bg1: #2A2927;
+    --text: #E8DFDF;
+    --brand: #E8DFDF;
+    --inverse: #171616;
+    --muted: #A8A29A;
+    --border: #3A3836;
+    --weekend: #2A9B7A;
+    --pill: #3A3836;
+    --accent: #1C648F;
+    --vacation: #5B57D4;
+    --red: #C11E1E;
+  }
+
+  .status {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 16px 4px;
+    font: 600 10px/1 "IBM Plex Mono", monospace;
+  }
+  .phone.lg .status { padding: 14px 22px 6px; font-size: 12px; }
+
+  .body {
+    height: calc(100% - 26px);
+    display: flex;
+    flex-direction: column;
+    padding: 6px 16px 14px;
+    gap: 10px;
+  }
+  .phone.lg .body {
+    height: calc(100% - 34px);
+    padding: 8px 22px 20px;
+    gap: 14px;
+  }
+
+  .serif {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin: 0;
+    color: var(--text);
+  }
+  .mono {
+    font-family: "IBM Plex Mono", ui-monospace, monospace;
+    color: var(--muted);
+    margin: 0;
+  }
+
+  .nav-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .nav-row .title {
+    font: 600 12px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+  }
+  .phone.lg .nav-row .title { font-size: 14px; }
+  .chev {
+    font: 500 11px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+
+  .grow { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .grow.center { justify-content: center; }
+  .grow.end { justify-content: flex-end; }
+
+  .cta {
+    appearance: none;
+    border: 0;
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 28px;
+    background: var(--brand);
+    color: var(--inverse);
+    font: 600 11px/1 "IBM Plex Mono", monospace;
+    cursor: pointer;
+    text-align: center;
+  }
+  .phone.lg .cta { padding: 15px 18px; font-size: 14px; border-radius: 32px; }
+  .cta.secondary {
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+  }
+  .linkish {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--muted);
+    font: 500 10px/1 "IBM Plex Mono", monospace;
+    padding: 6px;
+    cursor: pointer;
+    align-self: center;
+  }
+  .phone.lg .linkish { font-size: 12px; padding: 10px; }
+
+  .dots { display: flex; gap: 5px; justify-content: center; }
+  .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--pill);
+  }
+  .dot.on { background: var(--brand); }
+
+  .card {
+    background: var(--bg1);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .phone.lg .card { border-radius: 16px; padding: 14px 16px; }
+  .card .label {
+    font: 500 9px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .phone.lg .card .label { font-size: 11px; margin-bottom: 8px; }
+  .card .big {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 28px;
+    line-height: 1;
+    color: var(--text);
+  }
+  .phone.lg .card .big { font-size: 40px; }
+  .card .line {
+    font: 400 10px/1.35 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin-top: 4px;
+  }
+  .phone.lg .card .line { font-size: 12px; margin-top: 6px; }
+
+  .cal {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 3px;
+  }
+  .cal span {
+    aspect-ratio: 1;
+    border-radius: 6px;
+    display: grid;
+    place-items: center;
+    font: 500 8px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .cal { gap: 4px; }
+  .phone.lg .cal span { font-size: 10px; border-radius: 8px; }
+  .cal .shift { background: var(--accent); color: #fff; }
+  .cal .free {
+    background: color-mix(in srgb, var(--weekend) 22%, transparent);
+    color: var(--weekend);
+  }
+  .cal .vac { background: var(--vacation); color: #fff; }
+  .cal .sel {
+    outline: 2px solid var(--brand);
+    outline-offset: 0;
+  }
+  .cal .hd { color: var(--muted); opacity: .7; }
+
+  .field {
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 10px;
+    padding: 8px 10px;
+    min-height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font: 500 10px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+  }
+  .phone.lg .field {
+    border-radius: 12px;
+    padding: 14px 16px;
+    min-height: 52px;
+    font-size: 13px;
+  }
+  .field .ph { color: var(--muted); font-weight: 400; }
+  .field-label {
+    font: 500 9px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+  .phone.lg .field-label { font-size: 11px; margin-bottom: 6px; }
+
+  .seg-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .seg-inline button {
+    flex: 1;
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 10px;
+    padding: 8px 6px;
+    font: 600 10px/1.2 "IBM Plex Mono", monospace;
+    color: var(--text);
+    cursor: pointer;
+    text-align: left;
+  }
+  .phone.lg .seg-inline button {
+    border-radius: 14px;
+    padding: 12px 14px;
+    font-size: 13px;
+  }
+  .seg-inline button small {
+    display: block;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 3px;
+    font-size: 8px;
+  }
+  .phone.lg .seg-inline button small { font-size: 11px; margin-top: 4px; }
+  .seg-inline button[aria-pressed="true"] {
+    border-color: var(--brand);
+    box-shadow: inset 0 0 0 1px var(--brand);
+  }
+
+  .letters { display: flex; gap: 6px; }
+  .letters button {
+    flex: 1;
+    aspect-ratio: 1;
+    appearance: none;
+    border: 1px solid var(--border);
+    background: var(--bg1);
+    border-radius: 10px;
+    font: 600 14px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+    cursor: pointer;
+  }
+  .phone.lg .letters button { border-radius: 14px; font-size: 20px; }
+  .letters button[aria-pressed="true"] {
+    background: var(--brand);
+    color: var(--inverse);
+    border-color: var(--brand);
+  }
+
+  .swatches { display: flex; gap: 6px; }
+  .swatch {
+    width: 18px; height: 18px; border-radius: 50%;
+    border: 2px solid transparent;
+  }
+  .phone.lg .swatch { width: 24px; height: 24px; }
+  .swatch.on { border-color: var(--text); }
+
+  .section-h {
+    font: 600 10px/1 "IBM Plex Mono", monospace;
+    color: var(--text);
+    margin: 4px 0 0;
+  }
+  .phone.lg .section-h { font-size: 12px; }
+
+  .tabbar {
+    margin-top: auto;
+    display: flex;
+    justify-content: space-around;
+    padding: 8px 4px 2px;
+    border-top: 1px solid var(--border);
+    font: 500 8px/1 "IBM Plex Mono", monospace;
+    color: var(--muted);
+  }
+  .phone.lg .tabbar { font-size: 11px; padding: 12px 8px 4px; }
+  .tabbar .on { color: var(--text); }
+
+  .coach {
+    position: absolute;
+    left: 12px; right: 12px; bottom: 52px;
+    background: var(--brand);
+    color: var(--inverse);
+    border-radius: 12px;
+    padding: 10px 12px;
+    font: 400 9px/1.35 "IBM Plex Mono", monospace;
+  }
+  .phone.lg .coach {
+    left: 18px; right: 18px; bottom: 72px;
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-size: 12px;
+  }
+  .coach .row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .coach button {
+    appearance: none; border: 0; background: transparent;
+    color: var(--inverse); font: 600 9px/1 "IBM Plex Mono", monospace;
+    cursor: pointer; opacity: .75; padding: 4px 0;
+  }
+  .phone.lg .coach button { font-size: 11px; }
+  .coach button.primary { opacity: 1; }
+
+  .brand-mark {
+    font-family: "Instrument Serif", Georgia, serif;
+    font-size: 28px;
+    color: var(--text);
+  }
+  .phone.lg .brand-mark { font-size: 40px; }
+
+  .illu {
+    border-radius: 14px;
+    background:
+      linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--bg1)), var(--bg1));
+    border: 1px solid var(--border);
+    padding: 12px;
+    min-height: 110px;
+  }
+  .phone.lg .illu { min-height: 160px; padding: 16px; border-radius: 18px; }
+
+  /* Interactive panel */
+  .player {
+    display: grid;
+    grid-template-columns: 300px minmax(260px, 420px);
+    gap: 28px;
+    align-items: start;
+  }
+  @media (max-width: 720px) {
+    .player { grid-template-columns: 1fr; }
+  }
+  .script {
+    background: #191c22;
+    border: 1px solid #262a32;
+    border-radius: 12px;
+    padding: 16px 18px;
+  }
+  .script h3 { margin: 0 0 8px; font: 600 14px/1.3 inherit; color: #f2f4f8; }
+  .script p { color: #b9c0cd; margin: 0 0 12px; font-size: 13px; }
+  .script ol {
+    margin: 0;
+    padding-left: 18px;
+    color: #9aa2b1;
+    font-size: 12.5px;
+  }
+  .script li { margin-bottom: 6px; }
+  .script li.current { color: #f2f4f8; font-weight: 600; }
+  .script .controls {
+    display: flex;
+    gap: 8px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+  }
+  .script .controls button {
+    appearance: none;
+    border: 1px solid #2b3038;
+    background: #1d2027;
+    color: #e7e9ee;
+    border-radius: 8px;
+    padding: 8px 12px;
+    font: 500 13px/1 inherit;
+    cursor: pointer;
+  }
+  .script .controls button:hover { border-color: #465065; }
+  .script .progress {
+    font: 500 12px/1 "IBM Plex Mono", monospace;
+    color: #8b93a3;
+    margin-bottom: 10px;
+  }
+
+  .variant-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    align-items: flex-start;
+  }
+  .variant { width: 220px; }
+  .variant .tag {
+    font: 600 10px/1 inherit;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: #8eb4ff;
+    margin-bottom: 4px;
+  }
+  .variant h3 { font: 600 13px/1.3 inherit; margin: 0 0 4px; color: #f2f4f8; }
+  .variant .why { color: #9aa2b1; font-size: 12px; margin: 0 0 10px; min-height: 3.2em; }
+
+  .notes { margin-top: 10px; font-size: 12.5px; color: #9aa2b1; }
+  .notes ul { margin: 6px 0 0; padding-left: 18px; }
+  .notes .pro { color: #9fd8b4; }
+  .notes .con { color: #e9a3a3; }
+
+  .verdict {
+    margin-top: 40px;
+    padding: 20px 22px;
+    max-width: 96ch;
+    background: #191c22;
+    border: 1px solid #262a32;
+    border-radius: 12px;
+  }
+  .verdict p { color: #b9c0cd; margin: 0 0 10px; }
+  .verdict strong { color: #f2f4f8; }
+  .verdict ol { color: #b9c0cd; padding-left: 20px; margin: 0; }
+  .verdict li { margin-bottom: 6px; }
+
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px 20px;
+    margin: 0 0 16px;
+    font-size: 12px;
+    color: #9aa2b1;
+  }
+  .legend i {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    margin-right: 6px;
+  }
+  .legend .s { background: #8eb4ff; }
+  .legend .u { background: #7ee0a8; }
+  .legend .h { background: #e0c07e; }
+
+  .hidden { display: none !important; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+  }
+</style>
+</head>
+<body data-scheme="light">
+  <h1>DeGuardia — Slides onboarding (full flow)</h1>
+  <p class="sub">
+    Full wireframes for a short slide-based first run, then the existing add-rotation form,
+    then Home. Scroll the storyboard left→right, or use the interactive player.
+    Slide copy has two content packs below.
+  </p>
+
+  <div class="toolbar">
+    <div class="group">
+      <span class="glabel">Theme</span>
+      <div class="seg" id="schemeSeg">
+        <button type="button" data-scheme="light" aria-pressed="true">Light</button>
+        <button type="button" data-scheme="dark" aria-pressed="false">Dark</button>
+      </div>
+    </div>
+    <div class="group">
+      <span class="glabel">Slide pack</span>
+      <div class="seg" id="packSeg">
+        <button type="button" data-pack="value" aria-pressed="true">Value (3)</button>
+        <button type="button" data-pack="pattern" aria-pressed="false">Pattern (3)</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <span><i class="s"></i>Slides</span>
+    <span><i class="u"></i>Setup (existing form)</span>
+    <span><i class="h"></i>First Home</span>
+  </div>
+
+  <!-- ============================================================
+       STORYBOARD — entire flow as static frames
+       ============================================================ -->
+  <h2>1 · Full flow storyboard</h2>
+  <p class="sub">Every screen a user sees from cold open → first useful Home. Arrows are navigation, not separate routes.</p>
+
+  <div class="strip-wrap">
+    <div class="strip" id="storyboard">
+
+      <!-- S0 -->
+      <article class="wf" data-frame="s0">
+        <div class="meta">
+          <div class="step phase-slides">S0 · Cold open</div>
+          <h3>Brand beat</h3>
+          <p class="why">Optional 0.6s splash — or skip and land on S1.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow center" style="align-items:center;text-align:center;gap:8px">
+              <div class="brand-mark">DeGuardia</div>
+              <p class="mono" style="font-size:9px">Guardias A–D, claras</p>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- S1 -->
+      <article class="wf" data-frame="s1">
+        <div class="meta">
+          <div class="step phase-slides">S1 · Slide 1</div>
+          <h3 class="pack-title" data-pack-value="Cuenta tus guardias" data-pack-pattern="Tu patrón">Cuenta tus guardias</h3>
+          <p class="why pack-why" data-pack-value="Promise: remaining shifts + countdown." data-pack-pattern="Lead with A–D / A–C / A–E language residents already use.">Promise: remaining shifts + countdown.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <p class="mono" style="font-size:9px">DeGuardia</p>
+              <h4 class="serif pack-h" style="font-size:26px" data-pack-value="Cuenta tus guardias" data-pack-pattern="¿A–D, A–C o A–E?">Cuenta tus guardias</h4>
+              <p class="mono pack-p" style="font-size:9px" data-pack-value="Cuántas te quedan en la rotación y cuánto falta para la próxima." data-pack-pattern="La app arma el calendario a partir de tu letra y el ciclo.">Cuántas te quedan en la rotación y cuánto falta para la próxima.</p>
+              <div class="illu pack-illu-value">
+                <div class="card" style="margin:0">
+                  <div class="label">guardias restantes</div>
+                  <div class="big">12</div>
+                  <div class="line">Emergencias · Guardia B</div>
+                </div>
+              </div>
+              <div class="illu pack-illu-pattern hidden">
+                <div class="seg-inline">
+                  <button type="button" aria-pressed="true">A–D<small>Cada 4 días</small></button>
+                  <button type="button">A–C<small>Cada 3 días</small></button>
+                  <button type="button">A–E<small>Cada 5 días</small></button>
+                </div>
+              </div>
+              <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+              <button class="cta" tabindex="-1">Siguiente</button>
+              <button class="linkish" tabindex="-1">Saltar</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- S2 -->
+      <article class="wf" data-frame="s2">
+        <div class="meta">
+          <div class="step phase-slides">S2 · Slide 2</div>
+          <h3 class="pack-title" data-pack-value="Fines libres a la vista" data-pack-pattern="Elige tu letra">Fines libres a la vista</h3>
+          <p class="why pack-why" data-pack-value="Calendar marks: shifts vs free weekends." data-pack-pattern="Letter picks the phase of the cycle.">Calendar marks: shifts vs free weekends.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <p class="mono" style="font-size:9px">DeGuardia</p>
+              <h4 class="serif pack-h" style="font-size:26px" data-pack-value="Fines libres a la vista" data-pack-pattern="¿Qué letra eres?">Fines libres a la vista</h4>
+              <p class="mono pack-p" style="font-size:9px" data-pack-value="Marca guardias, vacaciones y el próximo fin sin turno." data-pack-pattern="A–E según tu ciclo — la primera guardia fija el resto del período.">Marca guardias, vacaciones y el próximo fin sin turno.</p>
+              <div class="illu pack-illu-value">
+                <div class="card" style="margin:0">
+                  <div class="label">oct</div>
+                  <div class="cal">
+                    <span class="hd">L</span><span class="hd">M</span><span class="hd">X</span><span class="hd">J</span><span class="hd">V</span><span class="hd">S</span><span class="hd">D</span>
+                    <span>1</span><span class="shift">2</span><span>3</span><span>4</span><span class="shift">5</span><span class="free">6</span><span class="free">7</span>
+                    <span>8</span><span class="shift">9</span><span>10</span><span>11</span><span class="shift">12</span><span>13</span><span>14</span>
+                  </div>
+                </div>
+              </div>
+              <div class="illu pack-illu-pattern hidden">
+                <div class="letters">
+                  <button type="button">A</button>
+                  <button type="button" aria-pressed="true">B</button>
+                  <button type="button">C</button>
+                  <button type="button">D</button>
+                  <button type="button">E</button>
+                </div>
+              </div>
+              <div class="dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+              <button class="cta" tabindex="-1">Siguiente</button>
+              <button class="linkish" tabindex="-1">Saltar</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- S3 -->
+      <article class="wf" data-frame="s3">
+        <div class="meta">
+          <div class="step phase-slides">S3 · Slide 3</div>
+          <h3 class="pack-title" data-pack-value="Comparte con tu equipo" data-pack-pattern="Listo para armarla">Comparte con tu equipo</h3>
+          <p class="why pack-why" data-pack-value="Share / friend shifts — or cut this slide." data-pack-pattern="CTA into setup; skip still available.">Share / friend shifts — or cut this slide.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <p class="mono" style="font-size:9px">DeGuardia</p>
+              <h4 class="serif pack-h" style="font-size:26px" data-pack-value="Comparte con tu equipo" data-pack-pattern="Arma tu rotación">Comparte con tu equipo</h4>
+              <p class="mono pack-p" style="font-size:9px" data-pack-value="Exporta al calendario o manda un enlace a quien lleva otra letra." data-pack-pattern="Nombre, fechas y tu primera guardia. Toma menos de un minuto.">Exporta al calendario o manda un enlace a quien lleva otra letra.</p>
+              <div class="illu pack-illu-value">
+                <div class="card" style="margin:0">
+                  <div class="label">compartir</div>
+                  <div class="line" style="color:var(--text);margin:0">Imagen · Calendario · Enlace</div>
+                  <div class="line">+ guardias de amigos en el mes</div>
+                </div>
+              </div>
+              <div class="illu pack-illu-pattern hidden">
+                <div class="card" style="margin:0">
+                  <div class="label">resumen</div>
+                  <div class="line" style="color:var(--text);margin:0">A–D · Guardia B</div>
+                  <div class="line">Se prellena en el formulario</div>
+                </div>
+              </div>
+              <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+              <button class="cta pack-cta" tabindex="-1" data-pack-value="Empezar" data-pack-pattern="Continuar">Empezar</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- U0 bridge -->
+      <article class="wf" data-frame="u0">
+        <div class="meta">
+          <div class="step phase-setup">U0 · Bridge</div>
+          <h3>Empty / CTA</h3>
+          <p class="why">Optional — can jump S3 CTA straight into AddRotation.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow center">
+              <h4 class="serif" style="font-size:24px">Agrega tu primera rotación</h4>
+              <p class="mono" style="font-size:9px">Ve cuántas guardias te quedan, tu próximo fin libre y más.</p>
+              <div class="card">
+                <div class="label">guardias restantes</div>
+                <div class="big">12</div>
+              </div>
+              <button class="cta" tabindex="-1">Agregar rotación</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- U1 -->
+      <article class="wf" data-frame="u1">
+        <div class="meta">
+          <div class="step phase-setup">U1 · Form · Nombre</div>
+          <h3>Basics</h3>
+          <p class="why">Existing form section — scroll, not wizard.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="nav-row">
+              <span class="chev">Cerrar</span>
+              <span class="title">Agregar rotación</span>
+              <span class="chev" style="color:var(--text)">Guardar</span>
+            </div>
+            <div class="grow">
+              <p class="section-h">Nombre</p>
+              <div>
+                <div class="field-label">Nombre</div>
+                <div class="field"><span>Emergencias</span></div>
+              </div>
+              <p class="section-h">Período</p>
+              <div>
+                <div class="field-label">Fecha de inicio</div>
+                <div class="field"><span>1 oct 2026</span></div>
+              </div>
+              <div>
+                <div class="field-label">Fecha de fin</div>
+                <div class="field"><span>31 dic 2026</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">↓</div>
+
+      <!-- U2 -->
+      <article class="wf" data-frame="u2">
+        <div class="meta">
+          <div class="step phase-setup">U2 · Form · Horario</div>
+          <h3>Pattern + letter</h3>
+          <p class="why">If Pattern pack: A–D / B already selected.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="nav-row">
+              <span class="chev">Cerrar</span>
+              <span class="title">Agregar rotación</span>
+              <span class="chev" style="color:var(--text)">Guardar</span>
+            </div>
+            <div class="grow">
+              <p class="section-h">Horario de guardias</p>
+              <div class="seg-inline">
+                <button type="button" aria-pressed="true">A–D<small>Cada 4 días</small></button>
+                <button type="button">A–C<small>Cada 3 días</small></button>
+                <button type="button">A–E<small>Cada 5 días</small></button>
+              </div>
+              <div>
+                <div class="field-label">Guardia</div>
+                <div class="letters">
+                  <button type="button">A</button>
+                  <button type="button" aria-pressed="true">B</button>
+                  <button type="button">C</button>
+                  <button type="button">D</button>
+                  <button type="button">E</button>
+                </div>
+              </div>
+              <div>
+                <div class="field-label">Primera guardia</div>
+                <div class="field"><span>mié 15 oct</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">↓</div>
+
+      <!-- U3 -->
+      <article class="wf" data-frame="u3">
+        <div class="meta">
+          <div class="step phase-setup">U3 · Form · Calendar</div>
+          <h3>First-shift picker</h3>
+          <p class="why">Tap a day to lock the phase (existing FirstShiftCalendar).</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="nav-row">
+              <span class="chev">Cerrar</span>
+              <span class="title">Agregar rotación</span>
+              <span class="chev" style="color:var(--text)">Guardar</span>
+            </div>
+            <div class="grow">
+              <p class="mono" style="font-size:9px">Selecciona un día para fijar el patrón</p>
+              <div class="card">
+                <div class="label">octubre 2026</div>
+                <div class="cal">
+                  <span class="hd">L</span><span class="hd">M</span><span class="hd">X</span><span class="hd">J</span><span class="hd">V</span><span class="hd">S</span><span class="hd">D</span>
+                  <span></span><span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+                  <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+                  <span>13</span><span>14</span><span class="shift sel">15</span><span>16</span><span>17</span><span>18</span><span class="shift">19</span>
+                  <span>20</span><span>21</span><span class="shift">22</span><span>23</span><span>24</span><span>25</span><span class="shift">26</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">↓</div>
+
+      <!-- U4 -->
+      <article class="wf" data-frame="u4">
+        <div class="meta">
+          <div class="step phase-setup">U4 · Form · Opcional</div>
+          <h3>Time, color, vacation</h3>
+          <p class="why">Skippable on first run — defaults are fine.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="nav-row">
+              <span class="chev">Cerrar</span>
+              <span class="title">Agregar rotación</span>
+              <span class="chev" style="color:var(--text)">Guardar</span>
+            </div>
+            <div class="grow">
+              <p class="section-h">Opcional</p>
+              <div class="field"><span class="ph">Inicio</span><span>07:00</span></div>
+              <div class="field"><span class="ph">Duración</span><span>24h</span></div>
+              <div>
+                <div class="field-label">Color</div>
+                <div class="swatches">
+                  <span class="swatch on" style="background:#2F69F3"></span>
+                  <span class="swatch" style="background:#DC211E"></span>
+                  <span class="swatch" style="background:#1F9BA8"></span>
+                  <span class="swatch" style="background:#FB8C00"></span>
+                </div>
+              </div>
+              <div class="field"><span class="ph">Vacaciones</span><span>Off</span></div>
+              <button class="cta" tabindex="-1">Guardar</button>
+            </div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- H1 -->
+      <article class="wf" data-frame="h1">
+        <div class="meta">
+          <div class="step phase-home">H1 · Home</div>
+          <h3>First useful screen</h3>
+          <p class="why">Slides marked complete; never shown again.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:28px">Inicio</h4>
+              <p class="mono" style="font-size:9px">Próxima guardia · mié 15</p>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div class="card"><div class="label">Restantes</div><div class="big" style="font-size:22px">12</div></div>
+                <div class="card"><div class="label">Fin libre</div><div class="big" style="font-size:22px;color:var(--weekend)">22</div></div>
+              </div>
+              <div class="card">
+                <div class="label">próximas</div>
+                <div class="line" style="color:var(--text);margin:0">mié 15 · dom 19 · jue 23</div>
+              </div>
+            </div>
+            <div class="tabbar"><span class="on">Inicio</span><span>Calendario</span><span>Rotaciones</span></div>
+          </div>
+        </div>
+      </article>
+
+      <div class="strip-arrow">→</div>
+
+      <!-- H2 optional -->
+      <article class="wf" data-frame="h2">
+        <div class="meta">
+          <div class="step phase-home">H2 · Optional tip</div>
+          <h3>One coach mark</h3>
+          <p class="why">Only if you need share/widgets discovery later.</p>
+        </div>
+        <div class="phone" data-scheme="light">
+          <div class="status"><span>9:41</span><span>●●●</span></div>
+          <div class="body">
+            <div class="grow">
+              <h4 class="serif" style="font-size:28px">Inicio</h4>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+                <div class="card"><div class="label">Restantes</div><div class="big" style="font-size:22px">12</div></div>
+                <div class="card"><div class="label">Fin libre</div><div class="big" style="font-size:22px">22</div></div>
+              </div>
+            </div>
+            <div class="tabbar"><span class="on">Inicio</span><span>Calendario</span><span>Rotaciones</span></div>
+            <div class="coach">
+              Tip: en Calendario puedes exportar o compartir tu mes.
+              <div class="row">
+                <button type="button">Ahora no</button>
+                <button type="button" class="primary">Entendido</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+
+    </div>
+  </div>
+
+  <!-- ============================================================
+       INTERACTIVE PLAYER
+       ============================================================ -->
+  <h2>2 · Interactive walkthrough</h2>
+  <p class="sub">Click through the same flow in a larger phone. Skip jumps to setup; Back steps within the current phase.</p>
+
+  <div class="player">
+    <div class="phone lg" id="playerPhone" data-scheme="light">
+      <div class="status"><span>9:41</span><span>●●●</span></div>
+
+      <!-- screens injected / toggled -->
+      <div class="body screen" data-id="s0">
+        <div class="grow center" style="align-items:center;text-align:center">
+          <div class="brand-mark">DeGuardia</div>
+          <p class="mono" style="font-size:12px">Guardias A–D, claras</p>
+          <button class="cta" data-next style="margin-top:24px;max-width:200px">Continuar</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="s1">
+        <div class="grow">
+          <p class="mono" style="font-size:12px">DeGuardia</p>
+          <h4 class="serif pack-h" style="font-size:40px" data-pack-value="Cuenta tus guardias" data-pack-pattern="¿A–D, A–C o A–E?">Cuenta tus guardias</h4>
+          <p class="mono pack-p" style="font-size:13px" data-pack-value="Cuántas te quedan en la rotación y cuánto falta para la próxima." data-pack-pattern="La app arma el calendario a partir de tu letra y el ciclo.">Cuántas te quedan en la rotación y cuánto falta para la próxima.</p>
+          <div class="illu pack-illu-value">
+            <div class="card" style="margin:0">
+              <div class="label">guardias restantes</div>
+              <div class="big">12</div>
+              <div class="line">Emergencias · Guardia B</div>
+            </div>
+          </div>
+          <div class="illu pack-illu-pattern hidden">
+            <div class="seg-inline" id="pPatterns">
+              <button type="button" data-pattern="ad" aria-pressed="true">A–D<small>Cada 4 días</small></button>
+              <button type="button" data-pattern="ac" aria-pressed="false">A–C<small>Cada 3 días</small></button>
+              <button type="button" data-pattern="ae" aria-pressed="false">A–E<small>Cada 5 días</small></button>
+            </div>
+          </div>
+          <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          <div class="grow end" style="flex:0">
+            <button class="cta" data-next>Siguiente</button>
+            <button class="linkish" data-skip>Saltar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="s2">
+        <div class="grow">
+          <p class="mono" style="font-size:12px">DeGuardia</p>
+          <h4 class="serif pack-h" style="font-size:40px" data-pack-value="Fines libres a la vista" data-pack-pattern="¿Qué letra eres?">Fines libres a la vista</h4>
+          <p class="mono pack-p" style="font-size:13px" data-pack-value="Marca guardias, vacaciones y el próximo fin sin turno." data-pack-pattern="A–E según tu ciclo — la primera guardia fija el resto del período.">Marca guardias, vacaciones y el próximo fin sin turno.</p>
+          <div class="illu pack-illu-value">
+            <div class="card" style="margin:0">
+              <div class="label">octubre</div>
+              <div class="cal">
+                <span class="hd">L</span><span class="hd">M</span><span class="hd">X</span><span class="hd">J</span><span class="hd">V</span><span class="hd">S</span><span class="hd">D</span>
+                <span>1</span><span class="shift">2</span><span>3</span><span>4</span><span class="shift">5</span><span class="free">6</span><span class="free">7</span>
+                <span>8</span><span class="shift">9</span><span>10</span><span>11</span><span class="shift">12</span><span>13</span><span>14</span>
+                <span class="shift">15</span><span>16</span><span>17</span><span>18</span><span class="shift">19</span><span class="free">20</span><span class="free">21</span>
+              </div>
+            </div>
+          </div>
+          <div class="illu pack-illu-pattern hidden">
+            <div class="letters" id="pLetters">
+              <button type="button" aria-pressed="false">A</button>
+              <button type="button" aria-pressed="true">B</button>
+              <button type="button" aria-pressed="false">C</button>
+              <button type="button" aria-pressed="false">D</button>
+              <button type="button" aria-pressed="false">E</button>
+            </div>
+          </div>
+          <div class="dots"><span class="dot"></span><span class="dot on"></span><span class="dot"></span></div>
+          <div class="grow end" style="flex:0">
+            <button class="cta" data-next>Siguiente</button>
+            <button class="linkish" data-skip>Saltar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="s3">
+        <div class="grow">
+          <p class="mono" style="font-size:12px">DeGuardia</p>
+          <h4 class="serif pack-h" style="font-size:40px" data-pack-value="Comparte con tu equipo" data-pack-pattern="Arma tu rotación">Comparte con tu equipo</h4>
+          <p class="mono pack-p" style="font-size:13px" data-pack-value="Exporta al calendario o manda un enlace a quien lleva otra letra." data-pack-pattern="Nombre, fechas y tu primera guardia. Toma menos de un minuto.">Exporta al calendario o manda un enlace a quien lleva otra letra.</p>
+          <div class="illu pack-illu-value">
+            <div class="card" style="margin:0">
+              <div class="label">compartir</div>
+              <div class="line" style="color:var(--text);margin:0;font-size:13px">Imagen · Calendario · Enlace</div>
+              <div class="line">También puedes marcar la guardia de un amigo</div>
+            </div>
+          </div>
+          <div class="illu pack-illu-pattern hidden">
+            <div class="card" style="margin:0">
+              <div class="label">se prellena</div>
+              <div class="big" style="font-size:28px" id="pSummary">A–D · B</div>
+              <div class="line">Horario y letra listos en el formulario</div>
+            </div>
+          </div>
+          <div class="dots"><span class="dot"></span><span class="dot"></span><span class="dot on"></span></div>
+          <div class="grow end" style="flex:0">
+            <button class="cta pack-cta" data-next data-pack-value="Empezar" data-pack-pattern="Continuar">Empezar</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="u0">
+        <div class="grow center">
+          <h4 class="serif" style="font-size:36px">Agrega tu primera rotación</h4>
+          <p class="mono" style="font-size:13px">Ve cuántas guardias te quedan, tu próximo fin libre y más.</p>
+          <div class="card">
+            <div class="label">vista previa</div>
+            <div class="big">12</div>
+            <div class="line">guardias restantes · ejemplo</div>
+          </div>
+          <button class="cta" data-next>Agregar rotación</button>
+          <button class="linkish" data-goto="s1">Ver slides de nuevo</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="u1">
+        <div class="nav-row">
+          <button class="linkish" data-back style="padding:0;align-self:auto">Cerrar</button>
+          <span class="title">Agregar rotación</span>
+          <button class="linkish" data-next style="padding:0;align-self:auto;color:var(--text)">Guardar</button>
+        </div>
+        <div class="grow">
+          <p class="section-h">Nombre</p>
+          <div>
+            <div class="field-label">Nombre</div>
+            <div class="field"><span>Emergencias</span></div>
+          </div>
+          <p class="section-h">Período</p>
+          <div>
+            <div class="field-label">Fecha de inicio</div>
+            <div class="field"><span>1 oct 2026</span></div>
+          </div>
+          <div>
+            <div class="field-label">Fecha de fin</div>
+            <div class="field"><span>31 dic 2026</span></div>
+          </div>
+          <button class="cta" data-next style="margin-top:auto">Continuar en formulario</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="u2">
+        <div class="nav-row">
+          <button class="linkish" data-back style="padding:0;align-self:auto">Atrás</button>
+          <span class="title">Agregar rotación</span>
+          <span class="chev"> </span>
+        </div>
+        <div class="grow">
+          <p class="section-h">Horario de guardias</p>
+          <div class="seg-inline">
+            <button type="button" aria-pressed="true">A–D<small>Cada 4 días</small></button>
+            <button type="button">A–C<small>Cada 3 días</small></button>
+            <button type="button">A–E<small>Cada 5 días</small></button>
+          </div>
+          <div>
+            <div class="field-label">Guardia</div>
+            <div class="letters">
+              <button type="button">A</button>
+              <button type="button" aria-pressed="true">B</button>
+              <button type="button">C</button>
+              <button type="button">D</button>
+              <button type="button">E</button>
+            </div>
+          </div>
+          <div>
+            <div class="field-label">Primera guardia</div>
+            <div class="field"><span>mié 15 oct</span></div>
+          </div>
+          <button class="cta" data-next style="margin-top:auto">Ver calendario</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="u3">
+        <div class="nav-row">
+          <button class="linkish" data-back style="padding:0;align-self:auto">Atrás</button>
+          <span class="title">Primera guardia</span>
+          <span class="chev"> </span>
+        </div>
+        <div class="grow">
+          <p class="mono" style="font-size:12px">Selecciona un día para fijar el patrón</p>
+          <div class="card">
+            <div class="label">octubre 2026</div>
+            <div class="cal">
+              <span class="hd">L</span><span class="hd">M</span><span class="hd">X</span><span class="hd">J</span><span class="hd">V</span><span class="hd">S</span><span class="hd">D</span>
+              <span></span><span></span><span>1</span><span>2</span><span>3</span><span>4</span><span>5</span>
+              <span>6</span><span>7</span><span>8</span><span>9</span><span>10</span><span>11</span><span>12</span>
+              <span>13</span><span>14</span><span class="shift sel">15</span><span>16</span><span>17</span><span>18</span><span class="shift">19</span>
+              <span>20</span><span>21</span><span class="shift">22</span><span>23</span><span>24</span><span>25</span><span class="shift">26</span>
+              <span>27</span><span>28</span><span class="shift">29</span><span>30</span><span>31</span><span></span><span></span>
+            </div>
+          </div>
+          <button class="cta" data-next style="margin-top:auto">Siguiente</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="u4">
+        <div class="nav-row">
+          <button class="linkish" data-back style="padding:0;align-self:auto">Atrás</button>
+          <span class="title">Agregar rotación</span>
+          <span class="chev"> </span>
+        </div>
+        <div class="grow">
+          <p class="section-h">Opcional</p>
+          <div class="field"><span class="ph">Inicio</span><span>07:00</span></div>
+          <div class="field"><span class="ph">Duración</span><span>24h</span></div>
+          <div>
+            <div class="field-label">Color</div>
+            <div class="swatches">
+              <span class="swatch on" style="background:#2F69F3"></span>
+              <span class="swatch" style="background:#DC211E"></span>
+              <span class="swatch" style="background:#1F9BA8"></span>
+              <span class="swatch" style="background:#FB8C00"></span>
+            </div>
+          </div>
+          <div class="field"><span class="ph">Vacaciones</span><span>Off</span></div>
+          <div class="field"><span class="ph">Guardia de un amigo</span><span>Off</span></div>
+          <button class="cta" data-next style="margin-top:auto">Guardar</button>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="h1">
+        <div class="grow">
+          <h4 class="serif" style="font-size:42px">Inicio</h4>
+          <p class="mono" style="font-size:12px">Próxima guardia · mié 15 oct · 07:00</p>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card"><div class="label">Restantes</div><div class="big" style="font-size:32px">12</div></div>
+            <div class="card"><div class="label">Fin libre</div><div class="big" style="font-size:32px;color:var(--weekend)">22</div></div>
+          </div>
+          <div class="card">
+            <div class="label">próximas guardias</div>
+            <div class="line" style="color:var(--text);margin:0;font-size:13px">mié 15 · dom 19 · jue 23 · lun 27</div>
+          </div>
+          <p class="mono" style="font-size:12px">Onboarding complete. Slides never return.</p>
+        </div>
+        <div class="tabbar"><span class="on">Inicio</span><span>Calendario</span><span>Rotaciones</span></div>
+      </div>
+
+      <div class="body screen hidden" data-id="h2">
+        <div class="grow">
+          <h4 class="serif" style="font-size:42px">Inicio</h4>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div class="card"><div class="label">Restantes</div><div class="big" style="font-size:32px">12</div></div>
+            <div class="card"><div class="label">Fin libre</div><div class="big" style="font-size:32px;color:var(--weekend)">22</div></div>
+          </div>
+        </div>
+        <div class="tabbar"><span class="on">Inicio</span><span>Calendario</span><span>Rotaciones</span></div>
+        <div class="coach">
+          Tip: en Calendario puedes exportar el mes o compartir un enlace.
+          <div class="row">
+            <button type="button" data-goto="h1">Ahora no</button>
+            <button type="button" class="primary" data-goto="done">Entendido</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="body screen hidden" data-id="done">
+        <div class="grow center" style="align-items:center;text-align:center">
+          <h4 class="serif" style="font-size:36px">Fin del flujo</h4>
+          <p class="mono" style="font-size:12px">Persist <code style="color:var(--text)">onboarding.slidesSeen</code> after S3 or Skip.</p>
+          <button class="cta secondary" data-goto="s0" style="max-width:220px">Replay from start</button>
+        </div>
+      </div>
+    </div>
+
+    <aside class="script">
+      <div class="progress" id="playerProgress">1 / 12 · S0 Brand</div>
+      <h3 id="playerTitle">Brand beat</h3>
+      <p id="playerBlurb">Optional splash. Most builds can start on S1.</p>
+      <ol id="playerToc"></ol>
+      <div class="controls">
+        <button type="button" id="btnBack">Back</button>
+        <button type="button" id="btnNext">Next</button>
+        <button type="button" id="btnSkip">Skip to setup</button>
+        <button type="button" id="btnReset">Reset</button>
+      </div>
+      <div class="notes" style="margin-top:16px">
+        <ul>
+          <li class="pro">Slides are a separate stack/modal once; then never again</li>
+          <li class="pro">Form screens U1–U4 are one scrollable <code>AddRotation</code> — split here only for wireframe clarity</li>
+          <li class="con">H2 coach is optional; cut if share isn’t core day-1</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <!-- ============================================================
+       SLIDE PACK COMPARISON
+       ============================================================ -->
+  <h2>3 · Slide content packs (side by side)</h2>
+  <p class="sub">Same 3-slide chrome; different story. Toggle in the toolbar updates the storyboard + player.</p>
+
+  <div class="variant-grid">
+    <div class="variant">
+      <div class="tag">Pack · Value</div>
+      <h3>Product outcomes</h3>
+      <p class="why">1 remaining · 2 calendar/free weekend · 3 share. Safest “App Store” story.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <p class="mono" style="font-size:9px">1 / 3</p>
+            <h4 class="serif" style="font-size:22px">Cuenta tus guardias</h4>
+            <div class="card"><div class="label">restantes</div><div class="big">12</div></div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="tag">Pack · Pattern</div>
+      <h3>Resident mental model</h3>
+      <p class="why">1 cycle · 2 letter · 3 CTA with prefill. Slides collect choices that feed the form.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <p class="mono" style="font-size:9px">1 / 3</p>
+            <h4 class="serif" style="font-size:22px">¿A–D, A–C o A–E?</h4>
+            <div class="seg-inline">
+              <button type="button" aria-pressed="true">A–D<small>4 días</small></button>
+              <button type="button">A–C<small>3 días</small></button>
+              <button type="button">A–E<small>5 días</small></button>
+            </div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="variant">
+      <div class="tag">Cut · 2 slides</div>
+      <h3>Shorter value</h3>
+      <p class="why">Drop share slide. S1 remaining → S2 calendar → Empezar. Best if you want slides but hate length.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <p class="mono" style="font-size:9px">2 / 2</p>
+            <h4 class="serif" style="font-size:22px">Fines libres a la vista</h4>
+            <div class="card">
+              <div class="cal">
+                <span class="shift">2</span><span>3</span><span>4</span><span class="shift">5</span><span class="free">6</span><span class="free">7</span><span>8</span>
+              </div>
+            </div>
+            <div class="dots"><span class="dot"></span><span class="dot on"></span></div>
+            <button class="cta" tabindex="-1">Empezar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       ALT ENTRY / EDGE PATHS
+       ============================================================ -->
+  <h2>4 · Edge paths (same system)</h2>
+  <p class="sub">Not every cold open is blank. Wire how slides interact with share links and “already has data.”</p>
+
+  <div class="variant-grid">
+    <div class="variant" style="width:280px">
+      <div class="tag">Deep link</div>
+      <h3>Shared rotation link</h3>
+      <p class="why">Skip slides entirely → AddRotation with draft → Home. Mark slides seen so they don’t interrupt later.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow center">
+            <h4 class="serif" style="font-size:24px">Rotación compartida</h4>
+            <p class="mono" style="font-size:9px">Urgencias · A–D · Guardia C</p>
+            <div class="card">
+              <div class="line" style="color:var(--text);margin:0">1 oct – 31 dic</div>
+              <div class="line">Revisa y guarda en tu teléfono</div>
+            </div>
+            <button class="cta" tabindex="-1">Agregar a DeGuardia</button>
+            <button class="linkish" tabindex="-1">Cancelar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="variant" style="width:280px">
+      <div class="tag">Returning</div>
+      <h3>Has rotations</h3>
+      <p class="why">No slides. Straight to last tab / Home. Empty state only if all periods deleted.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:28px">Inicio</h4>
+            <div class="card"><div class="label">próxima</div><div class="big" style="font-size:22px">2d 4h</div></div>
+          </div>
+          <div class="tabbar"><span class="on">Inicio</span><span>Calendario</span><span>Rotaciones</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="variant" style="width:280px">
+      <div class="tag">Skip</div>
+      <h3>Skip from any slide</h3>
+      <p class="why">Goes to U0 or U1. Still set <code>slidesSeen</code> — don’t trap people in marketing.</p>
+      <div class="phone" data-scheme="light">
+        <div class="status"><span>9:41</span><span>●●●</span></div>
+        <div class="body">
+          <div class="grow">
+            <h4 class="serif" style="font-size:24px">Cuenta tus guardias</h4>
+            <div class="card"><div class="big">12</div></div>
+            <div class="dots"><span class="dot on"></span><span class="dot"></span><span class="dot"></span></div>
+            <button class="cta" tabindex="-1">Siguiente</button>
+            <button class="linkish" tabindex="-1">Saltar → setup</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <aside class="verdict">
+    <h2 style="margin-top:0;color:#f2f4f8;font:600 15px/1.3 inherit">Implementation sketch</h2>
+    <p>
+      <strong>Flow:</strong>
+      <code>S0?</code> → <code>S1–S3</code> (pager) → <code>U0?</code> → existing <code>AddRotation</code> (one screen) → <code>H1</code> → optional <code>H2</code>.
+      Persist <code>preferences.onboardingSlidesSeen</code> on Finish or Skip. Prefill from Pattern pack via route params.
+    </p>
+    <ol>
+      <li>New modal/stack route <code>OnboardingSlides</code> shown only when <code>!slidesSeen && periods.length === 0</code>.</li>
+      <li>Reuse Instrument Serif + mono + ghost cards from <code>ShiftsEmptyState</code> for slide chrome.</li>
+      <li>Prefer <strong>Value pack with 2 slides</strong> (cut share) unless Pattern pack wins in testing.</li>
+      <li>U1–U4 in this doc = scroll sections of today’s form — don’t rebuild as a multi-step wizard unless you choose Pattern pack.</li>
+    </ol>
+  </aside>
+
+<script>
+  const FLOW = [
+    { id: 's0', title: 'Brand beat', blurb: 'Optional splash. Most builds can start on S1.', phase: 'slides' },
+    { id: 's1', title: 'Slide 1', blurb: 'First value or pattern choice. Skip always available.', phase: 'slides' },
+    { id: 's2', title: 'Slide 2', blurb: 'Calendar / letter. Keep illustration dominant, copy short.', phase: 'slides' },
+    { id: 's3', title: 'Slide 3', blurb: 'Last slide CTAs into setup (or empty bridge).', phase: 'slides' },
+    { id: 'u0', title: 'Empty / CTA bridge', blurb: 'Optional — S3 can open AddRotation directly.', phase: 'setup' },
+    { id: 'u1', title: 'Form · Nombre + período', blurb: 'Top of existing AddRotation scroll.', phase: 'setup' },
+    { id: 'u2', title: 'Form · Horario', blurb: 'A–D/A–C/A–E + letter. Prefill if Pattern pack.', phase: 'setup' },
+    { id: 'u3', title: 'Form · First-shift calendar', blurb: 'Existing FirstShiftCalendar interaction.', phase: 'setup' },
+    { id: 'u4', title: 'Form · Opcional + Guardar', blurb: 'Defaults OK; Save creates period.', phase: 'setup' },
+    { id: 'h1', title: 'Home (first useful)', blurb: 'Product value with real data. Slides never again.', phase: 'home' },
+    { id: 'h2', title: 'Optional coach tip', blurb: 'One-shot tip for share/calendar. Easy dismiss.', phase: 'home' },
+    { id: 'done', title: 'Flow complete', blurb: 'Wireframe end state / replay.', phase: 'home' },
+  ];
+
+  let index = 0;
+  let pack = 'value';
+
+  const phone = document.getElementById('playerPhone');
+  const toc = document.getElementById('playerToc');
+  const progress = document.getElementById('playerProgress');
+  const titleEl = document.getElementById('playerTitle');
+  const blurbEl = document.getElementById('playerBlurb');
+
+  FLOW.forEach((step, i) => {
+    const li = document.createElement('li');
+    li.textContent = `${step.id.toUpperCase()} — ${step.title}`;
+    li.dataset.i = String(i);
+    li.style.cursor = 'pointer';
+    li.addEventListener('click', () => go(i));
+    toc.appendChild(li);
+  });
+
+  function applyPack(next) {
+    pack = next;
+    document.querySelectorAll('#packSeg button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.pack === pack));
+    });
+    document.querySelectorAll('[data-pack-value]').forEach((el) => {
+      if (el.classList.contains('pack-illu-value') || el.classList.contains('pack-illu-pattern')) return;
+      const key = pack === 'value' ? 'packValue' : 'packPattern';
+      // dataset: packValue / packPattern from data-pack-value / data-pack-pattern
+      const text = pack === 'value' ? el.getAttribute('data-pack-value') : el.getAttribute('data-pack-pattern');
+      if (text != null) el.textContent = text;
+    });
+    document.querySelectorAll('.pack-illu-value').forEach((el) => {
+      el.classList.toggle('hidden', pack !== 'value');
+    });
+    document.querySelectorAll('.pack-illu-pattern').forEach((el) => {
+      el.classList.toggle('hidden', pack !== 'pattern');
+    });
+  }
+
+  function go(i) {
+    index = Math.max(0, Math.min(FLOW.length - 1, i));
+    const step = FLOW[index];
+    phone.querySelectorAll('.screen').forEach((s) => {
+      s.classList.toggle('hidden', s.dataset.id !== step.id);
+    });
+    progress.textContent = `${index + 1} / ${FLOW.length} · ${step.id.toUpperCase()} ${step.title}`;
+    titleEl.textContent = step.title;
+    blurbEl.textContent = step.blurb;
+    toc.querySelectorAll('li').forEach((li, liIndex) => {
+      li.classList.toggle('current', liIndex === index);
+    });
+  }
+
+  function next() { go(index + 1); }
+  function back() { go(index - 1); }
+  function skip() {
+    const setup = FLOW.findIndex((s) => s.id === 'u0');
+    go(setup);
+  }
+
+  document.getElementById('btnNext').addEventListener('click', next);
+  document.getElementById('btnBack').addEventListener('click', back);
+  document.getElementById('btnSkip').addEventListener('click', skip);
+  document.getElementById('btnReset').addEventListener('click', () => go(0));
+
+  phone.addEventListener('click', (e) => {
+    if (e.target.closest('[data-next]')) { next(); return; }
+    if (e.target.closest('[data-back]')) { back(); return; }
+    if (e.target.closest('[data-skip]')) { skip(); return; }
+    const jump = e.target.closest('[data-goto]');
+    if (jump) {
+      const id = jump.dataset.goto;
+      const i = FLOW.findIndex((s) => s.id === id);
+      if (i >= 0) go(i);
+    }
+  });
+
+  document.getElementById('schemeSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-scheme]');
+    if (!btn) return;
+    const scheme = btn.dataset.scheme;
+    document.body.dataset.scheme = scheme;
+    document.querySelectorAll('#schemeSeg button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b.dataset.scheme === scheme));
+    });
+    document.querySelectorAll('.phone').forEach((p) => p.setAttribute('data-scheme', scheme));
+  });
+
+  document.getElementById('packSeg').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-pack]');
+    if (!btn) return;
+    applyPack(btn.dataset.pack);
+  });
+
+  const PATTERN_LABELS = { ad: 'A–D', ac: 'A–C', ae: 'A–E' };
+  const PATTERN_LETTER_COUNT = { ad: 4, ac: 3, ae: 5 };
+
+  // Pattern pack interactions in player
+  document.getElementById('pPatterns')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-pattern]');
+    if (!btn) return;
+    btn.parentElement.querySelectorAll('button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b === btn));
+    });
+    const letters = document.getElementById('pLetters');
+    if (!letters) return;
+    const maxLetters = PATTERN_LETTER_COUNT[btn.dataset.pattern] || 4;
+    let resetSelection = false;
+    letters.querySelectorAll('button').forEach((el, i) => {
+      const visible = i < maxLetters;
+      el.style.display = visible ? '' : 'none';
+      if (!visible && el.getAttribute('aria-pressed') === 'true') {
+        el.setAttribute('aria-pressed', 'false');
+        resetSelection = true;
+      }
+    });
+    if (resetSelection) {
+      letters.children[0].setAttribute('aria-pressed', 'true');
+    }
+    updateSummary();
+  });
+
+  document.getElementById('pLetters')?.addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn || !btn.parentElement?.id) return;
+    btn.parentElement.querySelectorAll('button').forEach((b) => {
+      b.setAttribute('aria-pressed', String(b === btn));
+    });
+    updateSummary();
+  });
+
+  function updateSummary() {
+    const patternBtn = document.querySelector('#pPatterns button[aria-pressed="true"]');
+    const letterBtn = document.querySelector('#pLetters button[aria-pressed="true"]');
+    const summary = document.getElementById('pSummary');
+    if (!summary) return;
+    const cycle = PATTERN_LABELS[patternBtn?.dataset.pattern] || 'A–D';
+    const letter = letterBtn?.textContent?.trim() || 'B';
+    summary.textContent = `${cycle} · ${letter}`;
+  }
+
+  applyPack('value');
+  go(0);
+</script>
+</body>
+</html>
