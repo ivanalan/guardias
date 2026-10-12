@@ -1,5 +1,5 @@
 {
-  "lastApprovedMarketingVersion": "1.0.7",
-  "updatedAt": "2026-09-30",
+  "lastApprovedMarketingVersion": "1.0.8",
+  "updatedAt": "2026-10-12",
   "notes": "Set this to the latest iOS version Apple has approved (Ready for Sale or equivalent). Never upload an IPA whose expo.version / CFBundleShortVersionString is less than or equal to this value."
 }
