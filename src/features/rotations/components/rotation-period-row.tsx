@@ -41,7 +41,14 @@ export function RotationPeriodRow({
         borderRadius,
       }}
     >
-      <View className="w-full flex-row items-center justify-between gap-3">
+      <View className="w-full flex-row items-center gap-3">
+        {showPeopleIcon ? (
+          <Ionicons
+            name="people"
+            size={compact ? 16 : 20}
+            color={colors.onColor}
+          />
+        ) : null}
         <Text
           className={
             compact
@@ -52,13 +59,6 @@ export function RotationPeriodRow({
         >
           {label}
         </Text>
-        {showPeopleIcon ? (
-          <Ionicons
-            name="people"
-            size={compact ? 20 : 24}
-            color={colors.onColor}
-          />
-        ) : null}
       </View>
       <Text
         className={compact ? 'font-mono text-sm' : 'font-mono text-base'}

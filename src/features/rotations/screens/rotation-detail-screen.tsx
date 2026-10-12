@@ -230,9 +230,9 @@ export function RotationDetailScreen({ navigation, route }: Props) {
       if (destination === 'google') {
         const event = buildShiftExportEvent(sharePeriod);
         const details =
-          event != null && event.vacationExDates.length > 0
+          event != null && event.exDates.length > 0
             ? t('calendar.shareGoogleVacationNote', {
-                dates: event.vacationExDates.join(', '),
+                dates: event.exDates.join(', '),
               })
             : undefined;
         const result = await openGoogleCalendar(sharePeriod, { details });
@@ -252,9 +252,9 @@ export function RotationDetailScreen({ navigation, route }: Props) {
       if (destination === 'device') {
         const event = buildShiftExportEvent(sharePeriod);
         const notes =
-          event != null && event.vacationExDates.length > 0
+          event != null && event.exDates.length > 0
             ? t('calendar.shareDeviceVacationNote', {
-                dates: event.vacationExDates.join(', '),
+                dates: event.exDates.join(', '),
               })
             : undefined;
         const result = await openDeviceCalendar(sharePeriod, { notes });
@@ -440,21 +440,16 @@ export function RotationDetailScreen({ navigation, route }: Props) {
           </Text>
 
           <View className="gap-5">
-            <View className="w-full flex-row items-center justify-between gap-3">
+            <View className="w-full flex-row items-center gap-3">
+              {isSecondary(period) ? (
+                <Ionicons name="people" size={20} color={colors.text} />
+              ) : null}
               <Text
                 className="min-w-0 flex-1 font-mono text-base"
                 style={{ color: colors.text }}
               >
                 {subtitle}
               </Text>
-              {isSecondary(period) ? (
-                <Ionicons
-                  name="people"
-                  size={24}
-                  color={colors.text}
-                  style={{ marginRight: 16 }}
-                />
-              ) : null}
             </View>
 
             <View className="w-full flex-row gap-4">
@@ -465,7 +460,7 @@ export function RotationDetailScreen({ navigation, route }: Props) {
               />
               <FactCard
                 className="min-w-0 flex-1 gap-1 px-gutter py-widget"
-                value={period.shiftStartTime}
+                value={`${period.shiftStartTime} · ${t('shifts.form.shiftLengthHours', { hours: period.shiftLengthHours })}`}
                 caption={t('shifts.form.shiftStartTime')}
               />
             </View>

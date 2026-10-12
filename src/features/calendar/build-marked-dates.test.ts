@@ -1,13 +1,14 @@
 import {
   buildMarkedDates,
   pruneLegendFilterForMonthCounts,
+  secondaryFilterKey,
 } from './build-marked-dates';
 
 describe('buildMarkedDates', () => {
-  const shifts = [{ date: '2026-07-01', color: '#2F69F3' }];
+  const shifts = [{ date: '2026-07-01', color: '#2F69F3', periodId: 'p1' }];
   const freeWeekends = ['2026-07-11', '2026-07-12'];
   const vacations = ['2026-07-15', '2026-07-16'];
-  const secondary = [{ date: '2026-07-02', color: '#0D9488' }];
+  const secondary = [{ date: '2026-07-02', color: '#0D9488', periodId: 'f1' }];
 
   it('marks shift, free-weekend, vacation, and secondary dates', () => {
     const marked = buildMarkedDates(
@@ -24,7 +25,7 @@ describe('buildMarkedDates', () => {
 
   it('lets shift marks override free-weekend keys on the same day', () => {
     const marked = buildMarkedDates(
-      [{ date: '2026-07-11', color: '#E53935' }],
+      [{ date: '2026-07-11', color: '#E53935', periodId: 'p1' }],
       ['2026-07-11'],
       [],
     );
@@ -33,9 +34,10 @@ describe('buildMarkedDates', () => {
 });
 
 describe('pruneLegendFilterForMonthCounts', () => {
+  const friendKey = secondaryFilterKey('friend-1');
   const allOn = new Set([
     'shifts',
-    'secondaryShifts',
+    friendKey,
     'freeWeekends',
     'vacation',
   ] as const);
@@ -43,11 +45,22 @@ describe('pruneLegendFilterForMonthCounts', () => {
   it('drops categories whose visible-month count is 0', () => {
     const next = pruneLegendFilterForMonthCounts(allOn, {
       shiftDayCount: 0,
-      secondaryShiftDayCount: 2,
       freeWeekendCount: 0,
       vacationDayCount: 1,
+      secondaryPeriodIds: ['friend-1'],
     });
-    expect([...next].sort()).toEqual(['secondaryShifts', 'vacation']);
+    expect([...next].sort()).toEqual([friendKey, 'vacation'].sort());
+  });
+
+  it('drops friend filters for periods with no days this month', () => {
+    const next = pruneLegendFilterForMonthCounts(allOn, {
+      shiftDayCount: 7,
+      freeWeekendCount: 2,
+      vacationDayCount: 1,
+      secondaryPeriodIds: [],
+    });
+    expect(next.has(friendKey)).toBe(false);
+    expect(next.has('shifts')).toBe(true);
   });
 
   it('keeps the same set when every selected category still has a count', () => {
@@ -55,9 +68,9 @@ describe('pruneLegendFilterForMonthCounts', () => {
     expect(
       pruneLegendFilterForMonthCounts(shiftsOnly, {
         shiftDayCount: 7,
-        secondaryShiftDayCount: 0,
         freeWeekendCount: 2,
         vacationDayCount: 0,
+        secondaryPeriodIds: [],
       }),
     ).toBe(shiftsOnly);
   });

@@ -4,13 +4,21 @@ import { parseCalendarDate } from '../../lib/shifts/parse-calendar-date';
 import { BORDER_RADIUS } from '../../theme/layout';
 import {
   EMPTY_CALENDAR_FILTER,
+  selectedSecondaryPeriodIds,
   type CalendarLegendFilterState,
+  type ShiftDateMark,
 } from './build-marked-dates';
 import type { CalendarMarkColors } from './calendar-mark-colors';
 
 export const CELL_SIZE = 36;
-/** Vertical space between date rows in month / two-week calendars. */
-export const CALENDAR_WEEK_ROW_GAP = 8;
+/**
+ * Vertical space between date rows in month / two-week calendars (and list
+ * height math). Tweak this when friend dots need more breathing room — day
+ * cells, calendar theme `gap`, and home two-week strip all read this constant.
+ */
+export const CALENDAR_WEEK_ROW_GAP = 12;
+/** Gap between the day mark and friend dots parked below the cell. */
+export const SECONDARY_DOT_GAP = 4;
 export const DAY_MARKER_RADIUS = BORDER_RADIUS;
 export const TODAY_BORDER_WIDTH = 1.5;
 export const TODAY_INNER_GAP = 2;
@@ -19,6 +27,22 @@ export const DAY_MARKER_INNER_RADIUS = Math.max(
   4,
 );
 export const SECONDARY_DOT_SIZE = 5;
+/** Line height reserved for the “+N” overflow label beside friend dots. */
+export const SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT = 10;
+/** Max friend dots under a day cell before showing +N. */
+export const SECONDARY_DAY_DOT_CAP = 1;
+/**
+ * Vertical room below the day mark for friend dots / +N so rows and weekend
+ * capsules do not clip them. Keep in sync with SecondaryDotRow typography.
+ */
+export const SECONDARY_DOT_STACK_HEIGHT =
+  SECONDARY_DOT_GAP +
+  Math.max(SECONDARY_DOT_SIZE, SECONDARY_OVERFLOW_LABEL_LINE_HEIGHT);
+
+export type SecondaryDayDot = {
+  periodId: string;
+  color: string;
+};
 
 export const dayMarkerStyle = {
   borderCurve: 'continuous' as const,
@@ -34,13 +58,18 @@ export type DayMarkKind = 'shift' | 'vacation' | 'freeWeekend' | 'none';
 
 export type CalendarDayMarkContext = {
   shiftColorByDate: ReadonlyMap<string, string>;
-  secondaryShiftColorByDate: ReadonlyMap<string, string>;
+  /** Friend dots for the date (stable period order; may be empty). */
+  secondaryDotsByDate: ReadonlyMap<string, readonly SecondaryDayDot[]>;
   freeWeekendSet: ReadonlySet<string>;
   vacationSet: ReadonlySet<string>;
+  /** Skipped pattern days — strikethrough on empty (non-fill) cells. */
+  skippedSet: ReadonlySet<string>;
   filter: CalendarLegendFilterState;
   todayIso: string;
   /** When set, non-anchor shift days render at PATTERN_SHIFT_OPACITY (first-shift picker). */
   patternAnchorDate?: string | null;
+  /** Day open in DayDetail — brand ring while the sheet is presented. */
+  selectedIso?: string | null;
   /** `YYYY-MM` of the month the legend describes; extra days skip filter dimming. */
   visibleMonthKey?: string | null;
 };
@@ -59,23 +88,29 @@ export function withAlpha(hex: string, alpha: number): string {
 
 export type DayFilterMatchInput = {
   hasPrimary: boolean;
-  hasSecondary: boolean;
+  /** Friend period ids with a shift on this day. */
+  secondaryPeriodIds: readonly string[];
   markKind: DayMarkKind;
 };
 
 /**
  * Whether this day satisfies every selected legend filter (AND across
- * categories). An empty filter matches every day.
+ * categories; OR among selected friend filters). An empty filter matches
+ * every day.
  */
 export function dayMatchesActiveFilter(
   filter: CalendarLegendFilterState,
-  { hasPrimary, hasSecondary, markKind }: DayFilterMatchInput,
+  { hasPrimary, secondaryPeriodIds, markKind }: DayFilterMatchInput,
 ): boolean {
   if (filter.has('shifts') && !hasPrimary) {
     return false;
   }
-  if (filter.has('secondaryShifts') && !hasSecondary) {
-    return false;
+  const selectedFriends = selectedSecondaryPeriodIds(filter);
+  if (selectedFriends.length > 0) {
+    const onDay = new Set(secondaryPeriodIds);
+    if (!selectedFriends.some((id) => onDay.has(id))) {
+      return false;
+    }
   }
   if (filter.has('freeWeekends') && markKind !== 'freeWeekend') {
     return false;
@@ -84,6 +119,22 @@ export function dayMatchesActiveFilter(
     return false;
   }
   return true;
+}
+
+/**
+ * Friend dots to paint for a day: all when no friend filter is selected;
+ * otherwise only selected friends present on that day.
+ */
+export function visibleSecondaryDotsForDay(
+  dots: readonly SecondaryDayDot[],
+  filter: CalendarLegendFilterState,
+): SecondaryDayDot[] {
+  const selected = selectedSecondaryPeriodIds(filter);
+  if (selected.length === 0) {
+    return [...dots];
+  }
+  const selectedSet = new Set(selected);
+  return dots.filter((dot) => selectedSet.has(dot.periodId));
 }
 
 export type DayFilterDimOptions = {
@@ -164,6 +215,25 @@ export function shiftMarkColorAlpha(
   return 1;
 }
 
+/** Group secondary marks by date (preserves mark array order per date). */
+export function buildSecondaryDotsByDate(
+  secondaryShiftMarks: readonly Pick<
+    ShiftDateMark,
+    'date' | 'color' | 'periodId'
+  >[],
+): Map<string, SecondaryDayDot[]> {
+  const secondaryDotsByDate = new Map<string, SecondaryDayDot[]>();
+  for (const { date, color, periodId } of secondaryShiftMarks) {
+    const list = secondaryDotsByDate.get(date);
+    if (list != null) {
+      list.push({ periodId, color });
+    } else {
+      secondaryDotsByDate.set(date, [{ periodId, color }]);
+    }
+  }
+  return secondaryDotsByDate;
+}
+
 export function buildCalendarDayMarkContext(
   shiftMarks: readonly { date: string; color: string }[],
   freeWeekendDates: readonly string[],
@@ -171,26 +241,29 @@ export function buildCalendarDayMarkContext(
   filter: CalendarLegendFilterState,
   todayIso: string,
   patternAnchorDate?: string | null,
-  secondaryShiftMarks: readonly { date: string; color: string }[] = [],
+  secondaryShiftMarks: readonly Pick<
+    ShiftDateMark,
+    'date' | 'color' | 'periodId'
+  >[] = [],
   visibleMonthKey?: string | null,
+  skippedDates: readonly string[] = [],
+  selectedIso?: string | null,
 ): CalendarDayMarkContext {
   const shiftColorByDate = new Map<string, string>();
   for (const { date, color } of shiftMarks) {
     shiftColorByDate.set(date, color);
   }
-  const secondaryShiftColorByDate = new Map<string, string>();
-  for (const { date, color } of secondaryShiftMarks) {
-    secondaryShiftColorByDate.set(date, color);
-  }
 
   return {
     shiftColorByDate,
-    secondaryShiftColorByDate,
+    secondaryDotsByDate: buildSecondaryDotsByDate(secondaryShiftMarks),
     freeWeekendSet: new Set(freeWeekendDates),
     vacationSet: new Set(vacationDates),
+    skippedSet: new Set(skippedDates),
     filter: filter ?? EMPTY_CALENDAR_FILTER,
     todayIso,
     patternAnchorDate,
+    selectedIso: selectedIso ?? null,
     visibleMonthKey,
   };
 }

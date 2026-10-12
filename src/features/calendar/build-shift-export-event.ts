@@ -15,8 +15,13 @@ export type ShiftExportEvent = {
   untilDate: string;
   interval: number;
   summary: string;
-  /** Vacation pattern days that should be EXDATEs (`YYYY-MM-DD`). */
-  vacationExDates: string[];
+  /**
+   * RRULE occurrences that are not actual shifts (vacation + skips).
+   * ICS EXDATE; Google template note workaround.
+   */
+  exDates: string[];
+  /** Actual shifts that are not on the RRULE grid (covers). ICS RDATE. */
+  rDates: string[];
   /** RRULE body without the `RRULE:` prefix. */
   rrule: string;
 };
@@ -39,28 +44,48 @@ function findFirstShiftDate(period: RotationPeriod): string | null {
   return null;
 }
 
-/**
- * Pattern days that fall inside the vacation block (would be shifts without leave).
- * These become EXDATE exceptions on the recurring series.
- */
-export function listVacationExDates(period: RotationPeriod): string[] {
-  const { vacationStartDate, vacationEndDate } = period;
-  if (vacationStartDate == null || vacationEndDate == null) {
-    return [];
-  }
-
-  const withoutVacation: RotationPeriod = {
-    ...period,
-    vacationStartDate: null,
-    vacationEndDate: null,
-  };
-
+/** RRULE occurrence dates from `firstShiftDate` by `interval` through `untilDate`. */
+export function listRruleDates(
+  firstShiftDate: string,
+  untilDate: string,
+  interval: number,
+): string[] {
   const dates: string[] = [];
-  let cursor = parseCalendarDate(vacationStartDate);
-  const end = parseCalendarDate(vacationEndDate);
+  let cursor = parseCalendarDate(firstShiftDate);
+  const end = parseCalendarDate(untilDate);
+  while (cursor <= end) {
+    dates.push(format(cursor, 'yyyy-MM-dd'));
+    cursor = addDays(cursor, interval);
+  }
+  return dates;
+}
+
+/** RRULE days that are not actual shifts (vacation blocks + skippedDates). */
+export function listExportExDates(
+  period: RotationPeriod,
+  firstShiftDate: string,
+): string[] {
+  const interval = period.pattern.cycleDays;
+  return listRruleDates(firstShiftDate, period.endDate, interval).filter(
+    (iso) => !isShiftDay(period, iso),
+  );
+}
+
+/** Actual shifts not on the RRULE grid from `firstShiftDate` (covers). */
+export function listExportRDates(
+  period: RotationPeriod,
+  firstShiftDate: string,
+): string[] {
+  const interval = period.pattern.cycleDays;
+  const onRrule = new Set(
+    listRruleDates(firstShiftDate, period.endDate, interval),
+  );
+  const dates: string[] = [];
+  let cursor = parseCalendarDate(period.startDate);
+  const end = parseCalendarDate(period.endDate);
   while (cursor <= end) {
     const iso = format(cursor, 'yyyy-MM-dd');
-    if (isShiftDay(withoutVacation, iso)) {
+    if (isShiftDay(period, iso) && !onRrule.has(iso)) {
       dates.push(iso);
     }
     cursor = addDays(cursor, 1);
@@ -95,7 +120,8 @@ export function buildShiftExportEvent(
     untilDate,
     interval,
     summary,
-    vacationExDates: listVacationExDates(period),
+    exDates: listExportExDates(period, firstShiftDate),
+    rDates: listExportRDates(period, firstShiftDate),
     rrule: `FREQ=DAILY;INTERVAL=${interval};UNTIL=${formatCompactDate(untilDate)}`,
   };
 }

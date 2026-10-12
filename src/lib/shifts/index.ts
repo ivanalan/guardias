@@ -23,6 +23,12 @@ export {
   getTimeUntilNextShift,
 } from './home-stats';
 export type { NextFreeWeekend } from './home-stats';
-export { getDefaultFirstShiftDate, isShiftDay } from './is-shift-day';
+export {
+  getDefaultFirstShiftDate,
+  isShiftDay,
+  isSkippedPatternDay,
+  matchesShiftPattern,
+} from './is-shift-day';
 export { listShiftDatesInRange } from './list-shift-dates-in-range';
 export { parseCalendarDate } from './parse-calendar-date';
+export { toggleDayShift } from './toggle-day-shift';

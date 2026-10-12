@@ -384,8 +384,8 @@ This is implemented in `src/lib/shifts/is-shift-day.ts`.
 
 A period has a `role`:
 
-- **`primary`** — *your* schedule. Drives Home stats, free weekends, and solid calendar fills.
-- **`secondary`** — friend/spouse. Shown as **dots** on the calendar only; does not drive Home “next shift” logic.
+- **`primary`** — *your* schedule. Drives Home stats, free weekends, and solid calendar fills. Primary date ranges must not overlap each other.
+- **`secondary`** — friend/spouse. Shown as **dots** on the calendar (and read-only rows on day detail) only; does not drive Home “next shift” logic. Multiple secondaries are allowed (soft cap **8**); their date ranges **may overlap**, including the same calendar day. Day cells show up to **one** friend dot then `+N`. The month legend shows all named friend chips when there are ≤4; with 5+, it keeps **two** named chips plus a `+n friends` overflow chip that expands in place to all chips (expand state is ephemeral).
 
 Helpers live in `src/features/rotations/period-role.ts`.
 
@@ -395,7 +395,7 @@ A period can store an inclusive vacation range (`vacationStartDate` … `vacatio
 
 ### 7.5 Shift length
 
-Shifts are modeled as **24 hours** starting at a local `shiftStartTime` (default `07:00`). That constant is `SHIFT_DURATION_HOURS` in `build-shift.ts`.
+Each period stores `shiftLengthHours` (default **24**, allowed **8…40** whole hours). Shifts start at a local `shiftStartTime` (default `07:00`). `buildShift` uses the period’s length for end time; `SHIFT_DURATION_HOURS` is the default constant.
 
 ---
 

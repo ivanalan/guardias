@@ -55,6 +55,30 @@ function matchesFirstShiftCycle(
   return ((days % cycleDays) + cycleDays) % cycleDays === 0;
 }
 
+/** Whether `isoDate` falls on the period's cycle (ignores vacation / exceptions). */
+export function matchesShiftPattern(
+  period: RotationPeriod,
+  isoDate: string,
+): boolean {
+  if (isoDate < period.startDate || isoDate > period.endDate) {
+    return false;
+  }
+
+  if (period.firstShiftDate != null) {
+    return matchesFirstShiftCycle(
+      isoDate,
+      period.firstShiftDate,
+      period.pattern.cycleDays,
+    );
+  }
+
+  return matchesYearCalendarLetter(
+    isoDate,
+    period.pattern.cycleDays,
+    period.pattern.offset,
+  );
+}
+
 /**
  * First shift day on/after `startDate` within `[startDate, endDate]` under the
  * Jan 1 = A letter calendar (ignores any first-shift override).
@@ -83,28 +107,35 @@ export function getDefaultFirstShiftDate(
 
 /**
  * Whether `isoDate` (`YYYY-MM-DD`) is a scheduled shift day for this period.
- * Uses `firstShiftDate` every-N cycle when set; otherwise year-anchored A/B/C/D
- * + pattern offset. Vacation days are never shifts.
+ * Order: bounds → skip → cover (wins over vacation) → vacation → pattern.
  */
 export function isShiftDay(period: RotationPeriod, isoDate: string): boolean {
   if (isoDate < period.startDate || isoDate > period.endDate) {
     return false;
   }
+  if (period.skippedDates.includes(isoDate)) {
+    return false;
+  }
+  if (period.coveredDates.includes(isoDate)) {
+    return true;
+  }
   if (isOnVacation(period, isoDate)) {
     return false;
   }
 
-  if (period.firstShiftDate != null) {
-    return matchesFirstShiftCycle(
-      isoDate,
-      period.firstShiftDate,
-      period.pattern.cycleDays,
-    );
-  }
+  return matchesShiftPattern(period, isoDate);
+}
 
-  return matchesYearCalendarLetter(
-    isoDate,
-    period.pattern.cycleDays,
-    period.pattern.offset,
+/**
+ * Skipped pattern day (strikethrough on calendar): in `skippedDates` and still
+ * on the underlying cycle.
+ */
+export function isSkippedPatternDay(
+  period: RotationPeriod,
+  isoDate: string,
+): boolean {
+  return (
+    period.skippedDates.includes(isoDate) &&
+    matchesShiftPattern(period, isoDate)
   );
 }

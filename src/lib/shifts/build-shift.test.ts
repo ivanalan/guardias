@@ -12,7 +12,10 @@ function period(
     firstShiftDate: null,
     vacationStartDate: null,
     vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: '#2F69F3',
     role: 'primary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -38,6 +41,7 @@ describe('buildShift', () => {
       endDate: '2026-07-31',
       pattern: { cycleDays: 4, offset: 'B' },
       shiftStartTime: '07:00',
+      shiftLengthHours: 24,
     });
 
     const shift = buildShift(p, '2026-07-01');
@@ -71,6 +75,22 @@ describe('buildShift', () => {
     expect(shift!.endDateTime.getDate()).toBe(2);
     expect(shift!.endDateTime.getHours()).toBe(19);
     expect(shift!.endDateTime.getMinutes()).toBe(30);
+  });
+
+  it('uses period.shiftLengthHours for end time', () => {
+    const p = period({
+      startDate: '2026-07-01',
+      endDate: '2026-07-31',
+      pattern: { cycleDays: 4, offset: 'B' },
+      shiftStartTime: '07:00',
+      shiftLengthHours: 12,
+    });
+
+    const shift = buildShift(p, '2026-07-01');
+    expect(shift).not.toBeNull();
+    expect(shift!.durationHours).toBe(12);
+    expect(shift!.endDateTime.getHours()).toBe(19);
+    expect(shift!.endDateTime.getMinutes()).toBe(0);
   });
 
   it('returns null on a vacation day that would otherwise be a shift', () => {

@@ -21,7 +21,10 @@ function period(
     firstShiftDate: '2026-07-02',
     vacationStartDate: '2026-08-01',
     vacationEndDate: '2026-08-07',
+    skippedDates: [],
+    coveredDates: [],
     shiftStartTime: '07:00',
+    shiftLengthHours: 24,
     color: DEFAULT_ROTATION_COLOR,
     role: 'secondary',
     createdAt: '2026-01-01T00:00:00.000Z',
@@ -40,7 +43,10 @@ describe('periodToShareDraft', () => {
       firstShiftDate: '2026-07-02',
       vacationStartDate: '2026-08-01',
       vacationEndDate: '2026-08-07',
+      skippedDates: [],
+      coveredDates: [],
       shiftStartTime: '07:00',
+      shiftLengthHours: 24,
       color: DEFAULT_ROTATION_COLOR,
     });
     expect(draft).not.toHaveProperty('id');
@@ -57,6 +63,16 @@ describe('buildShareUrl / parseShareUrl', () => {
     );
     const draft = parseShareUrl(url);
     expect(draft).toEqual(periodToShareDraft(period()));
+  });
+
+  it('round-trips skippedDates and coveredDates', () => {
+    const withEdits = period({
+      skippedDates: ['2026-07-05'],
+      coveredDates: ['2026-07-03'],
+    });
+    const draft = parseShareUrl(buildShareUrl(withEdits));
+    expect(draft?.skippedDates).toEqual(['2026-07-05']);
+    expect(draft?.coveredDates).toEqual(['2026-07-03']);
   });
 
   it('uses a trailing-slash path (no Astro 301)', () => {
@@ -90,7 +106,10 @@ describe('parseShareDraft', () => {
         firstShiftDate: null,
         vacationStartDate: null,
         vacationEndDate: null,
+    skippedDates: [],
+    coveredDates: [],
         shiftStartTime: '07:00',
+        shiftLengthHours: 24,
         color: DEFAULT_ROTATION_COLOR,
       }),
     ).toBeNull();

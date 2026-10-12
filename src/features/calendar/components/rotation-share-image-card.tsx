@@ -76,6 +76,8 @@ function ShareImageMonthCard({ period, monthDate, todayIso }: MonthCardProps) {
             todayIso,
             null,
             [],
+            null,
+            monthInputs.skippedDates,
           ),
     [
       friendShift,
@@ -83,6 +85,7 @@ function ShareImageMonthCard({ period, monthDate, todayIso }: MonthCardProps) {
       resolvedSecondaryShiftMarks,
       monthInputs.freeWeekendDates,
       monthInputs.vacationDates,
+      monthInputs.skippedDates,
       todayIso,
     ],
   );

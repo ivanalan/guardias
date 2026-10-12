@@ -46,9 +46,15 @@ export function resolveTwoWeekLayout(
   const weekdayBlock = padTop + weekdayLine + weekdayBottom;
   const padBottom = 8;
   const available = Math.max(40, heightDp - weekdayBlock - padBottom);
+  // Must match DOT + DOT_GAP under each day in iOS/Android two-week widgets
+  // (single aggregated friend dot — no +N label).
+  const secondaryDotReserve = 6;
   const cellSize = Math.min(
     40,
-    Math.max(18, Math.floor(available / weekCount) - 6),
+    Math.max(
+      18,
+      Math.floor(available / weekCount) - secondaryDotReserve,
+    ),
   );
   const dayFontSize = compact
     ? cellSize >= 32

@@ -6,7 +6,11 @@ import { WIDGET_CARD_PADDING_X, WIDGET_CARD_PADDING_Y } from '../../theme/layout
 import {
   WIDGET_RADIUS,
 } from '../../theme/widget-radius';
-import { CALENDAR_WEEK_ROW_GAP, CELL_SIZE } from './calendar-day-marker';
+import {
+  CALENDAR_WEEK_ROW_GAP,
+  CELL_SIZE,
+  SECONDARY_DOT_STACK_HEIGHT,
+} from './calendar-day-marker';
 
 const MONO_FONT = Platform.select({
   ios: 'Menlo',
@@ -160,7 +164,8 @@ const HEADER_MARGIN_BOTTOM = 8;
 const WEEKDAY_ROW_MARGIN_TOP = 4;
 const DAY_HEADER_MARGIN_TOP = 2;
 const DAY_HEADER_MARGIN_BOTTOM = 7;
-const WEEK_ROW_HEIGHT = CELL_SIZE + CALENDAR_WEEK_ROW_GAP;
+const WEEK_ROW_HEIGHT =
+  CELL_SIZE + SECONDARY_DOT_STACK_HEIGHT + CALENDAR_WEEK_ROW_GAP;
 
 /**
  * Weekday row sits inside our header (`hideDayNames`). marginTop includes the

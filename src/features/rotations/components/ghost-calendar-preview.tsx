@@ -20,7 +20,7 @@ export function GhostCalendarPreview({
       weekdayLabels={weekdayLabels}
       todayIso={EMPTY_STATE_PREVIEW.todayIso}
       shiftColorByDate={EMPTY_STATE_PREVIEW_SHIFT_COLOR_BY_DATE}
-      secondaryShiftColorByDate={new Map()}
+      secondaryDotsByDate={new Map()}
       freeWeekendDates={EMPTY_STATE_PREVIEW_FREE_WEEKEND_DATES}
       vacationDates={EMPTY_STATE_PREVIEW_VACATION_DATES}
     />

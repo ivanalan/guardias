@@ -1,11 +1,14 @@
 import { addHours, parse } from 'date-fns';
 
-import type { RotationPeriod } from '@/features/rotations/types';
+import {
+  DEFAULT_SHIFT_LENGTH_HOURS,
+  type RotationPeriod,
+} from '@/features/rotations/types';
 
 import { isShiftDay } from './is-shift-day';
 
-/** Fixed shift length in hours. */
-export const SHIFT_DURATION_HOURS = 24 as const;
+/** Default shift length; periods may override via `shiftLengthHours`. */
+export const SHIFT_DURATION_HOURS = DEFAULT_SHIFT_LENGTH_HOURS;
 
 /** Computed shift for a calendar day (not stored). */
 export type ComputedShift = {
@@ -13,7 +16,7 @@ export type ComputedShift = {
   date: string;
   startDateTime: Date;
   endDateTime: Date;
-  durationHours: typeof SHIFT_DURATION_HOURS;
+  durationHours: number;
   rotationPeriodId: string;
   rotationLabel: string;
 };
@@ -35,13 +38,14 @@ export function buildShift(
     'yyyy-MM-dd HH:mm',
     new Date(),
   );
-  const endDateTime = addHours(startDateTime, SHIFT_DURATION_HOURS);
+  const durationHours = period.shiftLengthHours;
+  const endDateTime = addHours(startDateTime, durationHours);
 
   return {
     date: isoDate,
     startDateTime,
     endDateTime,
-    durationHours: SHIFT_DURATION_HOURS,
+    durationHours,
     rotationPeriodId: period.id,
     rotationLabel: period.label,
   };
